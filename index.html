@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Hidrologi Heroes</title>
+    <style>
+        /* Desain Glassmorphism agar terlihat modern di HP Juri */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            padding: 30px; border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center; width: 90%; max-width: 400px;
+        }
+        h2 { color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        button {
+            width: 100%; padding: 15px; margin: 10px 0;
+            border: none; border-radius: 15px;
+            font-size: 16px; font-weight: bold; color: white;
+            cursor: pointer; transition: 0.3s;
+        }
+        /* Warna tombol sesuai urutan diorama */
+        .btn-red { background: #f44336; }     /* Evaporasi */
+        .btn-orange { background: #ff9800; }  /* Kondensasi */
+        .btn-green { background: #4caf50; }   /* Presipitasi */
+        .btn-blue { background: #2196f3; }    /* Banjir */
+        .btn-dark { background: #333; }       /* Off */
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>HIDROLOGI HEROES</h2>
+    <p style="color: white;">Kontrol Diorama Cloud</p>
+    
+    <button class="btn-red" onclick="kirimKeFirebase('evaporasi')">1. EVAPORASI</button>
+    <button class="btn-orange" onclick="kirimKeFirebase('kondensasi')">2. KONDENSASI</button>
+    <button class="btn-green" onclick="kirimKeFirebase('presipitasi')">3. PRESIPITASI</button>
+    <button class="btn-blue" onclick="kirimKeFirebase('banjir')">4. BANJIR</button>
+    <button class="btn-dark" onclick="kirimKeFirebase('off')">MATIKAN SEMUA</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // --- KONFIGURASI PENTING ---
+    var firebaseConfig = {
+        databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    var database = firebase.database();
+
+    // Fungsi untuk mengirim data teks ke Firebase
+    function kirimKeFirebase(status) {
+        database.ref("diorama/status").set(status)
+        .then(() => {
+            console.log("Perintah " + status + " berhasil dikirim!");
+        })
+        .catch((error) => {
+            alert("Gagal konek ke Firebase: " + error);
+        });
+    }
+</script>
+
+</body>
+</html>
