@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hidrologi Heroes Dashboard</title>
+    <title>Hidrologi Heroes Dashboard - NISEEF 2026</title>
     <style>
         :root { --glass: rgba(255, 255, 255, 0.15); --border: rgba(255, 255, 255, 0.2); }
         body {
             font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
-            background: #001f3f; text-align: center;
+            background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
+            background-size: cover; text-align: center;
         }
         .container { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .glass-card {
             background: var(--glass); backdrop-filter: blur(12px);
             border-radius: 25px; border: 1px solid var(--border);
-            padding: 25px; width: 90%; max-width: 480px; display: none;
+            padding: 25px; width: 95%; max-width: 500px; display: none;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
         .active { display: block; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid white; }
         
         .btn {
             width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px;
@@ -37,7 +38,8 @@
         /* Quiz Styling */
         .quiz-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left; border: 1px solid var(--border); }
         .ans-btn { background: rgba(255,255,255,0.2); width: 100%; text-align: left; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); color: white; cursor: pointer; }
-        .ans-btn:hover { background: rgba(255,255,255,0.3); }
+        
+        .qr-box { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -46,18 +48,17 @@
     <h1 onclick="showPage('menu-utama')" style="cursor:pointer; text-shadow: 2px 2px 5px #000;">HIDROLOGI HEROES</h1>
 
     <div id="menu-utama" class="glass-card active">
-        <h2 style="margin-top:0">Pilih Mode</h2>
+        <h2>Menu Utama</h2>
         <button class="btn btn-main" onclick="showPage('menu-siswa')">A. SISWA</button>
-        <button class="btn btn-main" onclick="alert('Menu Guru Terkunci')">B. GURU</button>
-        <p style="font-size:12px; margin-top:15px; opacity:0.7">NISEEF 2026 - Sanggar Prestasi Aksa Swastika</p>
+        <button class="btn btn-main" onclick="aksesGuru()">B. GURU</button>
+        <p style="font-size:12px; margin-top:15px; opacity:0.8">Sanggar Prestasi Aksa Swastika</p>
     </div>
 
     <div id="menu-siswa" class="glass-card">
         <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png" class="scene-img">
-        <h3>Halo Heroes!</h3>
         <button class="btn btn-main" onclick="startPenjelasan()">1. Penjelasan</button>
         <button class="btn btn-main" onclick="showPage('hal-kuis')">2. Kuis</button>
-        <button class="btn btn-main" onclick="alert('Membuka Youtube...')">3. Menonton</button>
+        <button class="btn btn-main" onclick="showPage('hal-nonton')">3. Menonton</button>
         <button class="btn btn-main" onclick="showPage('hal-diorama')">4. Diorama</button>
         <div class="nav-group">
             <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
@@ -67,7 +68,6 @@
     <div id="hal-penjelasan" class="glass-card">
         <img id="img-penjelasan" src="" class="scene-img">
         <div class="desc-text" id="text-penjelasan"></div>
-        
         <div class="nav-group">
             <button class="btn-nav" onclick="prevSlide()">BACK</button>
             <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
@@ -77,42 +77,41 @@
 
     <div id="hal-kuis" class="glass-card">
         <h3>Asah Otak</h3>
-        
-        <div class="quiz-item">
-            <p><b>1. Apa sebutan untuk proses penguapan air laut?</b></p>
-            <button class="ans-btn" onclick="alert('Benar! Aji Dharma hebat!')">A. Evaporasi</button>
-            <button class="ans-btn" onclick="alert('Belum tepat, ayo coba lagi!')">B. Kondensasi</button>
-        </div>
-
-        <div class="quiz-item">
-            <p><b>2. Uap air yang berubah menjadi awan disebut...</b></p>
-            <button class="ans-btn" onclick="alert('Benar! Kayla & Aulia pintar!')">A. Kondensasi</button>
-            <button class="ans-btn" onclick="alert('Belum tepat, ingat tentang awan!')">B. Presipitasi</button>
-        </div>
-
-        <div class="quiz-item">
-            <p><b>3. Apa itu Presipitasi?</b></p>
-            <button class="ans-btn" onclick="alert('Tepat! Itulah saat hujan turun.')">A. Turunnya Hujan</button>
-            <button class="ans-btn" onclick="alert('Kurang tepat, itu Infiltrasi.')">B. Meresap ke Tanah</button>
-        </div>
-
+        <div id="quiz-container"></div>
         <div class="nav-group">
-            <button class="btn-nav" onclick="showPage('menu-siswa')">BACK</button>
+            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
+        </div>
+    </div>
+
+    <div id="hal-nonton" class="glass-card">
+        <h3>Video Edukasi</h3>
+        <button class="btn btn-main" onclick="window.open('https://www.youtube.com/watch?v=QNdvnetmG5A')">BUKA YOUTUBE</button>
+        <div class="qr-box" id="yt-qr"></div>
+        <p style="color:black; font-size:12px; font-weight:bold">Scan untuk Menonton</p>
+        <div class="nav-group">
             <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
         </div>
     </div>
 
     <div id="hal-diorama" class="glass-card">
         <h3>Kontrol Diorama</h3>
-        <button class="btn" style="background:linear-gradient(45deg, #f44336, #b71c1c)" onclick="kirim('evaporasi')">1. EVAPORASI</button>
-        <button class="btn" style="background:linear-gradient(45deg, #ff9800, #e65100)" onclick="kirim('kondensasi')">2. KONDENSASI</button>
-        <button class="btn" style="background:linear-gradient(45deg, #4caf50, #1b5e20)" onclick="kirim('presipitasi')">3. PRESIPITASI</button>
-        <button class="btn" style="background:linear-gradient(45deg, #2196f3, #01579b)" onclick="kirim('banjir')">4. BANJIR</button>
-        <button class="btn" style="background:#222; margin-top:20px" onclick="kirim('off')">MATIKAN SEMUA</button>
-        
+        <button class="btn" style="background:#f44336" onclick="kirim('evaporasi')">1. EVAPORASI</button>
+        <button class="btn" style="background:#ff9800" onclick="kirim('kondensasi')">2. KONDENSASI</button>
+        <button class="btn" style="background:#4caf50" onclick="kirim('presipitasi')">3. PRESIPITASI</button>
+        <button class="btn" style="background:#2196f3" onclick="kirim('banjir')">4. BANJIR</button>
+        <button class="btn" style="background:#333; margin-top:15px" onclick="kirim('off')">MATIKAN SEMUA</button>
         <div class="nav-group">
-            <button class="btn-nav" onclick="showPage('menu-siswa')">BACK</button>
             <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
+        </div>
+    </div>
+
+    <div id="menu-guru" class="glass-card">
+        <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%206.png" class="scene-img">
+        <h3>Panel Guru</h3>
+        <p>Akses Terbatas: Monitor Sistem IoT Aktif</p>
+        <button class="btn btn-main" onclick="alert('Database Reset')">Reset Skor Siswa</button>
+        <div class="nav-group">
+            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">LOGOUT</button>
         </div>
     </div>
 </div>
@@ -125,49 +124,75 @@
     firebase.initializeApp(config);
     var db = firebase.database();
 
+    // DATA PENJELASAN 
     let currentSlide = 0;
     const slides = [
-        {
-            img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Evaporasi.png",
-            text: "<b>1. Evaporasi:</b> Air di permukaan bumi (laut, sungai, danau) menguap ke udara karena panas dari sinar matahari."
-        },
-        {
-            img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Kondensasi.png",
-            text: "<b>2. Kondensasi:</b> Uap air naik ke atmosfer yang dingin, lalu berkumpul membentuk titik-titik air kecil (Awan)."
-        }
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Evaporasi.png", text: "<b>EVAPORASI:</b> Proses berubahnya air menjadi uap air karena panas matahari[cite: 102, 131]." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Kondensasi.png", text: "<b>KONDENSASI:</b> Proses berubahnya uap air menjadi tetesan air karena udara dingin[cite: 103, 133]." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png", text: "<b>PRESIPITASI:</b> Proses jatuhnya air dari awan ke bumi dalam bentuk hujan, salju atau hujan es[cite: 104, 135]." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png", text: "<b>PLTMH:</b> Pembangkit listrik yang memanfaatkan aliran air untuk memutar turbin dan generator[cite: 105, 137, 138]." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%206.png", text: "<b>BENCANA ALAM:</b> Peristiwa alam yang menyebabkan kerusakan seperti banjir dan tanah longsor[cite: 107, 140]." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png", text: "<b>INFILTRASI:</b> Proses meresapnya air hujan ke dalam tanah[cite: 108, 142]." }
+    ];
+
+    // DATA KUIS (10 PERTANYAAN) [cite: 108-111, 143-212]
+    const questions = [
+        { q: "1. Penguapan air laut karena panas matahari disebut?", a: ["Evaporasi", "Kondensasi"], c: 0 },
+        { q: "2. Uap air menjadi titik air di awan disebut?", a: ["Kondensasi", "Presipitasi"], c: 0 },
+        { q: "3. Banjir dapat terjadi karena?", a: ["Hujan deras terus-menerus", "Gempa bumi"], c: 0 },
+        { q: "4. Tanah longsor biasanya terjadi di daerah?", a: ["Pegunungan yang gundul", "Datar dan kering"], c: 0 },
+        { q: "5. Cara mencegah tanah longsor adalah?", a: ["Menanam pohon", "Menebang pohon"], c: 0 },
+        { q: "6. Turunnya hujan ke bumi disebut?", a: ["Presipitasi", "Infiltrasi"], c: 0 },
+        { q: "7. Air hujan yang meresap ke tanah disebut?", a: ["Infiltrasi", "Kondensasi"], c: 0 },
+        { q: "8. Salju dan hujan contoh dari proses?", a: ["Presipitasi", "Evaporasi"], c: 0 },
+        { q: "9. Perubahan air menjadi uap air disebut?", a: ["Evaporasi", "Kondensasi"], c: 0 },
+        { q: "10. Salah satu penyebab banjir adalah?", a: ["Hujan deras", "Gunung meletus"], c: 0 }
     ];
 
     function showPage(id) {
         document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         window.scrollTo(0,0);
+        if(id === 'hal-nonton') genYTQR();
+        if(id === 'hal-kuis') renderQuiz();
     }
 
-    function startPenjelasan() {
-        currentSlide = 0;
-        updateSlide();
-        showPage('hal-penjelasan');
+    function aksesGuru() {
+        let pin = prompt("Masukkan PIN Guru:");
+        if(pin === "1234") showPage('menu-guru');
+        else alert("PIN Salah!");
     }
 
+    function genYTQR() {
+        let url = "https://www.youtube.com/watch?v=QNdvnetmG5A";
+        document.getElementById('yt-qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}">`;
+    }
+
+    function renderQuiz() {
+        let html = "";
+        questions.forEach((item, index) => {
+            html += `<div class="quiz-item"><p><b>${item.q}</b></p>`;
+            item.a.forEach((ans, i) => {
+                html += `<button class="ans-btn" onclick="cek(${index}, ${i})">${String.fromCharCode(65+i)}. ${ans}</button>`;
+            });
+            html += `</div>`;
+        });
+        document.getElementById('quiz-container').innerHTML = html;
+    }
+
+    function cek(qIdx, aIdx) {
+        if(aIdx === questions[qIdx].c) alert("JAWABAN ANDA BENAR! [cite: 148]");
+        else alert("JAWABAN ANDA SALAH! [cite: 149]");
+    }
+
+    function startPenjelasan() { currentSlide = 0; updateSlide(); showPage('hal-penjelasan'); }
     function updateSlide() {
         document.getElementById('img-penjelasan').src = slides[currentSlide].img;
         document.getElementById('text-penjelasan').innerHTML = slides[currentSlide].text;
     }
-
-    function nextSlide() {
-        if (currentSlide < slides.length - 1) { currentSlide++; updateSlide(); }
-        else { showPage('menu-siswa'); }
-    }
-
-    function prevSlide() {
-        if (currentSlide > 0) { currentSlide--; updateSlide(); }
-        else { showPage('menu-siswa'); }
-    }
-
-    function kirim(status) {
-        db.ref("diorama/status").set(status);
-        console.log("Mengirim sinyal: " + status);
-    }
+    function nextSlide() { if(currentSlide < slides.length-1){ currentSlide++; updateSlide(); } else { showPage('menu-siswa'); } }
+    function prevSlide() { if(currentSlide > 0){ currentSlide--; updateSlide(); } else { showPage('menu-siswa'); } }
+    function kirim(s) { db.ref("diorama/status").set(s); }
 </script>
 </body>
 </html>
