@@ -3,100 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hidrologi Heroes - Educational Dashboard</title>
+    <title>Hidrologi Heroes Dashboard</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.2); --border: rgba(255, 255, 255, 0.3); }
         body {
             font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
-            background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
-            background-size: cover; overflow-x: hidden;
+            background: #001f3f; text-align: center;
         }
-        .container {
-            min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
-        }
+        .container { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .glass-card {
-            background: var(--glass); backdrop-filter: blur(15px);
-            border-radius: 25px; border: 1px solid var(--border);
-            padding: 25px; width: 90%; max-width: 450px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center;
-            display: none; /* Hidden by default */
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
+            padding: 20px; width: 90%; max-width: 450px; display: none;
         }
         .active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        h1, h2 { text-shadow: 2px 2px 10px rgba(0,0,0,0.5); margin-top: 0; }
-        .btn {
-            width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 15px;
-            font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: 0.3s;
-        }
-        .btn-main { background: linear-gradient(45deg, #00c6ff, #0072ff); }
-        .btn-sub { background: rgba(255, 255, 255, 0.2); border: 1px solid white; }
-        .btn-red { background: #f44336; } .btn-orange { background: #ff9800; } 
-        .btn-green { background: #4caf50; } .btn-blue { background: #2196f3; }
-        .btn-back { background: #333; margin-top: 20px; font-size: 14px; }
+        img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid white; }
         
-        .quiz-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin: 10px 0; }
+        .btn {
+            width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px;
+            font-size: 16px; font-weight: bold; color: white; cursor: pointer;
+        }
+        .btn-main { background: #007bff; }
+        .nav-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-nav { flex: 1; background: #555; padding: 12px; border-radius: 10px; border: 1px solid white; color: white; }
+        .btn-home { background: #d32f2f; }
+        
+        .desc-text { text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>HIDROLOGI HEROES</h1>
+    <h1 onclick="showPage('menu-utama')" style="cursor:pointer">HIDROLOGI HEROES</h1>
 
     <div id="menu-utama" class="glass-card active">
-        <h2>Menu Utama</h2>
+        <h2>Pilih Mode</h2>
         <button class="btn btn-main" onclick="showPage('menu-siswa')">A. SISWA</button>
-        <button class="btn btn-main" onclick="showPage('menu-guru')">B. GURU</button>
+        <button class="btn btn-main" onclick="alert('Menu Guru Terkunci')">B. GURU</button>
     </div>
 
     <div id="menu-siswa" class="glass-card">
-        <h2>Halo Heroes!</h2>
-        <button class="btn btn-sub" onclick="showPage('hal-penjelasan')">1. Penjelasan</button>
-        <button class="btn btn-sub" onclick="showPage('hal-kuis')">2. Kuis</button>
-        <button class="btn btn-sub" onclick="alert('Membuka Video Edukasi...')">3. Menonton</button>
-        <button class="btn btn-sub" onclick="showPage('hal-diorama')">4. Diorama</button>
-        <button class="btn btn-back" onclick="showPage('menu-utama')">KEMBALI</button>
+        <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png" class="scene-img">
+        <button class="btn btn-main" onclick="startPenjelasan()">1. Penjelasan</button>
+        <button class="btn btn-main" onclick="alert('Kuis Belum Tersedia')">2. Kuis</button>
+        <button class="btn btn-main" onclick="alert('Membuka Youtube...')">3. Menonton</button>
+        <button class="btn btn-main" onclick="showPage('hal-diorama')">4. Diorama</button>
+        <div class="nav-group">
+            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
+        </div>
     </div>
 
     <div id="hal-penjelasan" class="glass-card">
-        <h3>Siklus Air</h3>
-        <p align="left"><b>1. Evaporasi:</b> Penguapan air laut.<br>
-        <b>2. Kondensasi:</b> Pembentukan awan.<br>
-        <b>3. Presipitasi:</b> Turunnya hujan.<br>
-        <b>4. Infiltrasi:</b> Air meresap ke tanah.</p>
-        <button class="btn btn-back" onclick="showPage('menu-siswa')">KEMBALI</button>
-    </div>
-
-    <div id="hal-kuis" class="glass-card">
-        <h3>Asah Otak</h3>
-        <div class="quiz-box">
-            <p>Apa sebutan untuk proses air laut menguap menjadi awan?</p>
-            <button class="btn btn-sub" onclick="alert('Benar!')">Evaporasi</button>
-            <button class="btn btn-sub" onclick="alert('Salah, coba lagi!')">Infiltrasi</button>
+        <img id="img-penjelasan" src="" class="scene-img">
+        <div class="desc-text" id="text-penjelasan"></div>
+        
+        <div class="nav-group">
+            <button class="btn-nav" onclick="prevSlide()">BACK</button>
+            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
+            <button class="btn-nav" onclick="nextSlide()">NEXT</button>
         </div>
-        <button class="btn btn-back" onclick="showPage('menu-siswa')">KEMBALI</button>
     </div>
 
     <div id="hal-diorama" class="glass-card">
         <h3>Kontrol Alat</h3>
-        <button class="btn btn-red" onclick="kirim('evaporasi')">EVAPORASI</button>
-        <button class="btn btn-orange" onclick="kirim('kondensasi')">KONDENSASI</button>
-        <button class="btn btn-green" onclick="kirim('presipitasi')">PRESIPITASI</button>
-        <button class="btn btn-blue" onclick="kirim('banjir')">BANJIR</button>
-        <button class="btn btn-back" style="background:#555" onclick="kirim('off')">MATIKAN ALAT</button>
-        <button class="btn btn-back" onclick="showPage('menu-siswa')">KEMBALI</button>
-    </div>
-
-    <div id="menu-guru" class="glass-card">
-        <h2>Panel Guru</h2>
-        <div class="quiz-box">
-            <p>Statistik Penggunaan:</p>
-            <p>Siswa Aktif: 3<br>Skor Rata-rata: 85</p>
+        <button class="btn btn-main" style="background:#f44336" onclick="kirim('evaporasi')">EVAPORASI</button>
+        <button class="btn btn-main" style="background:#ff9800" onclick="kirim('kondensasi')">KONDENSASI</button>
+        <button class="btn btn-main" style="background:#4caf50" onclick="kirim('presipitasi')">PRESIPITASI</button>
+        <button class="btn btn-main" style="background:#333" onclick="kirim('off')">MATIKAN SEMUA</button>
+        <div class="nav-group">
+            <button class="btn-nav" onclick="showPage('menu-siswa')">BACK</button>
+            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
         </div>
-        <button class="btn btn-sub" onclick="alert('Reset Data Berhasil')">Reset Database</button>
-        <button class="btn btn-back" onclick="showPage('menu-utama')">KEMBALI</button>
     </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -107,15 +86,47 @@
     firebase.initializeApp(config);
     var db = firebase.database();
 
+    let currentSlide = 0;
+    const slides = [
+        {
+            img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Evaporasi.png",
+            text: "<b>Evaporasi:</b> Proses di mana air dari permukaan bumi menguap ke atmosfer karena panas matahari."
+        },
+        {
+            img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Kondensasi.png",
+            text: "<b>Kondensasi:</b> Uap air berubah menjadi titik-titik air kecil yang membentuk awan di langit."
+        }
+    ];
+
     function showPage(id) {
-        document.querySelectorAll('.glass-card').forEach(card => card.classList.remove('active'));
+        document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+    }
+
+    function startPenjelasan() {
+        currentSlide = 0;
+        updateSlide();
+        showPage('hal-penjelasan');
+    }
+
+    function updateSlide() {
+        document.getElementById('img-penjelasan').src = slides[currentSlide].img;
+        document.getElementById('text-penjelasan').innerHTML = slides[currentSlide].text;
+    }
+
+    function nextSlide() {
+        if (currentSlide < slides.length - 1) { currentSlide++; updateSlide(); }
+        else { showPage('menu-siswa'); }
+    }
+
+    function prevSlide() {
+        if (currentSlide > 0) { currentSlide--; updateSlide(); }
+        else { showPage('menu-siswa'); }
     }
 
     function kirim(status) {
         db.ref("diorama/status").set(status);
     }
 </script>
-
 </body>
 </html>
