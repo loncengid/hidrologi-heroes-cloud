@@ -5,64 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hidrologi Heroes Dashboard - NISEEF 2026</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.15); --border: rgba(255, 255, 255, 0.2); }
+        /* Desain Kontras Tinggi */
+        :root { 
+            --dark-card: rgba(0, 0, 0, 0.75); /* Hitam transparan lebih pekat */
+            --highlight: #00d4ff; 
+            --text-main: #ffffff;
+        }
         body {
-            font-family: 'Segoe UI', sans-serif; margin: 0; color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; color: var(--text-main);
             background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
-            background-size: cover; text-align: center;
+            background-size: cover;
         }
         .container { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
         .glass-card {
-            background: var(--glass); backdrop-filter: blur(12px);
-            border-radius: 25px; border: 1px solid var(--border);
-            padding: 25px; width: 95%; max-width: 500px; display: none;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            background: var(--dark-card); 
+            backdrop-filter: blur(15px);
+            border-radius: 25px; 
+            border: 2px solid var(--highlight);
+            padding: 30px; width: 95%; max-width: 500px; display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
-        .active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .active { display: block; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 15px; border: 2px solid white; }
+        h1, h2, h3 { text-shadow: 3px 3px 6px rgba(0,0,0,0.8); font-weight: 800; text-transform: uppercase; }
+        img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 20px; border: 3px solid #fff; }
         
+        /* Tombol Menu Utama & Sub-Menu */
         .btn {
-            width: 100%; padding: 15px; margin: 8px 0; border: none; border-radius: 12px;
-            font-size: 16px; font-weight: bold; color: white; cursor: pointer; transition: 0.3s;
+            width: 100%; padding: 18px; margin: 10px 0; border: none; border-radius: 15px;
+            font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .btn:active { transform: scale(0.98); }
-        .btn-main { background: linear-gradient(45deg, #007bff, #0056b3); }
-        .nav-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-nav { flex: 1; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid white; color: white; }
-        .btn-home { background: #d32f2f; }
+        .btn-main { background: linear-gradient(45deg, #007bff, #00c6ff); color: white; border-bottom: 4px solid #0056b3; }
         
-        .desc-text { text-align: left; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; line-height: 1.6; font-size: 14px; }
+        /* Tombol Jawaban Kuis - Kontras Tinggi */
+        .quiz-item { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 20px; margin-bottom: 30px; border-left: 5px solid var(--highlight); }
+        .quiz-item p { font-size: 18px; font-weight: bold; margin-bottom: 15px; line-height: 1.4; }
+        .ans-btn { 
+            background: #ffffff; color: #001f3f; /* Putih bersih dengan teks gelap */
+            width: 100%; text-align: left; padding: 15px; margin: 8px 0; 
+            border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+        .ans-btn:hover { background: var(--highlight); color: white; }
+
+        /* Navigasi */
+        .nav-group { display: flex; gap: 12px; margin-top: 25px; }
+        .btn-nav { flex: 1; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 2px solid white; color: white; font-weight: bold; font-size: 14px; }
+        .btn-home { background: #ff1744; border: none; }
         
-        /* Quiz Styling */
-        .quiz-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left; border: 1px solid var(--border); }
-        .ans-btn { background: rgba(255,255,255,0.2); width: 100%; text-align: left; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); color: white; cursor: pointer; }
-        
-        .qr-box { background: white; padding: 10px; border-radius: 10px; display: inline-block; margin-top: 10px; }
+        .qr-box { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin: 15px 0; }
+        .desc-text { text-align: left; font-size: 16px; line-height: 1.6; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 onclick="showPage('menu-utama')" style="cursor:pointer; text-shadow: 2px 2px 5px #000;">HIDROLOGI HEROES</h1>
+    <h1 onclick="showPage('menu-utama')" style="cursor:pointer; font-size: 28px;">HIDROLOGI HEROES</h1>
 
     <div id="menu-utama" class="glass-card active">
         <h2>Menu Utama</h2>
         <button class="btn btn-main" onclick="showPage('menu-siswa')">A. SISWA</button>
         <button class="btn btn-main" onclick="aksesGuru()">B. GURU</button>
-        <p style="font-size:12px; margin-top:15px; opacity:0.8">Sanggar Prestasi Aksa Swastika</p>
+        <p style="font-size:14px; margin-top:20px; font-weight: bold;">Sanggar Prestasi Aksa Swastika</p>
     </div>
 
     <div id="menu-siswa" class="glass-card">
         <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png" class="scene-img">
+        <h3>Halo Siswa!</h3>
         <button class="btn btn-main" onclick="startPenjelasan()">1. Penjelasan</button>
         <button class="btn btn-main" onclick="showPage('hal-kuis')">2. Kuis</button>
         <button class="btn btn-main" onclick="showPage('hal-nonton')">3. Menonton</button>
         <button class="btn btn-main" onclick="showPage('hal-diorama')">4. Diorama</button>
-        <div class="nav-group">
-            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
-        </div>
+        <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
     </div>
 
     <div id="hal-penjelasan" class="glass-card">
@@ -76,21 +93,17 @@
     </div>
 
     <div id="hal-kuis" class="glass-card">
-        <h3>Asah Otak</h3>
+        <h3>Kuis Interaktif</h3>
         <div id="quiz-container"></div>
-        <div class="nav-group">
-            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
-        </div>
+        <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
     </div>
 
     <div id="hal-nonton" class="glass-card">
         <h3>Video Edukasi</h3>
-        <button class="btn btn-main" onclick="window.open('https://www.youtube.com/watch?v=QNdvnetmG5A')">BUKA YOUTUBE</button>
+        <button class="btn btn-main" onclick="window.open('https://www.youtube.com/watch?v=QNdvnetmG5A')">BUKA VIDEO YOUTUBE</button>
         <div class="qr-box" id="yt-qr"></div>
-        <p style="color:black; font-size:12px; font-weight:bold">Scan untuk Menonton</p>
-        <div class="nav-group">
-            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
-        </div>
+        <p style="color:black; font-weight:bold; font-size:14px;">Scan untuk Menonton</p>
+        <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
     </div>
 
     <div id="hal-diorama" class="glass-card">
@@ -99,20 +112,16 @@
         <button class="btn" style="background:#ff9800" onclick="kirim('kondensasi')">2. KONDENSASI</button>
         <button class="btn" style="background:#4caf50" onclick="kirim('presipitasi')">3. PRESIPITASI</button>
         <button class="btn" style="background:#2196f3" onclick="kirim('banjir')">4. BANJIR</button>
-        <button class="btn" style="background:#333; margin-top:15px" onclick="kirim('off')">MATIKAN SEMUA</button>
-        <div class="nav-group">
-            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button>
-        </div>
+        <button class="btn" style="background:#333; margin-top:15px;" onclick="kirim('off')">MATIKAN SEMUA</button>
+        <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
     </div>
 
     <div id="menu-guru" class="glass-card">
         <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%206.png" class="scene-img">
         <h3>Panel Guru</h3>
         <p>Akses Terbatas: Monitor Sistem IoT Aktif</p>
-        <button class="btn btn-main" onclick="alert('Database Reset')">Reset Skor Siswa</button>
-        <div class="nav-group">
-            <button class="btn-nav btn-home" onclick="showPage('menu-utama')">LOGOUT</button>
-        </div>
+        <button class="btn btn-main" onclick="alert('Skor Berhasil Direset')">Reset Database</button>
+        <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">LOGOUT</button></div>
     </div>
 </div>
 
@@ -124,27 +133,25 @@
     firebase.initializeApp(config);
     var db = firebase.database();
 
-    // DATA PENJELASAN 
+    // DATA PENJELASAN
     let currentSlide = 0;
     const slides = [
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Evaporasi.png", text: "<b>EVAPORASI:</b> Proses berubahnya air menjadi uap air karena panas matahari[cite: 102, 131]." },
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Kondensasi.png", text: "<b>KONDENSASI:</b> Proses berubahnya uap air menjadi tetesan air karena udara dingin[cite: 103, 133]." },
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png", text: "<b>PRESIPITASI:</b> Proses jatuhnya air dari awan ke bumi dalam bentuk hujan, salju atau hujan es[cite: 104, 135]." },
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png", text: "<b>PLTMH:</b> Pembangkit listrik yang memanfaatkan aliran air untuk memutar turbin dan generator[cite: 105, 137, 138]." },
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%206.png", text: "<b>BENCANA ALAM:</b> Peristiwa alam yang menyebabkan kerusakan seperti banjir dan tanah longsor[cite: 107, 140]." },
-        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png", text: "<b>INFILTRASI:</b> Proses meresapnya air hujan ke dalam tanah[cite: 108, 142]." }
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Evaporasi.png", text: "<b>1. EVAPORASI:</b> Penguapan air laut/bumi karena panas matahari." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/Scene%20Kondensasi.png", text: "<b>2. KONDENSASI:</b> Uap air menjadi awan karena udara dingin." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png", text: "<b>3. PRESIPITASI:</b> Jatuhnya air hujan dari awan ke bumi." },
+        { img: "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%206.png", text: "<b>BENCANA ALAM:</b> Kerusakan alam seperti banjir dan tanah longsor." }
     ];
 
-    // DATA KUIS (10 PERTANYAAN) [cite: 108-111, 143-212]
+    // DATA KUIS (10 PERTANYAAN PPT)
     const questions = [
         { q: "1. Penguapan air laut karena panas matahari disebut?", a: ["Evaporasi", "Kondensasi"], c: 0 },
         { q: "2. Uap air menjadi titik air di awan disebut?", a: ["Kondensasi", "Presipitasi"], c: 0 },
         { q: "3. Banjir dapat terjadi karena?", a: ["Hujan deras terus-menerus", "Gempa bumi"], c: 0 },
-        { q: "4. Tanah longsor biasanya terjadi di daerah?", a: ["Pegunungan yang gundul", "Datar dan kering"], c: 0 },
-        { q: "5. Cara mencegah tanah longsor adalah?", a: ["Menanam pohon", "Menebang pohon"], c: 0 },
+        { q: "4. Tanah longsor biasanya terjadi di daerah?", a: ["Pegunungan yang gundul", "Tanah datar yang kering"], c: 0 },
+        { q: "5. Cara mencegah tanah longsor adalah?", a: ["Menanam banyak pohon", "Menebang pohon sembarang"], c: 0 },
         { q: "6. Turunnya hujan ke bumi disebut?", a: ["Presipitasi", "Infiltrasi"], c: 0 },
         { q: "7. Air hujan yang meresap ke tanah disebut?", a: ["Infiltrasi", "Kondensasi"], c: 0 },
-        { q: "8. Salju dan hujan contoh dari proses?", a: ["Presipitasi", "Evaporasi"], c: 0 },
+        { q: "8. Salju dan hujan es adalah contoh dari?", a: ["Presipitasi", "Evaporasi"], c: 0 },
         { q: "9. Perubahan air menjadi uap air disebut?", a: ["Evaporasi", "Kondensasi"], c: 0 },
         { q: "10. Salah satu penyebab banjir adalah?", a: ["Hujan deras", "Gunung meletus"], c: 0 }
     ];
@@ -160,18 +167,13 @@
     function aksesGuru() {
         let pin = prompt("Masukkan PIN Guru:");
         if(pin === "1234") showPage('menu-guru');
-        else alert("PIN Salah!");
-    }
-
-    function genYTQR() {
-        let url = "https://www.youtube.com/watch?v=QNdvnetmG5A";
-        document.getElementById('yt-qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}">`;
+        else alert("PIN SALAH!");
     }
 
     function renderQuiz() {
         let html = "";
         questions.forEach((item, index) => {
-            html += `<div class="quiz-item"><p><b>${item.q}</b></p>`;
+            html += `<div class="quiz-item"><p>${item.q}</p>`;
             item.a.forEach((ans, i) => {
                 html += `<button class="ans-btn" onclick="cek(${index}, ${i})">${String.fromCharCode(65+i)}. ${ans}</button>`;
             });
@@ -181,8 +183,13 @@
     }
 
     function cek(qIdx, aIdx) {
-        if(aIdx === questions[qIdx].c) alert("JAWABAN ANDA BENAR! [cite: 148]");
-        else alert("JAWABAN ANDA SALAH! [cite: 149]");
+        if(aIdx === questions[qIdx].c) alert("HEBAT! JAWABAN ANDA BENAR.");
+        else alert("AYO COBA LAGI! JAWABAN KURANG TEPAT.");
+    }
+
+    function genYTQR() {
+        let url = "https://www.youtube.com/watch?v=QNdvnetmG5A";
+        document.getElementById('yt-qr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}">`;
     }
 
     function startPenjelasan() { currentSlide = 0; updateSlide(); showPage('hal-penjelasan'); }
