@@ -1,12 +1,11 @@
-// 1. Inisialisasi State (Paling Atas agar tidak error)
+/* PROJECT: HIDROLOGI HEROES - NISEEF 2026 */
+
+// 1. Inisialisasi State (Matikan semua di awal)
 let relayState = {
-    evaporasi: 0,
-    kondensasi: 0,
-    presipitasi: 0,
-    banjir: 0
+    evaporasi: 0, kondensasi: 0, presipitasi: 0, banjir: 0
 };
 
-// 2. Konfigurasi Firebase Boss
+// 2. Konfigurasi Firebase Boss (Update Terbaru)
 const firebaseConfig = {
     apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
     authDomain: "hidrologi-heroes.firebaseapp.com",
@@ -18,38 +17,43 @@ const firebaseConfig = {
     measurementId: "G-HMVQ476SYS"
 };
 
-// 3. Hubungkan ke Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// 4. Pantau Data Sensor (ESP32 ke Web)
+// 3. Pantau Data Sensor (ESP32 -> Web)
 database.ref('sensor').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
-        document.getElementById('txt-jarak').innerText = data.jarak.toFixed(1);
-        document.getElementById('txt-persen').innerText = Math.round(data.persen);
-        document.getElementById('water-bar').style.height = data.persen + "%";
+        document.getElementById('txt-jarak').innerText = data.jarak ? data.jarak.toFixed(1) : "0";
+        document.getElementById('txt-persen').innerText = data.persen ? Math.round(data.persen) : "0";
+        document.getElementById('water-bar').style.height = (data.persen || 0) + "%";
     }
 });
 
-// 5. Pantau Status Tombol (Agar Sinkron saat Web dibuka)
-database.ref('controls').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        relayState = { ...relayState, ...data };
-        Object.keys(relayState).forEach(key => updateButtonUI(key));
+// 4. Pantau Status untuk Update Warna Tombol
+database.ref('diorama/status').on('value', (snapshot) => {
+    const statusAktif = snapshot.val();
+    // Reset semua state lokal dulu
+    Object.keys(relayState).forEach(key => relayState[key] = 0);
+    // Setel yang aktif
+    if (statusAktif && statusAktif !== "off") {
+        relayState[statusAktif] = 1;
     }
+    // Update tampilan semua tombol
+    Object.keys(relayState).forEach(key => updateButtonUI(key));
 });
 
-// 6. Fungsi Klik Tombol (Web ke ESP32)
+// 5. Fungsi Klik Tombol (Web -> ESP32)
 function toggleControl(name) {
-    const newVal = relayState[name] === 0 ? 1 : 0;
-    database.ref('controls/' + name).set(newVal)
-        .then(() => console.log(name + " berhasil diubah."))
-        .catch(err => alert("Gagal kirim data!"));
+    // Jika tombol yang diklik sudah ON, kirim 'off'. Jika OFF, kirim namanya.
+    const perintah = (relayState[name] === 1) ? "off" : name;
+    
+    // Tulis ke path yang ditunggu ESP32
+    database.ref('diorama/status').set(perintah)
+        .then(() => console.log("Perintah terkirim: " + perintah))
+        .catch(err => console.error("Gagal: ", err));
 }
 
-// 7. Fungsi Update Tampilan Tombol
 function updateButtonUI(name) {
     const btn = document.getElementById('btn-' + name);
     if (btn) {
