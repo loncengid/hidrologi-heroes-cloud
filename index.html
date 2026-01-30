@@ -1,124 +1,264 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hidrologi Heroes</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hidrologi Heroes Dashboard - NISEEF v4</title>
   <style>
-    body{
-      font-family: Arial, sans-serif;
-      background:#f4f6f8;
-      margin:0;
-      padding:20px;
+    :root {
+      --dark-card: rgba(0, 0, 0, 0.75);
+      --highlight: #00d4ff;
+      --text-main: #ffffff;
     }
-    .wrap{
-      max-width:520px;
-      margin:auto;
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; color: var(--text-main);
+      background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
+      background-size: cover;
     }
-    .card{
-      background:#fff;
-      border-radius:12px;
-      padding:16px;
-      margin-bottom:14px;
-      box-shadow:0 2px 6px rgba(0,0,0,.1);
+    .container { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+    .glass-card {
+      background: var(--dark-card);
+      backdrop-filter: blur(15px);
+      border-radius: 25px;
+      border: 2px solid var(--highlight);
+      padding: 30px; width: 95%; max-width: 520px; display: none;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     }
-    h2{text-align:center;margin-top:0}
-    button{
-      width:100%;
-      padding:14px;
-      margin:6px 0;
-      font-size:18px;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
+    .active { display: block; animation: slideUp 0.4s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    h1, h2, h3 { text-shadow: 3px 3px 6px rgba(0,0,0,0.8); font-weight: 800; text-transform: uppercase; }
+    img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 20px; border: 3px solid #fff; }
+
+    .btn {
+      width: 100%; padding: 18px; margin: 10px 0; border: none; border-radius: 15px;
+      font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.3s;
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .on{background:#2ecc71;color:#fff}
-    .off{background:#e74c3c;color:#fff}
-    .big{font-size:28px;font-weight:bold;text-align:center}
-    .small{font-size:12px;opacity:.7;text-align:center}
+    .btn-main { background: linear-gradient(45deg, #007bff, #00c6ff); color: white; border-bottom: 4px solid #0056b3; }
+    .nav-group { display: flex; gap: 12px; margin-top: 25px; }
+    .btn-nav { flex: 1; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 2px solid white; color: white; font-weight: bold; font-size: 14px; }
+    .btn-home { background: #ff1744; border: none; }
+
+    .status-box{
+      background: rgba(0,0,0,0.55);
+      border: 2px solid rgba(255,255,255,0.35);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 12px 0 18px 0;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .status-row{ display:flex; justify-content:space-between; gap:12px; }
+    .status-key{ opacity:0.9; }
+    .status-val{ text-align:right; }
+
+    .chart-wrap{
+      background: rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 12px;
+    }
   </style>
 </head>
-
 <body>
-<div class="wrap">
 
-  <h2>Menu Kontrol Hidrologi</h2>
+<div class="container">
+  <h1 onclick="showPage('menu-utama')" style="cursor:pointer; font-size: 28px;">HIDROLOGI HEROES</h1>
 
-  <div class="card">
-    <div class="small">Status Aktif</div>
-    <div class="big" id="status">---</div>
+  <div id="menu-utama" class="glass-card active">
+    <h2>Menu Utama</h2>
+    <button class="btn btn-main" onclick="showPage('menu-siswa')">A. SISWA</button>
+    <button class="btn btn-main" onclick="aksesGuru()">B. GURU</button>
+    <p style="font-size:14px; margin-top:20px; font-weight: bold;">Sanggar Prestasi Aksa Swastika</p>
   </div>
 
-  <div class="card">
-    <button class="on" onclick="setMode('evaporasi')">Evaporasi</button>
-    <button class="on" onclick="setMode('kondensasi')">Kondensasi</button>
-    <button class="on" onclick="setMode('presipitasi')">Presipitasi</button>
-    <button class="on" onclick="setMode('infiltrasi')">Infiltrasi</button>
-    <button class="on" onclick="setMode('banjir')">Banjir</button>
-    <button class="off" onclick="setMode('off')">OFF / Reset</button>
+  <div id="menu-siswa" class="glass-card">
+    <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png" class="scene-img">
+    <h3>Halo Siswa!</h3>
+    <button class="btn btn-main" onclick="showPage('hal-diorama')">1. Diorama</button>
+    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
   </div>
 
-  <div class="card">
-    <div class="small">Sensor Jarak</div>
-    <div class="big"><span id="jarak">--</span> cm</div>
-    <div class="big"><span id="persen">--</span> %</div>
+  <div id="hal-diorama" class="glass-card">
+    <h3>Kontrol Diorama</h3>
+
+    <!-- MONITOR REALTIME -->
+    <div class="status-box">
+      <div class="status-row">
+        <div class="status-key">Mode</div>
+        <div class="status-val" id="ui-mode">-</div>
+      </div>
+      <div class="status-row">
+        <div class="status-key">Jarak (cm)</div>
+        <div class="status-val" id="ui-jarak">-</div>
+      </div>
+      <div class="status-row">
+        <div class="status-key">Level (%)</div>
+        <div class="status-val" id="ui-persen">-</div>
+      </div>
+      <hr style="opacity:.25">
+      <div class="status-row">
+        <div class="status-key">Debit (L/min)</div>
+        <div class="status-val" id="ui-flow">-</div>
+      </div>
+      <div class="status-row">
+        <div class="status-key">Total (Liter)</div>
+        <div class="status-val" id="ui-total">-</div>
+      </div>
+    </div>
+
+    <!-- Grafik debit -->
+    <div class="chart-wrap">
+      <canvas id="flowChart" height="160"></canvas>
+      <div style="font-size:12px; opacity:.85; margin-top:8px;">
+        Grafik update otomatis (ambil data dari /debit/flow_lpm).
+      </div>
+    </div>
+
+    <!-- Tombol kontrol -->
+    <button class="btn" style="background:#f44336" onclick="kirim('evaporasi')">EVAPORASI</button>
+    <button class="btn" style="background:#ff9800" onclick="kirim('kondensasi')">KONDENSASI</button>
+    <button class="btn" style="background:#4caf50" onclick="kirim('presipitasi')">PRESIPITASI</button>
+    <button class="btn" style="background:#ffffff; color:#001f3f" onclick="kirim('infiltrasi')">INFILTRASI</button>
+    <button class="btn" style="background:#2196f3" onclick="kirim('banjir')">BANJIR</button>
+    <button class="btn" style="background:#333; margin-top:15px;" onclick="kirim('off')">MATIKAN SEMUA</button>
+
+    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
   </div>
 
-  <div class="small" id="log">log: -</div>
+  <div id="menu-guru" class="glass-card">
+    <h3>Panel Guru</h3>
+    <p>Akses Terbatas: Monitor Sistem IoT Aktif</p>
 
+    <div class="status-box">
+      <div class="status-row">
+        <div class="status-key">Debit (L/min)</div>
+        <div class="status-val" id="guru-flow">-</div>
+      </div>
+      <div class="status-row">
+        <div class="status-key">Total (Liter)</div>
+        <div class="status-val" id="guru-total">-</div>
+      </div>
+      <div class="status-row">
+        <div class="status-key">Pulses</div>
+        <div class="status-val" id="guru-pulses">-</div>
+      </div>
+    </div>
+
+    <button class="btn btn-main" onclick="resetDebit()">Reset Debit (Total=0)</button>
+    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">LOGOUT</button></div>
+  </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  // 🔥 Firebase Config (punya Boss)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
-    authDomain: "hidrologi-heroes.firebaseapp.com",
-    databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "hidrologi-heroes",
-    storageBucket: "hidrologi-heroes.firebasestorage.app",
-    messagingSenderId: "349578733020",
-    appId: "1:349578733020:web:df27bed634e6bdefd5db19",
-    measurementId: "G-HMVQ476SYS"
-  };
+<script>
+  // Firebase init (RTDB only)
+  var config = { databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+  firebase.initializeApp(config);
+  var db = firebase.database();
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+  function showPage(id) {
+    document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
 
-  // Path harus SAMA dengan ESP32
-  const statusRef = ref(db, "diorama/status");
-  const jarakRef  = ref(db, "sensor/jarak");
-  const persenRef = ref(db, "sensor/persen");
+  function aksesGuru() {
+    let pin = prompt("Masukkan PIN Guru:");
+    if(pin === "1234") showPage('menu-guru');
+    else alert("PIN SALAH!");
+  }
 
-  const statusEl = document.getElementById("status");
-  const jarakEl  = document.getElementById("jarak");
-  const persenEl = document.getElementById("persen");
-  const logEl    = document.getElementById("log");
+  function kirim(s) { db.ref("diorama/status").set(s); }
 
-  // Realtime update
-  onValue(statusRef, snap => {
-    statusEl.innerText = snap.val() ?? "---";
+  // ====== Chart setup ======
+  const labels = [];
+  const dataPoints = [];
+
+  const ctx = document.getElementById('flowChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Debit (L/min)',
+        data: dataPoints,
+        tension: 0.25
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
   });
 
-  onValue(jarakRef, snap => {
+  function pushChartPoint(flow) {
+    const t = new Date();
+    const label = t.toLocaleTimeString('id-ID', { hour12:false });
+
+    labels.push(label);
+    dataPoints.push(flow);
+
+    // simpan 30 titik terakhir biar ringan
+    if (labels.length > 30) { labels.shift(); dataPoints.shift(); }
+    chart.update();
+  }
+
+  // ====== Listener realtime ======
+  db.ref("diorama/status").on("value", snap => {
+    const v = snap.val() || "-";
+    document.getElementById("ui-mode").innerText = v;
+  });
+
+  db.ref("sensor/jarak").on("value", snap => {
     const v = snap.val();
-    jarakEl.innerText = (v == null) ? "--" : Number(v).toFixed(1);
+    document.getElementById("ui-jarak").innerText = (v == null) ? "-" : Number(v).toFixed(1);
   });
 
-  onValue(persenRef, snap => {
+  db.ref("sensor/persen").on("value", snap => {
     const v = snap.val();
-    persenEl.innerText = (v == null) ? "--" : Math.round(v);
+    document.getElementById("ui-persen").innerText = (v == null) ? "-" : Math.round(Number(v));
   });
 
-  // Tombol kirim perintah
-  window.setMode = async (mode) => {
-    await set(statusRef, mode);
-    logEl.innerText = "log: set diorama/status = " + mode;
-  };
+  // Debit
+  db.ref("debit/flow_lpm").on("value", snap => {
+    const v = snap.val();
+    const flow = (v == null) ? 0 : Number(v);
+    document.getElementById("ui-flow").innerText = (snap.val() == null) ? "-" : flow.toFixed(3);
+    document.getElementById("guru-flow").innerText = (snap.val() == null) ? "-" : flow.toFixed(3);
+
+    // update chart (tiap ada update)
+    pushChartPoint(flow);
+  });
+
+  db.ref("debit/total_liter").on("value", snap => {
+    const v = snap.val();
+    const total = (v == null) ? "-" : Number(v).toFixed(3);
+    document.getElementById("ui-total").innerText = total;
+    document.getElementById("guru-total").innerText = total;
+  });
+
+  db.ref("debit/pulses").on("value", snap => {
+    const v = snap.val();
+    document.getElementById("guru-pulses").innerText = (v == null) ? "-" : v;
+  });
+
+  // Reset debit (di cloud) -> set pulses 0
+  // Catatan: ini reset "angka di database". ESP32 akan hitung lagi dari pulses internal,
+  // jadi reset total debit paling bersih sebenarnya dilakukan juga di ESP32 (v5).
+  function resetDebit() {
+    db.ref("debit").update({ pulses: 0, flow_lpm: 0, total_liter: 0 });
+    alert("Debit di database direset. (Untuk reset total internal ESP32, bisa kita tambah di v5.)");
+  }
 </script>
-
 </body>
 </html>
