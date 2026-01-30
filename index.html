@@ -1,42 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LACAK SI TIRTA, AIR AJAIB</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f8ff; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: inline-block; min-width: 300px; }
-        .btn { padding: 15px 25px; margin: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 80%; }
-        .off { background: #ff5252; color: white; }
-        .on { background: #4caf50; color: white; }
-        .sensor-val { font-size: 2rem; color: #0288d1; font-weight: bold; }
-        #water-tank { width: 100px; height: 150px; border: 3px solid #333; margin: 20px auto; position: relative; background: #eee; border-radius: 0 0 10px 10px; overflow: hidden; }
-        #water-bar { width: 100%; background: #2196f3; position: absolute; bottom: 0; transition: height 0.5s; height: 0%; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hidrologi Heroes</title>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#f4f6f8;
+      margin:0;
+      padding:20px;
+    }
+    .wrap{
+      max-width:520px;
+      margin:auto;
+    }
+    .card{
+      background:#fff;
+      border-radius:12px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:0 2px 6px rgba(0,0,0,.1);
+    }
+    h2{text-align:center;margin-top:0}
+    button{
+      width:100%;
+      padding:14px;
+      margin:6px 0;
+      font-size:18px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+    }
+    .on{background:#2ecc71;color:#fff}
+    .off{background:#e74c3c;color:#fff}
+    .big{font-size:28px;font-weight:bold;text-align:center}
+    .small{font-size:12px;opacity:.7;text-align:center}
+  </style>
 </head>
+
 <body>
+<div class="wrap">
 
-    <div class="card">
-        <h2>🌊 Hidrologi Heroes 🌊</h2>
-    
+  <h2>Menu Kontrol Hidrologi</h2>
 
-        <div id="water-tank">
-            <div id="water-bar"></div>
-        </div>
-        
-        <div class="sensor-val"><span id="txt-persen">0</span>%</div>
-        <p>Jarak Sensor: <span id="txt-jarak">0</span> cm</p>
-        <hr>
+  <div class="card">
+    <div class="small">Status Aktif</div>
+    <div class="big" id="status">---</div>
+  </div>
 
-        <button id="btn-evaporasi" class="btn off" onclick="toggleControl('evaporasi')">EVAPORASI: OFF</button>
-        <button id="btn-kondensasi" class="btn off" onclick="toggleControl('kondensasi')">KONDENSASI: OFF</button>
-        <button id="btn-presipitasi" class="btn off" onclick="toggleControl('presipitasi')">PRESIPITASI: OFF</button>
-        <button id="btn-banjir" class="btn off" onclick="toggleControl('banjir')">BANJIR: OFF</button>
-    </div>
+  <div class="card">
+    <button class="on" onclick="setMode('evaporasi')">Evaporasi</button>
+    <button class="on" onclick="setMode('kondensasi')">Kondensasi</button>
+    <button class="on" onclick="setMode('presipitasi')">Presipitasi</button>
+    <button class="on" onclick="setMode('infiltrasi')">Infiltrasi</button>
+    <button class="on" onclick="setMode('banjir')">Banjir</button>
+    <button class="off" onclick="setMode('off')">OFF / Reset</button>
+  </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    <script src="script.js"></script>
+  <div class="card">
+    <div class="small">Sensor Jarak</div>
+    <div class="big"><span id="jarak">--</span> cm</div>
+    <div class="big"><span id="persen">--</span> %</div>
+  </div>
+
+  <div class="small" id="log">log: -</div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+  // 🔥 Firebase Config (punya Boss)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
+    authDomain: "hidrologi-heroes.firebaseapp.com",
+    databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hidrologi-heroes",
+    storageBucket: "hidrologi-heroes.firebasestorage.app",
+    messagingSenderId: "349578733020",
+    appId: "1:349578733020:web:df27bed634e6bdefd5db19",
+    measurementId: "G-HMVQ476SYS"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  // Path harus SAMA dengan ESP32
+  const statusRef = ref(db, "diorama/status");
+  const jarakRef  = ref(db, "sensor/jarak");
+  const persenRef = ref(db, "sensor/persen");
+
+  const statusEl = document.getElementById("status");
+  const jarakEl  = document.getElementById("jarak");
+  const persenEl = document.getElementById("persen");
+  const logEl    = document.getElementById("log");
+
+  // Realtime update
+  onValue(statusRef, snap => {
+    statusEl.innerText = snap.val() ?? "---";
+  });
+
+  onValue(jarakRef, snap => {
+    const v = snap.val();
+    jarakEl.innerText = (v == null) ? "--" : Number(v).toFixed(1);
+  });
+
+  onValue(persenRef, snap => {
+    const v = snap.val();
+    persenEl.innerText = (v == null) ? "--" : Math.round(v);
+  });
+
+  // Tombol kirim perintah
+  window.setMode = async (mode) => {
+    await set(statusRef, mode);
+    logEl.innerText = "log: set diorama/status = " + mode;
+  };
+</script>
+
 </body>
 </html>
