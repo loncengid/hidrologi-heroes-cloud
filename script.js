@@ -12,9 +12,10 @@ const firebaseConfig = {
     authDomain: "hidrologi-heroes.firebaseapp.com",
     databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "hidrologi-heroes",
-    storageBucket: "hidrologi-heroes.appspot.com",
-    messagingSenderId: "349578733020", 
-    appId: "1:349578733020:web:df27bed634e6bdefd5db19"
+    storageBucket: "hidrologi-heroes.firebasestorage.app",
+    messagingSenderId: "349578733020",
+    appId: "1:349578733020:web:df27bed634e6bdefd5db19",
+    measurementId: "G-HMVQ476SYS"
 };
 
 // 3. Hubungkan ke Firebase
