@@ -312,11 +312,11 @@
 
     // Heartbeat lastActiveMs (dipakai ESP32 untuk auto-off 10 menit)
     function bumpActive(){
-      // update timestamp global (server time)
-      set(ref(db, "presence/lastActiveMs"), serverTimestamp());
-      // update sesi
-      set(sessionRef, { ts: serverTimestamp() });
-    }
+  const sec = Math.floor(Date.now() / 1000);
+  set(ref(db, "presence/lastActiveSec"), sec);   // <-- ganti ke DETIK
+  set(sessionRef, { ts: sec });                  // session juga detik
+}
+
 
     // update heartbeat tiap 20 detik
     setInterval(() => bumpActive(), 20000);
