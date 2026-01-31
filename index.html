@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Hidrologi Heroes Dashboard - NISEEF v6</title>
+  <title>Hidrologi Heroes Dashboard - NISEEF v8</title>
 
   <style>
     :root{
@@ -23,7 +23,7 @@
     }
     .container{ min-height:100vh; padding:18px; display:flex; flex-direction:column; align-items:center; gap:14px; }
     .card{
-      width:min(580px, 96vw);
+      width:min(620px, 96vw);
       background:var(--bgcard);
       backdrop-filter: blur(15px);
       border-radius:22px;
@@ -108,8 +108,9 @@
       cursor:pointer;
     }
     .nav .home{ background:#ff1744; border:none; }
+    .nav button[disabled]{ opacity:.55; cursor:not-allowed; }
 
-    .chart{
+    .panel{
       background: rgba(0,0,0,.35);
       border:1px solid var(--bd);
       border-radius:16px;
@@ -117,6 +118,31 @@
       margin-top:12px;
     }
     .mini{ font-size:12px; color:var(--mut); font-weight:800; margin-top:8px; line-height:1.4; }
+
+    .grid2{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+    @media(min-width: 560px){ .grid2{ grid-template-columns: 1fr 1fr; } }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .chip{
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--bd);
+      background: rgba(0,0,0,.55);
+      color: var(--txt);
+      font-weight: 1000;
+      cursor:pointer;
+      user-select:none;
+      font-size: 13px;
+    }
+    .chip.active{
+      outline: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 0 0 4px rgba(0, 212, 255, .22);
+    }
 
     .toast{
       position:fixed; left:50%; bottom:18px; transform: translateX(-50%);
@@ -132,18 +158,20 @@
       z-index:9999;
     }
     .toast.show{ opacity:1; transform: translateX(-50%) translateY(-4px); }
+
+    code{ color: #c7f6ff; }
   </style>
 </head>
 
 <body>
   <div class="container">
 
-    <!-- MENU UTAMA -->
+    <!-- HOME -->
     <div class="card active" id="page-home">
       <div class="topbar">
         <div>
           <h1 style="font-size:22px;">Hidrologi Heroes</h1>
-          <div class="sub">NISEEF v6 • Toggle + Online Viewers + Auto-Off 10 Menit</div>
+          <div class="sub">NISEEF v8 • Toggle + Viewers + Auto-Off 10m + Log Analitik</div>
         </div>
         <div class="pill" title="Koneksi RTDB">
           <span class="dot" id="connDot"></span>
@@ -159,11 +187,13 @@
       <button class="btn" style="background:linear-gradient(45deg,#007bff,#00c6ff); color:#fff;"
               id="go-diorama">MASUK KONTROL DIORAMA</button>
 
-      <div class="mini">Tip: tombol mode sekarang bersifat toggle. Klik sama lagi = OFF.</div>
+      <div class="mini">
+        Data realtime: <code>/sensor</code>, <code>/debit</code> • Log analitik: <code>/log/ts/{epochSec}</code>
+      </div>
 
       <div class="nav">
-        <button id="back-home" disabled>BACK</button>
-        <button class="home" id="home-home" disabled>HOME</button>
+        <button disabled>BACK</button>
+        <button class="home" disabled>HOME</button>
         <button id="next-home">NEXT</button>
       </div>
     </div>
@@ -173,7 +203,7 @@
       <div class="topbar">
         <div>
           <h2 style="font-size:18px; margin-bottom:4px;">Kontrol Diorama</h2>
-          <div class="sub">Mode toggle + monitor realtime</div>
+          <div class="sub">Tombol toggle (klik sama lagi = OFF)</div>
         </div>
         <div class="pill" title="Viewer realtime">
           👥 <span id="ui-viewers-2">-</span>
@@ -203,25 +233,67 @@
       </div>
     </div>
 
-    <!-- MONITOR / GRAFIK -->
+    <!-- MONITOR REALTIME -->
     <div class="card" id="page-monitor">
       <div class="topbar">
         <div>
-          <h2 style="font-size:18px; margin-bottom:4px;">Monitor Grafik</h2>
+          <h2 style="font-size:18px; margin-bottom:4px;">Monitor Realtime</h2>
           <div class="sub">Grafik debit realtime (30 titik terakhir)</div>
         </div>
         <div class="pill">👥 <span id="ui-viewers-3">-</span></div>
       </div>
 
-      <div class="chart">
+      <div class="panel">
         <canvas id="flowChart" height="190"></canvas>
-        <div class="mini">Sumber data: <code>/debit/flow_lpm</code></div>
+        <div class="mini">Sumber: <code>/debit/flow_lpm</code></div>
       </div>
 
       <div class="nav">
         <button id="back-monitor">BACK</button>
         <button class="home" id="home-monitor">HOME</button>
-        <button id="next-monitor" disabled>NEXT</button>
+        <button id="next-monitor">NEXT</button>
+      </div>
+    </div>
+
+    <!-- ANALITIK (HISTORI) -->
+    <div class="card" id="page-analytics">
+      <div class="topbar">
+        <div>
+          <h2 style="font-size:18px; margin-bottom:4px;">Analitik Histori</h2>
+          <div class="sub">Ambil data dari <code>/log/ts</code> + filter waktu</div>
+        </div>
+        <div class="pill">👥 <span id="ui-viewers-4">-</span></div>
+      </div>
+
+      <div class="status">
+        <div class="row"><div class="k">Range</div><div class="v" id="ui-range">10 menit</div></div>
+        <div class="row"><div class="k">Titik Data</div><div class="v" id="ui-points">-</div></div>
+        <div class="row"><div class="k">Terakhir</div><div class="v" id="ui-last">-</div></div>
+      </div>
+
+      <div class="filters">
+        <div class="chip" id="chip-1m">1 menit</div>
+        <div class="chip active" id="chip-10m">10 menit</div>
+        <div class="chip" id="chip-1h">1 jam</div>
+        <div class="chip" id="chip-refresh">Refresh</div>
+        <div class="chip" id="chip-export">Export CSV</div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <canvas id="histFlowChart" height="190"></canvas>
+          <div class="mini">Histori Debit (L/min)</div>
+        </div>
+        <div class="panel">
+          <canvas id="histLevelChart" height="190"></canvas>
+          <div class="mini">Histori Level (%)</div>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button id="back-analytics">BACK</button>
+        <button class="home" id="home-analytics">HOME</button>
+        <button disabled>NEXT</button>
       </div>
     </div>
 
@@ -234,7 +306,9 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {
-      getDatabase, ref, set, onValue, get, serverTimestamp, onDisconnect, remove
+      getDatabase, ref, set, onValue, get,
+      query, orderByKey, startAt, endAt,
+      onDisconnect
     } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
     // ===== Firebase config (punya Boss) =====
@@ -263,7 +337,7 @@
     }
 
     // ===== Pages + Navigation =====
-    const pages = ["page-home","page-diorama","page-monitor"];
+    const pages = ["page-home","page-diorama","page-monitor","page-analytics"];
     let currentIndex = 0;
 
     function showPageByIndex(idx){
@@ -271,9 +345,9 @@
       pages.forEach(id => document.getElementById(id).classList.remove("active"));
       document.getElementById(pages[currentIndex]).classList.add("active");
       window.scrollTo(0,0);
-      bumpActive(); // update lastActive saat pindah halaman
+      bumpActive();
+      if (pages[currentIndex] === "page-analytics") loadAnalytics(); // auto load
     }
-
     function back(){ showPageByIndex(currentIndex - 1); }
     function next(){ showPageByIndex(currentIndex + 1); }
     function home(){ showPageByIndex(0); }
@@ -287,6 +361,10 @@
 
     document.getElementById("back-monitor").onclick = () => back();
     document.getElementById("home-monitor").onclick = () => home();
+    document.getElementById("next-monitor").onclick = () => next();
+
+    document.getElementById("back-analytics").onclick = () => back();
+    document.getElementById("home-analytics").onclick = () => home();
 
     // ===== Connection indicator =====
     const connDot = document.getElementById("connDot");
@@ -301,34 +379,34 @@
     }
     setConn("warn");
 
-    // tombol disable saat offline
-    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"]
-      .map(id => document.getElementById(id));
-    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
-
     // ===== Presence / Viewers realtime =====
     const sessionId = (crypto?.randomUUID?.() ?? ("sess_" + Math.random().toString(16).slice(2)));
     const sessionRef = ref(db, `presence/sessions/${sessionId}`);
 
-    // Heartbeat lastActiveMs (dipakai ESP32 untuk auto-off 10 menit)
     function bumpActive(){
-  const sec = Math.floor(Date.now() / 1000);
-  set(ref(db, "presence/lastActiveSec"), sec);   // <-- ganti ke DETIK
-  set(sessionRef, { ts: sec });                  // session juga detik
-}
+      // DETIK (anti overflow) - dipakai ESP32 auto-off 10 menit
+      const sec = Math.floor(Date.now() / 1000);
+      set(ref(db, "presence/lastActiveSec"), sec);
+      set(sessionRef, { ts: sec });
+    }
 
-
-    // update heartbeat tiap 20 detik
+    // heartbeat tiap 20 detik
     setInterval(() => bumpActive(), 20000);
 
     // hitung viewers
     onValue(ref(db, "presence/sessions"), snap => {
       const obj = snap.val() || {};
       const count = Object.keys(obj).length;
-      document.getElementById("ui-viewers").innerText = count;
-      document.getElementById("ui-viewers-2").innerText = count;
-      document.getElementById("ui-viewers-3").innerText = count;
+      ["ui-viewers","ui-viewers-2","ui-viewers-3","ui-viewers-4"].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.innerText = count;
+      });
     });
+
+    // ===== tombol disable saat offline =====
+    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"]
+      .map(id => document.getElementById(id));
+    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
 
     // ===== Connected state dari RTDB =====
     onValue(ref(db, ".info/connected"), async (snap) => {
@@ -339,14 +417,13 @@
 
         // register presence + auto-remove saat disconnect
         try{
-          await set(sessionRef, { ts: serverTimestamp() });
+          await set(sessionRef, { ts: Math.floor(Date.now()/1000) });
           onDisconnect(sessionRef).remove();
           bumpActive();
         }catch(e){
           console.error(e);
-          toast("Koneksi OK, tapi presence gagal (cek rules)");
+          toast("Presence gagal (cek rules)");
         }
-
       }else{
         setConn("bad");
         setButtonsEnabled(false);
@@ -362,17 +439,13 @@
       banjir: document.getElementById("btn-banj"),
       off: document.getElementById("btn-off"),
     };
-
     function setActiveMode(mode){
       Object.values(btnMap).forEach(b => b.classList.remove("active"));
       if(btnMap[mode]) btnMap[mode].classList.add("active");
     }
 
     async function toggleMode(target){
-      if(!isConnected){
-        toast("Offline: tidak bisa kirim");
-        return;
-      }
+      if(!isConnected){ toast("Offline: tidak bisa kirim"); return; }
       bumpActive();
 
       try{
@@ -380,7 +453,7 @@
         const current = snap.val() ?? "off";
         const nextMode = (current === target) ? "off" : target;
         await set(ref(db, "diorama/status"), nextMode);
-        toast(`Mode: ${nextMode.toUpperCase()}`);
+        toast(`Mode: ${String(nextMode).toUpperCase()}`);
       }catch(e){
         console.error(e);
         toast("Gagal kirim (cek rules)");
@@ -394,7 +467,7 @@
     document.getElementById("btn-banj").onclick = () => toggleMode("banjir");
     document.getElementById("btn-off").onclick  = () => toggleMode("off");
 
-    // ===== Realtime read =====
+    // ===== Realtime read (UI) =====
     onValue(ref(db, "diorama/status"), snap => {
       const mode = snap.val() ?? "-";
       document.getElementById("ui-mode").innerText = mode;
@@ -416,7 +489,7 @@
       const v = snap.val();
       const flow = (v == null) ? null : Number(v);
       document.getElementById("ui-flow").innerText = (flow == null) ? "-" : flow.toFixed(3);
-      if(flow != null) pushChartPoint(flow);
+      if(flow != null) pushRealtimeFlow(flow);
     });
 
     onValue(ref(db, "debit/total_liter"), snap => {
@@ -424,23 +497,167 @@
       document.getElementById("ui-total").innerText = (v == null) ? "-" : Number(v).toFixed(3);
     });
 
-    // ===== Chart =====
-    const labels = [];
-    const dataPoints = [];
-    const ctx = document.getElementById("flowChart").getContext("2d");
-    const chart = new Chart(ctx, {
+    // ===== Realtime Chart (30 points) =====
+    const rtLabels = [];
+    const rtData = [];
+    const rtCtx = document.getElementById("flowChart").getContext("2d");
+    const rtChart = new Chart(rtCtx, {
       type: "line",
-      data: { labels, datasets: [{ label: "Debit (L/min)", data: dataPoints, tension: 0.25 }] },
+      data: { labels: rtLabels, datasets: [{ label: "Debit (L/min)", data: rtData, tension: 0.25 }] },
       options: { responsive:true, animation:false, scales:{ y:{ beginAtZero:true } } }
     });
 
-    function pushChartPoint(flow){
-      const t = new Date();
-      const label = t.toLocaleTimeString("id-ID", { hour12:false });
-      labels.push(label);
-      dataPoints.push(flow);
-      if(labels.length > 30){ labels.shift(); dataPoints.shift(); }
-      chart.update();
+    function pushRealtimeFlow(flow){
+      const label = new Date().toLocaleTimeString("id-ID",{hour12:false});
+      rtLabels.push(label);
+      rtData.push(flow);
+      if(rtLabels.length > 30){ rtLabels.shift(); rtData.shift(); }
+      rtChart.update();
+    }
+
+    // ===== ANALYTICS (History from /log/ts) =====
+    let rangeSec = 10 * 60; // default 10 menit
+    let lastAnalyticsRows = []; // keep for export
+
+    const uiRange = document.getElementById("ui-range");
+    const uiPoints = document.getElementById("ui-points");
+    const uiLast = document.getElementById("ui-last");
+
+    function setChipActive(which){
+      ["chip-1m","chip-10m","chip-1h"].forEach(id => document.getElementById(id).classList.remove("active"));
+      document.getElementById(which).classList.add("active");
+    }
+
+    document.getElementById("chip-1m").onclick = () => { rangeSec = 60; uiRange.innerText="1 menit"; setChipActive("chip-1m"); loadAnalytics(true); };
+    document.getElementById("chip-10m").onclick = () => { rangeSec = 600; uiRange.innerText="10 menit"; setChipActive("chip-10m"); loadAnalytics(true); };
+    document.getElementById("chip-1h").onclick = () => { rangeSec = 3600; uiRange.innerText="1 jam"; setChipActive("chip-1h"); loadAnalytics(true); };
+    document.getElementById("chip-refresh").onclick = () => loadAnalytics(true);
+    document.getElementById("chip-export").onclick = () => exportCSV();
+
+    // charts for history
+    const histFlowLabels = [];
+    const histFlowData = [];
+    const histLevelLabels = [];
+    const histLevelData = [];
+
+    const hfCtx = document.getElementById("histFlowChart").getContext("2d");
+    const hlCtx = document.getElementById("histLevelChart").getContext("2d");
+
+    const histFlowChart = new Chart(hfCtx, {
+      type: "line",
+      data: { labels: histFlowLabels, datasets: [{ label: "Flow (L/min)", data: histFlowData, tension: 0.25 }] },
+      options: { responsive:true, animation:false, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    const histLevelChart = new Chart(hlCtx, {
+      type: "line",
+      data: { labels: histLevelLabels, datasets: [{ label: "Level (%)", data: histLevelData, tension: 0.25 }] },
+      options: { responsive:true, animation:false, scales:{ y:{ beginAtZero:true, max: 100 } } }
+    });
+
+    function clearArr(a){ a.splice(0, a.length); }
+
+    function epochToLabel(sec){
+      // label jam:menit:detik
+      const d = new Date(sec * 1000);
+      return d.toLocaleTimeString("id-ID",{hour12:false});
+    }
+
+    async function loadAnalytics(showToast=false){
+      if(!isConnected){
+        uiPoints.innerText = "-";
+        uiLast.innerText = "-";
+        if(showToast) toast("Offline: tidak bisa ambil histori");
+        return;
+      }
+
+      bumpActive();
+
+      const nowSec = Math.floor(Date.now()/1000);
+      const startSec = nowSec - rangeSec;
+
+      // query /log/ts keys are epochSec (string)
+      const q = query(
+        ref(db, "log/ts"),
+        orderByKey(),
+        startAt(String(startSec)),
+        endAt(String(nowSec))
+      );
+
+      try{
+        const snap = await get(q);
+        const obj = snap.val() || {};
+
+        // convert to sorted rows
+        const keys = Object.keys(obj).sort((a,b)=>Number(a)-Number(b));
+        const rows = keys.map(k => {
+          const v = obj[k] || {};
+          return {
+            ts: Number(k),
+            flow: Number(v.flow ?? 0),
+            total: Number(v.total ?? 0),
+            pct: Number(v.pct ?? 0),
+            cm: Number(v.cm ?? 0)
+          };
+        });
+
+        lastAnalyticsRows = rows;
+
+        // update UI
+        uiPoints.innerText = rows.length;
+        if(rows.length){
+          uiLast.innerText = epochToLabel(rows[rows.length-1].ts);
+        }else{
+          uiLast.innerText = "-";
+        }
+
+        // fill charts
+        clearArr(histFlowLabels); clearArr(histFlowData);
+        clearArr(histLevelLabels); clearArr(histLevelData);
+
+        rows.forEach(r=>{
+          const lab = epochToLabel(r.ts);
+          histFlowLabels.push(lab);
+          histFlowData.push(r.flow);
+
+          histLevelLabels.push(lab);
+          histLevelData.push(r.pct);
+        });
+
+        histFlowChart.update();
+        histLevelChart.update();
+
+        if(showToast) toast("Histori ter-update");
+      }catch(e){
+        console.error(e);
+        if(showToast) toast("Gagal ambil histori (cek rules)");
+      }
+    }
+
+    function exportCSV(){
+      if(!lastAnalyticsRows.length){
+        toast("Data histori kosong");
+        return;
+      }
+      // build CSV
+      const header = ["ts_epoch","time","flow_lpm","total_liter","level_pct","jarak_cm"];
+      const lines = [header.join(",")];
+
+      lastAnalyticsRows.forEach(r=>{
+        const timeStr = new Date(r.ts*1000).toISOString();
+        lines.push([r.ts, timeStr, r.flow, r.total, r.pct, r.cm].join(","));
+      });
+
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `niseef_log_${rangeSec}s.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("CSV diunduh");
     }
 
     // ===== Initial bump =====
