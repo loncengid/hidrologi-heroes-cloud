@@ -1,264 +1,408 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hidrologi Heroes Dashboard - NISEEF v4</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Hidrologi Heroes Dashboard - NISEEF v5</title>
+
   <style>
     :root {
-      --dark-card: rgba(0, 0, 0, 0.75);
+      --dark-card: rgba(0,0,0,.75);
       --highlight: #00d4ff;
-      --text-main: #ffffff;
+      --text-main: #fff;
+      --muted: rgba(255,255,255,.8);
+      --border: rgba(255,255,255,.25);
+      --panel: rgba(0,0,0,.55);
+      --ok: #2ecc71;
+      --bad: #ff4757;
+      --warn: #ffa502;
     }
-    body {
+
+    body{
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; color: var(--text-main);
-      background: url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
-      background-size: cover;
+      margin:0; color:var(--text-main);
+      background:url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
+      background-size:cover;
     }
-    .container { min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-    .glass-card {
-      background: var(--dark-card);
-      backdrop-filter: blur(15px);
-      border-radius: 25px;
-      border: 2px solid var(--highlight);
-      padding: 30px; width: 95%; max-width: 520px; display: none;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    }
-    .active { display: block; animation: slideUp 0.4s ease-out; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    h1, h2, h3 { text-shadow: 3px 3px 6px rgba(0,0,0,0.8); font-weight: 800; text-transform: uppercase; }
-    img.scene-img { width: 100%; border-radius: 15px; margin-bottom: 20px; border: 3px solid #fff; }
-
-    .btn {
-      width: 100%; padding: 18px; margin: 10px 0; border: none; border-radius: 15px;
-      font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.3s;
-      text-transform: uppercase; letter-spacing: 1px;
+    .container{
+      min-height:100vh;
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 14px;
     }
-    .btn-main { background: linear-gradient(45deg, #007bff, #00c6ff); color: white; border-bottom: 4px solid #0056b3; }
-    .nav-group { display: flex; gap: 12px; margin-top: 25px; }
-    .btn-nav { flex: 1; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 2px solid white; color: white; font-weight: bold; font-size: 14px; }
-    .btn-home { background: #ff1744; border: none; }
+
+    .glass-card{
+      width: min(560px, 96vw);
+      background:var(--dark-card);
+      backdrop-filter:blur(15px);
+      border-radius:22px;
+      border:2px solid var(--highlight);
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.6);
+    }
+
+    h1,h2,h3{
+      margin: 0 0 10px 0;
+      text-shadow:3px 3px 6px rgba(0,0,0,.8);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+    }
+
+    .sub{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      opacity: .95;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.45);
+      border: 1px solid var(--border);
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .4px;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .dot{
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--warn);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+    .dot.ok{ background: var(--ok); }
+    .dot.bad{ background: var(--bad); }
 
     .status-box{
-      background: rgba(0,0,0,0.55);
-      border: 2px solid rgba(255,255,255,0.35);
-      border-radius: 14px;
-      padding: 14px;
-      margin: 12px 0 18px 0;
-      font-weight: 700;
-      line-height: 1.5;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      margin: 10px 0 14px 0;
+      font-weight: 800;
+      line-height: 1.6;
     }
-    .status-row{ display:flex; justify-content:space-between; gap:12px; }
-    .status-key{ opacity:0.9; }
-    .status-val{ text-align:right; }
+
+    .status-row{
+      display:flex;
+      justify-content:space-between;
+      gap: 14px;
+      padding: 2px 0;
+    }
+    .status-key{ color: var(--muted); font-weight: 800; }
+    .status-val{ text-align:right; font-weight: 900; }
+
+    .btn{
+      width:100%;
+      padding: 16px 16px;
+      margin: 8px 0;
+      border:none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 1000;
+      cursor:pointer;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+    }
+
+    .btn:active{ transform: scale(.99); }
+    .btn[disabled]{ opacity:.55; cursor:not-allowed; filter: grayscale(.35); }
+
+    /* Tombol aktif (sinkron dari RTDB) */
+    .btn.active{
+      outline: 3px solid rgba(255,255,255,.9);
+      box-shadow: 0 0 0 4px rgba(0, 212, 255, .25);
+      position: relative;
+    }
+    .btn.active::after{
+      content: "AKTIF";
+      position:absolute;
+      top: 10px;
+      right: 12px;
+      font-size: 11px;
+      font-weight: 1000;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.35);
+      letter-spacing: .6px;
+    }
 
     .chart-wrap{
-      background: rgba(0,0,0,0.35);
-      border: 2px solid rgba(255,255,255,0.25);
-      border-radius: 14px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid var(--border);
+      border-radius: 16px;
       padding: 12px;
       margin-top: 12px;
     }
+
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+      opacity: .95;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.75);
+      border: 1px solid rgba(255,255,255,.25);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45);
+      font-weight: 900;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease, transform .22s ease;
+      max-width: min(560px, 90vw);
+      text-align: center;
+      z-index: 9999;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
   </style>
 </head>
+
 <body>
+  <div class="container">
+    <div class="glass-card">
+      <div class="topbar">
+        <div class="brand">
+          <h1 style="font-size: 22px;">Hidrologi Heroes</h1>
+          <div class="sub">Dashboard Kontrol + Monitor • NISEEF v5 (UI/UX)</div>
+        </div>
 
-<div class="container">
-  <h1 onclick="showPage('menu-utama')" style="cursor:pointer; font-size: 28px;">HIDROLOGI HEROES</h1>
-
-  <div id="menu-utama" class="glass-card active">
-    <h2>Menu Utama</h2>
-    <button class="btn btn-main" onclick="showPage('menu-siswa')">A. SISWA</button>
-    <button class="btn btn-main" onclick="aksesGuru()">B. GURU</button>
-    <p style="font-size:14px; margin-top:20px; font-weight: bold;">Sanggar Prestasi Aksa Swastika</p>
-  </div>
-
-  <div id="menu-siswa" class="glass-card">
-    <img src="https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/scene%201.png" class="scene-img">
-    <h3>Halo Siswa!</h3>
-    <button class="btn btn-main" onclick="showPage('hal-diorama')">1. Diorama</button>
-    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
-  </div>
-
-  <div id="hal-diorama" class="glass-card">
-    <h3>Kontrol Diorama</h3>
-
-    <!-- MONITOR REALTIME -->
-    <div class="status-box">
-      <div class="status-row">
-        <div class="status-key">Mode</div>
-        <div class="status-val" id="ui-mode">-</div>
+        <div class="pill" title="Status koneksi ke Firebase RTDB">
+          <span class="dot" id="connDot"></span>
+          <span id="connText">CONNECTING</span>
+        </div>
       </div>
-      <div class="status-row">
-        <div class="status-key">Jarak (cm)</div>
-        <div class="status-val" id="ui-jarak">-</div>
-      </div>
-      <div class="status-row">
-        <div class="status-key">Level (%)</div>
-        <div class="status-val" id="ui-persen">-</div>
-      </div>
-      <hr style="opacity:.25">
-      <div class="status-row">
-        <div class="status-key">Debit (L/min)</div>
-        <div class="status-val" id="ui-flow">-</div>
-      </div>
-      <div class="status-row">
-        <div class="status-key">Total (Liter)</div>
-        <div class="status-val" id="ui-total">-</div>
-      </div>
-    </div>
 
-    <!-- Grafik debit -->
-    <div class="chart-wrap">
-      <canvas id="flowChart" height="160"></canvas>
-      <div style="font-size:12px; opacity:.85; margin-top:8px;">
-        Grafik update otomatis (ambil data dari /debit/flow_lpm).
+      <!-- MONITOR -->
+      <div class="status-box">
+        <div class="status-row"><div class="status-key">Mode</div><div class="status-val" id="ui-mode">-</div></div>
+        <div class="status-row"><div class="status-key">Jarak (cm)</div><div class="status-val" id="ui-jarak">-</div></div>
+        <div class="status-row"><div class="status-key">Level (%)</div><div class="status-val" id="ui-persen">-</div></div>
+        <hr style="opacity:.2">
+        <div class="status-row"><div class="status-key">Debit (L/min)</div><div class="status-val" id="ui-flow">-</div></div>
+        <div class="status-row"><div class="status-key">Total (Liter)</div><div class="status-val" id="ui-total">-</div></div>
+      </div>
+
+      <!-- Grafik debit -->
+      <div class="chart-wrap">
+        <canvas id="flowChart" height="170"></canvas>
+        <div class="mini">
+          Grafik realtime dari <code>/debit/flow_lpm</code>. Disimpan 30 titik terakhir biar ringan.
+        </div>
+      </div>
+
+      <!-- BUTTONS -->
+      <button class="btn" style="background:#f44336" id="btn-evap">EVAPORASI</button>
+      <button class="btn" style="background:#ff9800" id="btn-kond">KONDENSASI</button>
+      <button class="btn" style="background:#4caf50" id="btn-pres">PRESIPITASI</button>
+      <button class="btn" style="background:#ffffff; color:#001f3f" id="btn-infi">INFILTRASI</button>
+      <button class="btn" style="background:#2196f3" id="btn-banj">BANJIR</button>
+      <button class="btn" style="background:#333" id="btn-off">MATIKAN SEMUA</button>
+
+      <div class="mini">
+        Kontrol menulis ke RTDB: <code>/diorama/status</code>. Tombol akan nonaktif jika offline.
       </div>
     </div>
-
-    <!-- Tombol kontrol -->
-    <button class="btn" style="background:#f44336" onclick="kirim('evaporasi')">EVAPORASI</button>
-    <button class="btn" style="background:#ff9800" onclick="kirim('kondensasi')">KONDENSASI</button>
-    <button class="btn" style="background:#4caf50" onclick="kirim('presipitasi')">PRESIPITASI</button>
-    <button class="btn" style="background:#ffffff; color:#001f3f" onclick="kirim('infiltrasi')">INFILTRASI</button>
-    <button class="btn" style="background:#2196f3" onclick="kirim('banjir')">BANJIR</button>
-    <button class="btn" style="background:#333; margin-top:15px;" onclick="kirim('off')">MATIKAN SEMUA</button>
-
-    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">HOME</button></div>
   </div>
 
-  <div id="menu-guru" class="glass-card">
-    <h3>Panel Guru</h3>
-    <p>Akses Terbatas: Monitor Sistem IoT Aktif</p>
+  <div class="toast" id="toast">-</div>
 
-    <div class="status-box">
-      <div class="status-row">
-        <div class="status-key">Debit (L/min)</div>
-        <div class="status-val" id="guru-flow">-</div>
-      </div>
-      <div class="status-row">
-        <div class="status-key">Total (Liter)</div>
-        <div class="status-val" id="guru-total">-</div>
-      </div>
-      <div class="status-row">
-        <div class="status-key">Pulses</div>
-        <div class="status-val" id="guru-pulses">-</div>
-      </div>
-    </div>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <button class="btn btn-main" onclick="resetDebit()">Reset Debit (Total=0)</button>
-    <div class="nav-group"><button class="btn-nav btn-home" onclick="showPage('menu-utama')">LOGOUT</button></div>
-  </div>
-</div>
+  <!-- Firebase v12 modular -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    // ====== CONFIG (punya Boss) ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
+      authDomain: "hidrologi-heroes.firebaseapp.com",
+      databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "hidrologi-heroes",
+      storageBucket: "hidrologi-heroes.firebasestorage.app",
+      messagingSenderId: "349578733020",
+      appId: "1:349578733020:web:df27bed634e6bdefd5db19",
+      measurementId: "G-HMVQ476SYS"
+    };
 
-<script>
-  // Firebase init (RTDB only)
-  var config = { databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app/" };
-  firebase.initializeApp(config);
-  var db = firebase.database();
+    // ====== INIT ======
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  function showPage(id) {
-    document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0,0);
-  }
+    // ====== UI HELPERS ======
+    const toastEl = document.getElementById("toast");
+    let toastTimer = null;
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1400);
+    }
 
-  function aksesGuru() {
-    let pin = prompt("Masukkan PIN Guru:");
-    if(pin === "1234") showPage('menu-guru');
-    else alert("PIN SALAH!");
-  }
+    // Connection indicator + disable buttons
+    const connDot = document.getElementById("connDot");
+    const connText = document.getElementById("connText");
+    let isConnected = false;
 
-  function kirim(s) { db.ref("diorama/status").set(s); }
+    const allBtns = [
+      "btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"
+    ].map(id => document.getElementById(id));
 
-  // ====== Chart setup ======
-  const labels = [];
-  const dataPoints = [];
+    function setButtonsEnabled(enabled){
+      allBtns.forEach(b => b.disabled = !enabled);
+    }
 
-  const ctx = document.getElementById('flowChart').getContext('2d');
-  const chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Debit (L/min)',
-        data: dataPoints,
-        tension: 0.25
-      }]
-    },
-    options: {
-      responsive: true,
-      animation: false,
-      scales: {
-        y: { beginAtZero: true }
+    function setConnState(state){ // "ok" | "bad" | "warn"
+      connDot.classList.remove("ok","bad");
+      if(state === "ok"){ connDot.classList.add("ok"); connText.textContent = "ONLINE"; }
+      else if(state === "bad"){ connDot.classList.add("bad"); connText.textContent = "OFFLINE"; }
+      else { connText.textContent = "CONNECTING"; }
+    }
+
+    setConnState("warn");
+    setButtonsEnabled(false);
+
+    // ====== WRITE COMMAND ======
+    async function kirim(mode){
+      if(!isConnected){
+        toast("Offline: tidak bisa kirim perintah");
+        return;
+      }
+      try{
+        await set(ref(db, "diorama/status"), mode);
+        toast("Terkirim: " + mode.toUpperCase());
+      }catch(e){
+        console.error(e);
+        toast("Gagal kirim (cek rules)");
       }
     }
-  });
 
-  function pushChartPoint(flow) {
-    const t = new Date();
-    const label = t.toLocaleTimeString('id-ID', { hour12:false });
+    document.getElementById("btn-evap").onclick = () => kirim("evaporasi");
+    document.getElementById("btn-kond").onclick = () => kirim("kondensasi");
+    document.getElementById("btn-pres").onclick = () => kirim("presipitasi");
+    document.getElementById("btn-infi").onclick = () => kirim("infiltrasi");
+    document.getElementById("btn-banj").onclick = () => kirim("banjir");
+    document.getElementById("btn-off").onclick  = () => kirim("off");
 
-    labels.push(label);
-    dataPoints.push(flow);
+    // ====== BUTTON ACTIVE STATE (SYNC MODE) ======
+    const btnMap = {
+      evaporasi: document.getElementById("btn-evap"),
+      kondensasi: document.getElementById("btn-kond"),
+      presipitasi: document.getElementById("btn-pres"),
+      infiltrasi: document.getElementById("btn-infi"),
+      banjir: document.getElementById("btn-banj"),
+      off: document.getElementById("btn-off")
+    };
 
-    // simpan 30 titik terakhir biar ringan
-    if (labels.length > 30) { labels.shift(); dataPoints.shift(); }
-    chart.update();
-  }
+    function setActiveMode(mode){
+      Object.values(btnMap).forEach(b => b.classList.remove("active"));
+      if(btnMap[mode]) btnMap[mode].classList.add("active");
+    }
 
-  // ====== Listener realtime ======
-  db.ref("diorama/status").on("value", snap => {
-    const v = snap.val() || "-";
-    document.getElementById("ui-mode").innerText = v;
-  });
+    // ====== CHART SETUP ======
+    const labels = [];
+    const dataPoints = [];
+    const ctx = document.getElementById("flowChart").getContext("2d");
+    const chart = new Chart(ctx, {
+      type: "line",
+      data: { labels, datasets: [{ label: "Debit (L/min)", data: dataPoints, tension: 0.25 }] },
+      options: { responsive:true, animation:false, scales:{ y:{ beginAtZero:true } } }
+    });
 
-  db.ref("sensor/jarak").on("value", snap => {
-    const v = snap.val();
-    document.getElementById("ui-jarak").innerText = (v == null) ? "-" : Number(v).toFixed(1);
-  });
+    function pushChartPoint(flow){
+      const t = new Date();
+      const label = t.toLocaleTimeString("id-ID", { hour12:false });
+      labels.push(label);
+      dataPoints.push(flow);
+      if(labels.length > 30){ labels.shift(); dataPoints.shift(); }
+      chart.update();
+    }
 
-  db.ref("sensor/persen").on("value", snap => {
-    const v = snap.val();
-    document.getElementById("ui-persen").innerText = (v == null) ? "-" : Math.round(Number(v));
-  });
+    // ====== READ REALTIME ======
+    // 1) Connection state dari RTDB
+    onValue(ref(db, ".info/connected"), snap => {
+      isConnected = !!snap.val();
+      if(isConnected){
+        setConnState("ok");
+        setButtonsEnabled(true);
+      }else{
+        setConnState("bad");
+        setButtonsEnabled(false);
+      }
+    });
 
-  // Debit
-  db.ref("debit/flow_lpm").on("value", snap => {
-    const v = snap.val();
-    const flow = (v == null) ? 0 : Number(v);
-    document.getElementById("ui-flow").innerText = (snap.val() == null) ? "-" : flow.toFixed(3);
-    document.getElementById("guru-flow").innerText = (snap.val() == null) ? "-" : flow.toFixed(3);
+    // 2) Mode + tombol aktif
+    onValue(ref(db, "diorama/status"), snap => {
+      const mode = snap.val() ?? "-";
+      document.getElementById("ui-mode").innerText = mode;
+      if(mode !== "-") setActiveMode(mode);
+    });
 
-    // update chart (tiap ada update)
-    pushChartPoint(flow);
-  });
+    // 3) Sensor level
+    onValue(ref(db, "sensor/jarak"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-jarak").innerText = (v == null) ? "-" : Number(v).toFixed(1);
+    });
 
-  db.ref("debit/total_liter").on("value", snap => {
-    const v = snap.val();
-    const total = (v == null) ? "-" : Number(v).toFixed(3);
-    document.getElementById("ui-total").innerText = total;
-    document.getElementById("guru-total").innerText = total;
-  });
+    onValue(ref(db, "sensor/persen"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-persen").innerText = (v == null) ? "-" : Math.round(Number(v));
+    });
 
-  db.ref("debit/pulses").on("value", snap => {
-    const v = snap.val();
-    document.getElementById("guru-pulses").innerText = (v == null) ? "-" : v;
-  });
+    // 4) Debit + chart
+    onValue(ref(db, "debit/flow_lpm"), snap => {
+      const v = snap.val();
+      const flow = (v == null) ? null : Number(v);
+      document.getElementById("ui-flow").innerText = (flow == null) ? "-" : flow.toFixed(3);
+      if(flow != null) pushChartPoint(flow);
+    });
 
-  // Reset debit (di cloud) -> set pulses 0
-  // Catatan: ini reset "angka di database". ESP32 akan hitung lagi dari pulses internal,
-  // jadi reset total debit paling bersih sebenarnya dilakukan juga di ESP32 (v5).
-  function resetDebit() {
-    db.ref("debit").update({ pulses: 0, flow_lpm: 0, total_liter: 0 });
-    alert("Debit di database direset. (Untuk reset total internal ESP32, bisa kita tambah di v5.)");
-  }
-</script>
+    onValue(ref(db, "debit/total_liter"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-total").innerText = (v == null) ? "-" : Number(v).toFixed(3);
+    });
+  </script>
 </body>
 </html>
