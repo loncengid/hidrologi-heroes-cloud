@@ -3,235 +3,192 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Hidrologi Heroes Dashboard - NISEEF v5</title>
+  <title>Hidrologi Heroes Dashboard - NISEEF v6</title>
 
   <style>
-    :root {
-      --dark-card: rgba(0,0,0,.75);
-      --highlight: #00d4ff;
-      --text-main: #fff;
-      --muted: rgba(255,255,255,.8);
-      --border: rgba(255,255,255,.25);
+    :root{
+      --bgcard: rgba(0,0,0,.75);
+      --hi:#00d4ff;
+      --txt:#fff;
+      --mut: rgba(255,255,255,.85);
+      --bd: rgba(255,255,255,.25);
       --panel: rgba(0,0,0,.55);
-      --ok: #2ecc71;
-      --bad: #ff4757;
-      --warn: #ffa502;
+      --ok:#2ecc71; --bad:#ff4757; --warn:#ffa502;
     }
-
     body{
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin:0; color:var(--text-main);
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin:0; color:var(--txt);
       background:url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
       background-size:cover;
     }
-
-    .container{
-      min-height:100vh;
-      padding: 18px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 14px;
-    }
-
-    .glass-card{
-      width: min(560px, 96vw);
-      background:var(--dark-card);
-      backdrop-filter:blur(15px);
+    .container{ min-height:100vh; padding:18px; display:flex; flex-direction:column; align-items:center; gap:14px; }
+    .card{
+      width:min(580px, 96vw);
+      background:var(--bgcard);
+      backdrop-filter: blur(15px);
       border-radius:22px;
-      border:2px solid var(--highlight);
-      padding: 18px;
+      border:2px solid var(--hi);
+      padding:16px;
       box-shadow: 0 10px 40px rgba(0,0,0,.6);
+      display:none;
     }
+    .card.active{ display:block; animation: up .25s ease-out; }
+    @keyframes up{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform:none;} }
 
-    h1,h2,h3{
-      margin: 0 0 10px 0;
-      text-shadow:3px 3px 6px rgba(0,0,0,.8);
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
-
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .brand{
-      display:flex;
-      flex-direction:column;
-      gap: 4px;
-    }
-
-    .sub{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-      opacity: .95;
-    }
+    h1,h2,h3{ margin:0 0 10px 0; font-weight:1000; text-transform:uppercase; text-shadow:3px 3px 6px rgba(0,0,0,.8); }
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .sub{ font-size:12px; color:var(--mut); font-weight:800; }
 
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
       background: rgba(0,0,0,.45);
-      border: 1px solid var(--border);
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing: .4px;
-      user-select: none;
-      white-space: nowrap;
+      border:1px solid var(--bd);
+      font-weight:1000; font-size:12px;
+      white-space:nowrap;
     }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--warn); box-shadow:0 0 0 3px rgba(255,255,255,.08); }
+    .dot.ok{ background:var(--ok); }
+    .dot.bad{ background:var(--bad); }
 
-    .dot{
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--warn);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
-    }
-    .dot.ok{ background: var(--ok); }
-    .dot.bad{ background: var(--bad); }
-
-    .status-box{
+    .status{
       background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px;
+      border:1px solid var(--bd);
+      border-radius:16px;
+      padding:12px;
       margin: 10px 0 14px 0;
-      font-weight: 800;
-      line-height: 1.6;
+      font-weight:900;
+      line-height:1.6;
     }
-
-    .status-row{
-      display:flex;
-      justify-content:space-between;
-      gap: 14px;
-      padding: 2px 0;
-    }
-    .status-key{ color: var(--muted); font-weight: 800; }
-    .status-val{ text-align:right; font-weight: 900; }
+    .row{ display:flex; justify-content:space-between; gap:12px; }
+    .k{ color:var(--mut); font-weight:900; }
+    .v{ text-align:right; font-weight:1000; }
 
     .btn{
       width:100%;
-      padding: 16px 16px;
-      margin: 8px 0;
+      padding:16px;
+      margin:8px 0;
       border:none;
-      border-radius: 16px;
-      font-size: 16px;
-      font-weight: 1000;
+      border-radius:16px;
+      font-size:16px;
+      font-weight:1000;
       cursor:pointer;
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+      text-transform:uppercase;
+      letter-spacing:.8px;
+      transition: transform .06s ease, opacity .2s ease, filter .2s ease;
     }
-
     .btn:active{ transform: scale(.99); }
     .btn[disabled]{ opacity:.55; cursor:not-allowed; filter: grayscale(.35); }
 
-    /* Tombol aktif (sinkron dari RTDB) */
     .btn.active{
-      outline: 3px solid rgba(255,255,255,.9);
-      box-shadow: 0 0 0 4px rgba(0, 212, 255, .25);
-      position: relative;
+      outline:3px solid rgba(255,255,255,.9);
+      box-shadow:0 0 0 4px rgba(0, 212, 255, .25);
+      position:relative;
     }
     .btn.active::after{
-      content: "AKTIF";
+      content:"AKTIF";
       position:absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 11px;
-      font-weight: 1000;
-      padding: 4px 8px;
-      border-radius: 999px;
+      top:10px; right:12px;
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
       background: rgba(0,0,0,.55);
-      border: 1px solid rgba(255,255,255,.35);
-      letter-spacing: .6px;
+      border:1px solid rgba(255,255,255,.35);
     }
 
-    .chart-wrap{
+    .nav{ display:flex; gap:10px; margin-top:12px; }
+    .nav button{
+      flex:1;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--bd);
+      background: rgba(0,0,0,.55);
+      color: var(--txt);
+      font-weight:1000;
+      cursor:pointer;
+    }
+    .nav .home{ background:#ff1744; border:none; }
+
+    .chart{
       background: rgba(0,0,0,.35);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px;
-      margin-top: 12px;
+      border:1px solid var(--bd);
+      border-radius:16px;
+      padding:12px;
+      margin-top:12px;
     }
+    .mini{ font-size:12px; color:var(--mut); font-weight:800; margin-top:8px; line-height:1.4; }
 
-    .mini{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 800;
-      opacity: .95;
-      margin-top: 8px;
-      line-height: 1.4;
-    }
-
-    /* Toast */
     .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,.75);
-      border: 1px solid rgba(255,255,255,.25);
-      color: white;
-      padding: 10px 14px;
-      border-radius: 14px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.45);
-      font-weight: 900;
-      font-size: 13px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .22s ease, transform .22s ease;
-      max-width: min(560px, 90vw);
-      text-align: center;
-      z-index: 9999;
+      position:fixed; left:50%; bottom:18px; transform: translateX(-50%);
+      background: rgba(0,0,0,.78);
+      border:1px solid rgba(255,255,255,.25);
+      padding:10px 14px; border-radius:14px;
+      font-weight:1000; font-size:13px;
+      box-shadow:0 12px 30px rgba(0,0,0,.45);
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
+      max-width:min(560px, 90vw);
+      text-align:center;
+      z-index:9999;
     }
-    .toast.show{
-      opacity: 1;
-      transform: translateX(-50%) translateY(-4px);
-    }
+    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-4px); }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="glass-card">
-      <div class="topbar">
-        <div class="brand">
-          <h1 style="font-size: 22px;">Hidrologi Heroes</h1>
-          <div class="sub">Dashboard Kontrol + Monitor • NISEEF v5 (UI/UX)</div>
-        </div>
 
-        <div class="pill" title="Status koneksi ke Firebase RTDB">
+    <!-- MENU UTAMA -->
+    <div class="card active" id="page-home">
+      <div class="topbar">
+        <div>
+          <h1 style="font-size:22px;">Hidrologi Heroes</h1>
+          <div class="sub">NISEEF v6 • Toggle + Online Viewers + Auto-Off 10 Menit</div>
+        </div>
+        <div class="pill" title="Koneksi RTDB">
           <span class="dot" id="connDot"></span>
           <span id="connText">CONNECTING</span>
         </div>
       </div>
 
-      <!-- MONITOR -->
-      <div class="status-box">
-        <div class="status-row"><div class="status-key">Mode</div><div class="status-val" id="ui-mode">-</div></div>
-        <div class="status-row"><div class="status-key">Jarak (cm)</div><div class="status-val" id="ui-jarak">-</div></div>
-        <div class="status-row"><div class="status-key">Level (%)</div><div class="status-val" id="ui-persen">-</div></div>
-        <hr style="opacity:.2">
-        <div class="status-row"><div class="status-key">Debit (L/min)</div><div class="status-val" id="ui-flow">-</div></div>
-        <div class="status-row"><div class="status-key">Total (Liter)</div><div class="status-val" id="ui-total">-</div></div>
+      <div class="status">
+        <div class="row"><div class="k">Pengunjung Online</div><div class="v" id="ui-viewers">-</div></div>
+        <div class="row"><div class="k">Mode</div><div class="v" id="ui-mode-home">-</div></div>
       </div>
 
-      <!-- Grafik debit -->
-      <div class="chart-wrap">
-        <canvas id="flowChart" height="170"></canvas>
-        <div class="mini">
-          Grafik realtime dari <code>/debit/flow_lpm</code>. Disimpan 30 titik terakhir biar ringan.
+      <button class="btn" style="background:linear-gradient(45deg,#007bff,#00c6ff); color:#fff;"
+              id="go-diorama">MASUK KONTROL DIORAMA</button>
+
+      <div class="mini">Tip: tombol mode sekarang bersifat toggle. Klik sama lagi = OFF.</div>
+
+      <div class="nav">
+        <button id="back-home" disabled>BACK</button>
+        <button class="home" id="home-home" disabled>HOME</button>
+        <button id="next-home">NEXT</button>
+      </div>
+    </div>
+
+    <!-- DIORAMA -->
+    <div class="card" id="page-diorama">
+      <div class="topbar">
+        <div>
+          <h2 style="font-size:18px; margin-bottom:4px;">Kontrol Diorama</h2>
+          <div class="sub">Mode toggle + monitor realtime</div>
+        </div>
+        <div class="pill" title="Viewer realtime">
+          👥 <span id="ui-viewers-2">-</span>
         </div>
       </div>
 
-      <!-- BUTTONS -->
+      <div class="status">
+        <div class="row"><div class="k">Mode</div><div class="v" id="ui-mode">-</div></div>
+        <div class="row"><div class="k">Jarak (cm)</div><div class="v" id="ui-jarak">-</div></div>
+        <div class="row"><div class="k">Level (%)</div><div class="v" id="ui-persen">-</div></div>
+        <hr style="opacity:.2">
+        <div class="row"><div class="k">Debit (L/min)</div><div class="v" id="ui-flow">-</div></div>
+        <div class="row"><div class="k">Total (Liter)</div><div class="v" id="ui-total">-</div></div>
+      </div>
+
       <button class="btn" style="background:#f44336" id="btn-evap">EVAPORASI</button>
       <button class="btn" style="background:#ff9800" id="btn-kond">KONDENSASI</button>
       <button class="btn" style="background:#4caf50" id="btn-pres">PRESIPITASI</button>
@@ -239,23 +196,48 @@
       <button class="btn" style="background:#2196f3" id="btn-banj">BANJIR</button>
       <button class="btn" style="background:#333" id="btn-off">MATIKAN SEMUA</button>
 
-      <div class="mini">
-        Kontrol menulis ke RTDB: <code>/diorama/status</code>. Tombol akan nonaktif jika offline.
+      <div class="nav">
+        <button id="back-diorama">BACK</button>
+        <button class="home" id="home-diorama">HOME</button>
+        <button id="next-diorama">NEXT</button>
       </div>
     </div>
+
+    <!-- MONITOR / GRAFIK -->
+    <div class="card" id="page-monitor">
+      <div class="topbar">
+        <div>
+          <h2 style="font-size:18px; margin-bottom:4px;">Monitor Grafik</h2>
+          <div class="sub">Grafik debit realtime (30 titik terakhir)</div>
+        </div>
+        <div class="pill">👥 <span id="ui-viewers-3">-</span></div>
+      </div>
+
+      <div class="chart">
+        <canvas id="flowChart" height="190"></canvas>
+        <div class="mini">Sumber data: <code>/debit/flow_lpm</code></div>
+      </div>
+
+      <div class="nav">
+        <button id="back-monitor">BACK</button>
+        <button class="home" id="home-monitor">HOME</button>
+        <button id="next-monitor" disabled>NEXT</button>
+      </div>
+    </div>
+
   </div>
 
   <div class="toast" id="toast">-</div>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- Firebase v12 modular -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
+    import {
+      getDatabase, ref, set, onValue, get, serverTimestamp, onDisconnect, remove
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
 
-    // ====== CONFIG (punya Boss) ======
+    // ===== Firebase config (punya Boss) =====
     const firebaseConfig = {
       apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
       authDomain: "hidrologi-heroes.firebaseapp.com",
@@ -267,11 +249,10 @@
       measurementId: "G-HMVQ476SYS"
     };
 
-    // ====== INIT ======
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // ====== UI HELPERS ======
+    // ===== Toast =====
     const toastEl = document.getElementById("toast");
     let toastTimer = null;
     function toast(msg){
@@ -281,59 +262,105 @@
       toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1400);
     }
 
-    // Connection indicator + disable buttons
+    // ===== Pages + Navigation =====
+    const pages = ["page-home","page-diorama","page-monitor"];
+    let currentIndex = 0;
+
+    function showPageByIndex(idx){
+      currentIndex = Math.max(0, Math.min(pages.length-1, idx));
+      pages.forEach(id => document.getElementById(id).classList.remove("active"));
+      document.getElementById(pages[currentIndex]).classList.add("active");
+      window.scrollTo(0,0);
+      bumpActive(); // update lastActive saat pindah halaman
+    }
+
+    function back(){ showPageByIndex(currentIndex - 1); }
+    function next(){ showPageByIndex(currentIndex + 1); }
+    function home(){ showPageByIndex(0); }
+
+    document.getElementById("go-diorama").onclick = () => showPageByIndex(1);
+    document.getElementById("next-home").onclick = () => next();
+
+    document.getElementById("back-diorama").onclick = () => back();
+    document.getElementById("home-diorama").onclick = () => home();
+    document.getElementById("next-diorama").onclick = () => next();
+
+    document.getElementById("back-monitor").onclick = () => back();
+    document.getElementById("home-monitor").onclick = () => home();
+
+    // ===== Connection indicator =====
     const connDot = document.getElementById("connDot");
     const connText = document.getElementById("connText");
     let isConnected = false;
 
-    const allBtns = [
-      "btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"
-    ].map(id => document.getElementById(id));
-
-    function setButtonsEnabled(enabled){
-      allBtns.forEach(b => b.disabled = !enabled);
-    }
-
-    function setConnState(state){ // "ok" | "bad" | "warn"
+    function setConn(state){
       connDot.classList.remove("ok","bad");
       if(state === "ok"){ connDot.classList.add("ok"); connText.textContent = "ONLINE"; }
       else if(state === "bad"){ connDot.classList.add("bad"); connText.textContent = "OFFLINE"; }
       else { connText.textContent = "CONNECTING"; }
     }
+    setConn("warn");
 
-    setConnState("warn");
-    setButtonsEnabled(false);
+    // tombol disable saat offline
+    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"]
+      .map(id => document.getElementById(id));
+    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
 
-    // ====== WRITE COMMAND ======
-    async function kirim(mode){
-      if(!isConnected){
-        toast("Offline: tidak bisa kirim perintah");
-        return;
-      }
-      try{
-        await set(ref(db, "diorama/status"), mode);
-        toast("Terkirim: " + mode.toUpperCase());
-      }catch(e){
-        console.error(e);
-        toast("Gagal kirim (cek rules)");
-      }
+    // ===== Presence / Viewers realtime =====
+    const sessionId = (crypto?.randomUUID?.() ?? ("sess_" + Math.random().toString(16).slice(2)));
+    const sessionRef = ref(db, `presence/sessions/${sessionId}`);
+
+    // Heartbeat lastActiveMs (dipakai ESP32 untuk auto-off 10 menit)
+    function bumpActive(){
+      // update timestamp global (server time)
+      set(ref(db, "presence/lastActiveMs"), serverTimestamp());
+      // update sesi
+      set(sessionRef, { ts: serverTimestamp() });
     }
 
-    document.getElementById("btn-evap").onclick = () => kirim("evaporasi");
-    document.getElementById("btn-kond").onclick = () => kirim("kondensasi");
-    document.getElementById("btn-pres").onclick = () => kirim("presipitasi");
-    document.getElementById("btn-infi").onclick = () => kirim("infiltrasi");
-    document.getElementById("btn-banj").onclick = () => kirim("banjir");
-    document.getElementById("btn-off").onclick  = () => kirim("off");
+    // update heartbeat tiap 20 detik
+    setInterval(() => bumpActive(), 20000);
 
-    // ====== BUTTON ACTIVE STATE (SYNC MODE) ======
+    // hitung viewers
+    onValue(ref(db, "presence/sessions"), snap => {
+      const obj = snap.val() || {};
+      const count = Object.keys(obj).length;
+      document.getElementById("ui-viewers").innerText = count;
+      document.getElementById("ui-viewers-2").innerText = count;
+      document.getElementById("ui-viewers-3").innerText = count;
+    });
+
+    // ===== Connected state dari RTDB =====
+    onValue(ref(db, ".info/connected"), async (snap) => {
+      isConnected = !!snap.val();
+      if(isConnected){
+        setConn("ok");
+        setButtonsEnabled(true);
+
+        // register presence + auto-remove saat disconnect
+        try{
+          await set(sessionRef, { ts: serverTimestamp() });
+          onDisconnect(sessionRef).remove();
+          bumpActive();
+        }catch(e){
+          console.error(e);
+          toast("Koneksi OK, tapi presence gagal (cek rules)");
+        }
+
+      }else{
+        setConn("bad");
+        setButtonsEnabled(false);
+      }
+    });
+
+    // ===== Mode toggle logic =====
     const btnMap = {
       evaporasi: document.getElementById("btn-evap"),
       kondensasi: document.getElementById("btn-kond"),
       presipitasi: document.getElementById("btn-pres"),
       infiltrasi: document.getElementById("btn-infi"),
       banjir: document.getElementById("btn-banj"),
-      off: document.getElementById("btn-off")
+      off: document.getElementById("btn-off"),
     };
 
     function setActiveMode(mode){
@@ -341,7 +368,63 @@
       if(btnMap[mode]) btnMap[mode].classList.add("active");
     }
 
-    // ====== CHART SETUP ======
+    async function toggleMode(target){
+      if(!isConnected){
+        toast("Offline: tidak bisa kirim");
+        return;
+      }
+      bumpActive();
+
+      try{
+        const snap = await get(ref(db, "diorama/status"));
+        const current = snap.val() ?? "off";
+        const nextMode = (current === target) ? "off" : target;
+        await set(ref(db, "diorama/status"), nextMode);
+        toast(`Mode: ${nextMode.toUpperCase()}`);
+      }catch(e){
+        console.error(e);
+        toast("Gagal kirim (cek rules)");
+      }
+    }
+
+    document.getElementById("btn-evap").onclick = () => toggleMode("evaporasi");
+    document.getElementById("btn-kond").onclick = () => toggleMode("kondensasi");
+    document.getElementById("btn-pres").onclick = () => toggleMode("presipitasi");
+    document.getElementById("btn-infi").onclick = () => toggleMode("infiltrasi");
+    document.getElementById("btn-banj").onclick = () => toggleMode("banjir");
+    document.getElementById("btn-off").onclick  = () => toggleMode("off");
+
+    // ===== Realtime read =====
+    onValue(ref(db, "diorama/status"), snap => {
+      const mode = snap.val() ?? "-";
+      document.getElementById("ui-mode").innerText = mode;
+      document.getElementById("ui-mode-home").innerText = mode;
+      if(mode !== "-") setActiveMode(mode);
+    });
+
+    onValue(ref(db, "sensor/jarak"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-jarak").innerText = (v == null) ? "-" : Number(v).toFixed(1);
+    });
+
+    onValue(ref(db, "sensor/persen"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-persen").innerText = (v == null) ? "-" : Math.round(Number(v));
+    });
+
+    onValue(ref(db, "debit/flow_lpm"), snap => {
+      const v = snap.val();
+      const flow = (v == null) ? null : Number(v);
+      document.getElementById("ui-flow").innerText = (flow == null) ? "-" : flow.toFixed(3);
+      if(flow != null) pushChartPoint(flow);
+    });
+
+    onValue(ref(db, "debit/total_liter"), snap => {
+      const v = snap.val();
+      document.getElementById("ui-total").innerText = (v == null) ? "-" : Number(v).toFixed(3);
+    });
+
+    // ===== Chart =====
     const labels = [];
     const dataPoints = [];
     const ctx = document.getElementById("flowChart").getContext("2d");
@@ -360,49 +443,8 @@
       chart.update();
     }
 
-    // ====== READ REALTIME ======
-    // 1) Connection state dari RTDB
-    onValue(ref(db, ".info/connected"), snap => {
-      isConnected = !!snap.val();
-      if(isConnected){
-        setConnState("ok");
-        setButtonsEnabled(true);
-      }else{
-        setConnState("bad");
-        setButtonsEnabled(false);
-      }
-    });
-
-    // 2) Mode + tombol aktif
-    onValue(ref(db, "diorama/status"), snap => {
-      const mode = snap.val() ?? "-";
-      document.getElementById("ui-mode").innerText = mode;
-      if(mode !== "-") setActiveMode(mode);
-    });
-
-    // 3) Sensor level
-    onValue(ref(db, "sensor/jarak"), snap => {
-      const v = snap.val();
-      document.getElementById("ui-jarak").innerText = (v == null) ? "-" : Number(v).toFixed(1);
-    });
-
-    onValue(ref(db, "sensor/persen"), snap => {
-      const v = snap.val();
-      document.getElementById("ui-persen").innerText = (v == null) ? "-" : Math.round(Number(v));
-    });
-
-    // 4) Debit + chart
-    onValue(ref(db, "debit/flow_lpm"), snap => {
-      const v = snap.val();
-      const flow = (v == null) ? null : Number(v);
-      document.getElementById("ui-flow").innerText = (flow == null) ? "-" : flow.toFixed(3);
-      if(flow != null) pushChartPoint(flow);
-    });
-
-    onValue(ref(db, "debit/total_liter"), snap => {
-      const v = snap.val();
-      document.getElementById("ui-total").innerText = (v == null) ? "-" : Number(v).toFixed(3);
-    });
+    // ===== Initial bump =====
+    bumpActive();
   </script>
 </body>
 </html>
