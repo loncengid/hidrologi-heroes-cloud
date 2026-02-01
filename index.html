@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Hidrologi Heroes Dashboard - NISEEF v9</title>
+  <title>Hidrologi Heroes Dashboard - NISEEF v12</title>
 
   <style>
     :root{
@@ -23,7 +23,7 @@
     }
     .container{ min-height:100vh; padding:18px; display:flex; flex-direction:column; align-items:center; gap:14px; }
     .card{
-      width:min(640px, 96vw);
+      width:min(720px, 96vw);
       background:var(--bgcard);
       backdrop-filter: blur(15px);
       border-radius:22px;
@@ -35,9 +35,9 @@
     .card.active{ display:block; animation: up .25s ease-out; }
     @keyframes up{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform:none;} }
 
-    h1,h2{ margin:0 0 10px 0; font-weight:1000; text-transform:uppercase; text-shadow:3px 3px 6px rgba(0,0,0,.8); }
-    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
-    .sub{ font-size:12px; color:var(--mut); font-weight:800; }
+    h1,h2,h3{ margin:0 0 10px 0; font-weight:1000; text-transform:uppercase; text-shadow:3px 3px 6px rgba(0,0,0,.8); }
+    .topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .sub{ font-size:12px; color:var(--mut); font-weight:900; line-height:1.3; }
 
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -60,7 +60,7 @@
       font-weight:900;
       line-height:1.6;
     }
-    .row{ display:flex; justify-content:space-between; gap:12px; }
+    .row{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
     .k{ color:var(--mut); font-weight:900; }
     .v{ text-align:right; font-weight:1000; }
 
@@ -76,6 +76,7 @@
       text-transform:uppercase;
       letter-spacing:.8px;
       transition: transform .06s ease, opacity .2s ease, filter .2s ease;
+      position: relative;
     }
     .btn:active{ transform: scale(.99); }
     .btn[disabled]{ opacity:.55; cursor:not-allowed; filter: grayscale(.35); }
@@ -84,7 +85,6 @@
     .btn.active{
       outline:3px solid rgba(255,255,255,.9);
       box-shadow:0 0 0 4px rgba(0, 212, 255, .25);
-      position:relative;
     }
     .btn.active::after{
       content:"ON";
@@ -119,78 +119,79 @@
       margin-top:12px;
     }
     .mini{ font-size:12px; color:var(--mut); font-weight:800; margin-top:8px; line-height:1.4; }
+    code{ color:#c7f6ff; font-weight:900; }
 
-    .filters{ display:flex; gap:10px; flex-wrap: wrap; margin-top: 8px; }
-    .chip{
-      padding:10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--bd);
-      background: rgba(0,0,0,.55);
-      color: var(--txt);
-      font-weight: 1000;
-      cursor:pointer;
-      user-select:none;
-      font-size: 13px;
-    }
-    .chip.active{
-      outline: 3px solid rgba(255,255,255,.9);
-      box-shadow: 0 0 0 4px rgba(0, 212, 255, .22);
-    }
-
-    .grid2{ display:grid; grid-template-columns: 1fr; gap: 10px; }
-    @media(min-width: 560px){ .grid2{ grid-template-columns: 1fr 1fr; } }
-
-    .toast{
-      position:fixed; left:50%; bottom:18px; transform: translateX(-50%);
-      background: rgba(0,0,0,.78);
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
       border:1px solid rgba(255,255,255,.25);
-      padding:10px 14px; border-radius:14px;
-      font-weight:1000; font-size:13px;
-      box-shadow:0 12px 30px rgba(0,0,0,.45);
-      opacity:0; pointer-events:none;
-      transition: opacity .2s ease, transform .2s ease;
-      max-width:min(560px, 90vw);
-      text-align:center;
-      z-index:9999;
+      background: rgba(0,0,0,.35);
+      font-weight:1000;
+      font-size:12px;
+      white-space:nowrap;
     }
-    .toast.show{ opacity:1; transform: translateX(-50%) translateY(-4px); }
-    code{ color:#c7f6ff; }
+    .b-on{ color: var(--ok); }
+    .b-off{ color: var(--bad); }
+    .b-hold{ color: var(--warn); }
+
+    .hw-row{
+      display:flex;
+      justify-content:space-between;
+      padding:8px 0;
+      border-bottom:1px dashed rgba(255,255,255,.18);
+      font-weight:900;
+    }
+    .hw-row:last-child{ border-bottom:none; }
   </style>
 </head>
 
 <body>
   <div class="container">
 
-    <!-- HOME -->
+    <!-- PAGE 0: HOME -->
     <div class="card active" id="page-home">
       <div class="topbar">
         <div>
           <h1 style="font-size:22px;">Hidrologi Heroes</h1>
-          <div class="sub">NISEEF v9 • Multi-toggle + Realtime + Log Analitik</div>
+          <div class="sub" id="fwLine">Firmware: -</div>
+          <div class="sub">UI sinkron: <code>NISEEF v12</code> • Multi-toggle • Presence</div>
         </div>
-        <div class="pill" title="Koneksi RTDB">
+
+        <div class="pill" title="Koneksi ke Firebase RTDB">
           <span class="dot" id="connDot"></span>
           <span id="connText">CONNECTING</span>
         </div>
       </div>
 
-      <!-- MENU STATUS: Realtime + Log -->
       <div class="status">
         <div class="row"><div class="k">Pengunjung Online</div><div class="v" id="ui-viewers">-</div></div>
         <hr style="opacity:.2">
-        <div class="row"><div class="k">Jarak (cm)</div><div class="v" id="m-jarak">-</div></div>
-        <div class="row"><div class="k">Level (%)</div><div class="v" id="m-persen">-</div></div>
-        <div class="row"><div class="k">Debit (L/min)</div><div class="v" id="m-flow">-</div></div>
-        <div class="row"><div class="k">Total (Liter)</div><div class="v" id="m-total">-</div></div>
+        <div class="row"><div class="k">Level Air</div><div class="v"><span id="m-persen">-</span>%</div></div>
+        <div class="row"><div class="k">Debit Air (Flow)</div><div class="v"><span id="m-flow">-</span> L/min</div></div>
         <hr style="opacity:.2">
+        <div class="row">
+          <div class="k">Status Sistem</div>
+          <div class="v" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <span class="badge" id="badgeLampu">Lampu Desa: -</span>
+            <span class="badge" id="badgePompa2">Pompa 2: -</span>
+          </div>
+        </div>
         <div class="row"><div class="k">Last Log</div><div class="v" id="m-lastlog">-</div></div>
       </div>
 
       <button class="btn" style="background:linear-gradient(45deg,#007bff,#00c6ff); color:#fff;"
               id="go-diorama">MASUK KONTROL DIORAMA</button>
 
+      <div class="panel">
+        <h3 style="margin:0 0 8px 0; font-size:14px;">Pin & Hardware (Realtime)</h3>
+        <div id="hw-list" class="mini">Loading...</div>
+      </div>
+
       <div class="mini">
-        Realtime: <code>/sensor</code>, <code>/debit</code> • Log: <code>/log/ts</code> • Presence: <code>/presence</code>
+        Data dipakai UI: <code>/sensor/persen</code>, <code>/debit/flow_lpm</code>, <code>/desa/lampu_aktif</code>, <code>/diorama/mode/*</code>
       </div>
 
       <div class="nav">
@@ -200,28 +201,32 @@
       </div>
     </div>
 
-    <!-- DIORAMA -->
+    <!-- PAGE 1: DIORAMA -->
     <div class="card" id="page-diorama">
       <div class="topbar">
         <div>
           <h2 style="font-size:18px; margin-bottom:4px;">Kontrol Diorama</h2>
-          <div class="sub">Bisa ON bareng (evaporasi + kondensasi dll)</div>
+          <div class="sub">Tekan sekali ON, tekan lagi OFF. Bisa ON bareng.</div>
         </div>
         <div class="pill">👥 <span id="ui-viewers-2">-</span></div>
       </div>
 
       <div class="status">
-        <div class="row"><div class="k">Jarak (cm)</div><div class="v" id="ui-jarak">-</div></div>
-        <div class="row"><div class="k">Level (%)</div><div class="v" id="ui-persen">-</div></div>
+        <div class="row"><div class="k">Level Air</div><div class="v"><span id="ui-persen">-</span>%</div></div>
+        <div class="row"><div class="k">Debit Air (Flow)</div><div class="v"><span id="ui-flow">-</span> L/min</div></div>
         <hr style="opacity:.2">
-        <div class="row"><div class="k">Debit (L/min)</div><div class="v" id="ui-flow">-</div></div>
-        <div class="row"><div class="k">Total (Liter)</div><div class="v" id="ui-total">-</div></div>
+        <div class="row">
+          <div class="k">Status</div>
+          <div class="v" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <span class="badge" id="badgeLampu2">Lampu Desa: -</span>
+            <span class="badge" id="badgePompa22">Pompa 2: -</span>
+          </div>
+        </div>
       </div>
 
       <button class="btn" style="background:#f44336" id="btn-evap">EVAPORASI</button>
       <button class="btn" style="background:#ff9800" id="btn-kond">KONDENSASI</button>
       <button class="btn" style="background:#4caf50" id="btn-pres">PRESIPITASI</button>
-      <button class="btn" style="background:#ffffff; color:#001f3f" id="btn-infi">INFILTRASI</button>
       <button class="btn" style="background:#2196f3" id="btn-banj">BANJIR</button>
       <button class="btn" style="background:#333" id="btn-off">MATIKAN SEMUA</button>
 
@@ -232,96 +237,60 @@
       </div>
     </div>
 
-    <!-- ANALYTICS -->
-    <div class="card" id="page-analytics">
+    <!-- PAGE 2: INFO -->
+    <div class="card" id="page-info">
       <div class="topbar">
         <div>
-          <h2 style="font-size:18px; margin-bottom:4px;">Analitik Histori</h2>
-          <div class="sub">Ambil dari <code>/log/ts</code> + filter waktu</div>
+          <h2 style="font-size:18px; margin-bottom:4px;">Info & Diagnostik</h2>
+          <div class="sub">Cek versi firmware, pinmap, dan path RTDB</div>
         </div>
         <div class="pill">👥 <span id="ui-viewers-3">-</span></div>
       </div>
 
       <div class="status">
-        <div class="row"><div class="k">Range</div><div class="v" id="ui-range">10 menit</div></div>
-        <div class="row"><div class="k">Titik Data</div><div class="v" id="ui-points">-</div></div>
-        <div class="row"><div class="k">Terakhir</div><div class="v" id="ui-last">-</div></div>
+        <div class="row"><div class="k">Firmware</div><div class="v" id="info-fw">-</div></div>
+        <div class="row"><div class="k">Build</div><div class="v" id="info-build">-</div></div>
+        <hr style="opacity:.2">
+        <div class="row"><div class="k">Path Mode</div><div class="v"><code>/diorama/mode/*</code></div></div>
+        <div class="row"><div class="k">Sensor</div><div class="v"><code>/sensor/persen</code></div></div>
+        <div class="row"><div class="k">Debit</div><div class="v"><code>/debit/flow_lpm</code></div></div>
+        <div class="row"><div class="k">Lampu Desa</div><div class="v"><code>/desa/lampu_aktif</code></div></div>
+        <div class="row"><div class="k">Presence</div><div class="v"><code>/presence/*</code></div></div>
       </div>
 
-      <div class="filters">
-        <div class="chip" id="chip-1m">1 menit</div>
-        <div class="chip active" id="chip-10m">10 menit</div>
-        <div class="chip" id="chip-1h">1 jam</div>
-        <div class="chip" id="chip-refresh">Refresh</div>
-        <div class="chip" id="chip-export">Export CSV</div>
-      </div>
-
-      <div class="grid2">
-        <div class="panel">
-          <canvas id="histFlowChart" height="190"></canvas>
-          <div class="mini">Histori Debit (L/min)</div>
-        </div>
-        <div class="panel">
-          <canvas id="histLevelChart" height="190"></canvas>
-          <div class="mini">Histori Level (%)</div>
-        </div>
+      <div class="panel">
+        <h3 style="margin:0 0 8px 0; font-size:14px;">Pin Map dari Firmware</h3>
+        <div id="pinmap-box" class="mini">Loading...</div>
       </div>
 
       <div class="nav">
-        <button id="back-analytics">BACK</button>
-        <button class="home" id="home-analytics">HOME</button>
+        <button id="back-info">BACK</button>
+        <button class="home" id="home-info">HOME</button>
         <button disabled>NEXT</button>
       </div>
     </div>
 
   </div>
 
-  <div class="toast" id="toast">-</div>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    // ====== Firebase RTDB (v8 compat) ======
+    var config = { databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app/" };
+    firebase.initializeApp(config);
+    var db = firebase.database();
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import {
-      getDatabase, ref, set, onValue, get,
-      query, orderByKey, startAt, endAt,
-      onDisconnect
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
-      authDomain: "hidrologi-heroes.firebaseapp.com",
-      databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "hidrologi-heroes",
-      storageBucket: "hidrologi-heroes.firebasestorage.app",
-      messagingSenderId: "349578733020",
-      appId: "1:349578733020:web:df27bed634e6bdefd5db19",
-      measurementId: "G-HMVQ476SYS"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Toast
-    const toastEl = document.getElementById("toast");
-    let toastTimer = null;
-    function toast(msg){
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1400);
-    }
-
-    // Pages
-    const pages = ["page-home","page-diorama","page-analytics"];
+    // ====== Pages ======
+    const pages = ["page-home", "page-diorama", "page-info"];
     let currentIndex = 0;
+
     function showPageByIndex(idx){
-      currentIndex = Math.max(0, Math.min(pages.length-1, idx));
+      currentIndex = Math.max(0, Math.min(pages.length - 1, idx));
       pages.forEach(id => document.getElementById(id).classList.remove("active"));
       document.getElementById(pages[currentIndex]).classList.add("active");
       window.scrollTo(0,0);
       bumpActive();
-      if (pages[currentIndex] === "page-analytics") loadAnalytics();
     }
     function back(){ showPageByIndex(currentIndex - 1); }
     function next(){ showPageByIndex(currentIndex + 1); }
@@ -332,13 +301,12 @@
     document.getElementById("back-diorama").onclick = () => back();
     document.getElementById("home-diorama").onclick = () => home();
     document.getElementById("next-diorama").onclick = () => next();
-    document.getElementById("back-analytics").onclick = () => back();
-    document.getElementById("home-analytics").onclick = () => home();
+    document.getElementById("back-info").onclick = () => back();
+    document.getElementById("home-info").onclick = () => home();
 
-    // Connection
+    // ====== Connection indicator ======
     const connDot = document.getElementById("connDot");
     const connText = document.getElementById("connText");
-    let isConnected = false;
     function setConn(state){
       connDot.classList.remove("ok","bad");
       if(state === "ok"){ connDot.classList.add("ok"); connText.textContent = "ONLINE"; }
@@ -347,18 +315,42 @@
     }
     setConn("warn");
 
-    // Presence (viewer)
-    const sessionId = (crypto?.randomUUID?.() ?? ("sess_" + Math.random().toString(16).slice(2)));
-    const sessionRef = ref(db, `presence/sessions/${sessionId}`);
+    // Disable buttons when offline
+    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-banj","btn-off"].map(id => document.getElementById(id));
+    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
+
+    // ====== Presence (Realtime viewers) ======
+    const sessionId = "sess_" + Math.random().toString(16).slice(2);
+    const sessionRef = db.ref("presence/sessions/" + sessionId);
 
     function bumpActive(){
       const sec = Math.floor(Date.now() / 1000);
-      set(ref(db, "presence/lastActiveSec"), sec);
-      set(sessionRef, { ts: sec });
+      db.ref("presence/lastActiveSec").set(sec);
+      sessionRef.set({ ts: sec });
     }
-    setInterval(() => bumpActive(), 20000);
 
-    onValue(ref(db, "presence/sessions"), snap => {
+    // keep-alive (20 detik)
+    setInterval(() => bumpActive(), 20000);
+    // bump on interactions
+    document.body.addEventListener("click", () => bumpActive());
+    document.body.addEventListener("touchstart", () => bumpActive(), { passive:true });
+
+    // onDisconnect remove session
+    db.ref(".info/connected").on("value", snap => {
+      const ok = !!snap.val();
+      if(ok){
+        setConn("ok");
+        setButtonsEnabled(true);
+        sessionRef.onDisconnect().remove();
+        bumpActive();
+      }else{
+        setConn("bad");
+        setButtonsEnabled(false);
+      }
+    });
+
+    // viewers count
+    db.ref("presence/sessions").on("value", snap => {
       const obj = snap.val() || {};
       const count = Object.keys(obj).length;
       document.getElementById("ui-viewers").innerText = count;
@@ -366,32 +358,8 @@
       document.getElementById("ui-viewers-3").innerText = count;
     });
 
-    // Disable controls when offline
-    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-infi","btn-banj","btn-off"]
-      .map(id => document.getElementById(id));
-    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
-
-    onValue(ref(db, ".info/connected"), async (snap) => {
-      isConnected = !!snap.val();
-      if(isConnected){
-        setConn("ok");
-        setButtonsEnabled(true);
-        try{
-          await set(sessionRef, { ts: Math.floor(Date.now()/1000) });
-          onDisconnect(sessionRef).remove();
-          bumpActive();
-        }catch(e){
-          console.error(e);
-          toast("Presence gagal (cek rules)");
-        }
-      }else{
-        setConn("bad");
-        setButtonsEnabled(false);
-      }
-    });
-
-    // ===== Realtime (menu + diorama) =====
-    function setNum(id, v, d=3){
+    // ====== Helpers ======
+    function setNum(id, v, d=2){
       const el = document.getElementById(id);
       if(!el) return;
       if(v == null) el.innerText = "-";
@@ -404,54 +372,87 @@
       else el.innerText = Math.round(Number(v));
     }
 
-    onValue(ref(db, "sensor/jarak"), snap => {
-      const v = snap.val();
-      setNum("ui-jarak", v, 1);
-      setNum("m-jarak", v, 1);
+    function setBadge(el, label, state){
+      el.classList.remove("b-on","b-off","b-hold");
+      if(state === "ON"){ el.classList.add("b-on"); el.textContent = `${label}: ON`; }
+      else if(state === "OFF"){ el.classList.add("b-off"); el.textContent = `${label}: OFF`; }
+      else { el.classList.add("b-hold"); el.textContent = `${label}: HOLD`; }
+    }
+
+    // ====== Firmware info ======
+    db.ref("system").on("value", snap => {
+      const d = snap.val() || {};
+      const ver = d.version || "-";
+      const bld = d.build || "-";
+      document.getElementById("fwLine").innerText = `Firmware: ${ver} | build ${bld}`;
+      document.getElementById("info-fw").innerText = ver;
+      document.getElementById("info-build").innerText = bld;
     });
 
-    onValue(ref(db, "sensor/persen"), snap => {
+    // ====== Realtime sensor: LEVEL (%) only ======
+    let lastLevelPct = null;
+
+    db.ref("sensor/persen").on("value", snap => {
       const v = snap.val();
-      setInt("ui-persen", v);
-      setInt("m-persen", v);
+      lastLevelPct = (v == null) ? null : Number(v);
+      setInt("m-persen", lastLevelPct);
+      setInt("ui-persen", lastLevelPct);
+
+      // Pompa2 state derived from level rules (v12): ON>=80, OFF<=25, else HOLD
+      const b1 = document.getElementById("badgePompa2");
+      const b2 = document.getElementById("badgePompa22");
+      if(lastLevelPct == null){
+        setBadge(b1, "Pompa 2", "HOLD");
+        setBadge(b2, "Pompa 2", "HOLD");
+      }else if(lastLevelPct >= 80){
+        setBadge(b1, "Pompa 2", "ON");
+        setBadge(b2, "Pompa 2", "ON");
+      }else if(lastLevelPct <= 25){
+        setBadge(b1, "Pompa 2", "OFF");
+        setBadge(b2, "Pompa 2", "OFF");
+      }else{
+        setBadge(b1, "Pompa 2", "HOLD");
+        setBadge(b2, "Pompa 2", "HOLD");
+      }
     });
 
-    onValue(ref(db, "debit/flow_lpm"), snap => {
+    // ====== Realtime debit: FLOW only ======
+    db.ref("debit/flow_lpm").on("value", snap => {
       const v = snap.val();
-      setNum("ui-flow", v, 3);
       setNum("m-flow", v, 3);
+      setNum("ui-flow", v, 3);
     });
 
-    onValue(ref(db, "debit/total_liter"), snap => {
-      const v = snap.val();
-      setNum("ui-total", v, 3);
-      setNum("m-total", v, 3);
+    // ====== Lampu Desa status ======
+    db.ref("desa/lampu_aktif").on("value", snap => {
+      const on = !!snap.val();
+      const b1 = document.getElementById("badgeLampu");
+      const b2 = document.getElementById("badgeLampu2");
+      setBadge(b1, "Lampu Desa", on ? "ON" : "OFF");
+      setBadge(b2, "Lampu Desa", on ? "ON" : "OFF");
     });
 
-    // tampilkan last log di menu
-    onValue(ref(db, "log/lastTs"), snap => {
+    // ====== last log time ======
+    db.ref("log/lastTs").on("value", snap => {
       const ts = snap.val();
       const el = document.getElementById("m-lastlog");
       if(!el) return;
-      if(!ts) { el.innerText = "-"; return; }
+      if(!ts){ el.innerText = "-"; return; }
       const d = new Date(Number(ts) * 1000);
       el.innerText = d.toLocaleTimeString("id-ID", { hour12:false });
     });
 
-    // ===== Multi-toggle controls =====
+    // ====== Multi-toggle mode controls ======
     const modePaths = {
       evaporasi: "diorama/mode/evaporasi",
       kondensasi: "diorama/mode/kondensasi",
       presipitasi: "diorama/mode/presipitasi",
-      infiltrasi: "diorama/mode/infiltrasi",
       banjir: "diorama/mode/banjir",
     };
-
     const btnMap = {
       evaporasi: document.getElementById("btn-evap"),
       kondensasi: document.getElementById("btn-kond"),
       presipitasi: document.getElementById("btn-pres"),
-      infiltrasi: document.getElementById("btn-infi"),
       banjir: document.getElementById("btn-banj"),
     };
 
@@ -462,165 +463,112 @@
       else b.classList.remove("active");
     }
 
-    // listen per toggle -> update UI active state
+    // Listen each mode boolean
     Object.entries(modePaths).forEach(([name, p]) => {
-      onValue(ref(db, p), snap => setBtnState(name, !!snap.val()));
+      db.ref(p).on("value", snap => setBtnState(name, !!snap.val()));
     });
 
-    async function toggleOne(name){
-      if(!isConnected){ toast("Offline"); return; }
+    function toggleOne(name){
       bumpActive();
       const p = modePaths[name];
-      try{
-        const s = await get(ref(db, p));
-        const cur = !!s.val();
-        await set(ref(db, p), !cur);
-        toast(`${name.toUpperCase()} ${!cur ? "ON":"OFF"}`);
-      }catch(e){
-        console.error(e);
-        toast("Gagal toggle (cek rules)");
-      }
+      db.ref(p).once("value").then(snap => {
+        const cur = !!snap.val();
+        db.ref(p).set(!cur);
+      });
     }
 
     document.getElementById("btn-evap").onclick = () => toggleOne("evaporasi");
     document.getElementById("btn-kond").onclick = () => toggleOne("kondensasi");
     document.getElementById("btn-pres").onclick = () => toggleOne("presipitasi");
-    document.getElementById("btn-infi").onclick = () => toggleOne("infiltrasi");
     document.getElementById("btn-banj").onclick = () => toggleOne("banjir");
 
-    // matikan semua
-    document.getElementById("btn-off").onclick = async () => {
-      if(!isConnected){ toast("Offline"); return; }
+    // Matikan semua
+    document.getElementById("btn-off").onclick = () => {
       bumpActive();
-      try{
-        await Promise.all(Object.values(modePaths).map(p => set(ref(db, p), false)));
-        toast("SEMUA OFF");
-      }catch(e){
-        console.error(e);
-        toast("Gagal OFF semua");
-      }
+      Promise.all(Object.values(modePaths).map(p => db.ref(p).set(false)));
     };
 
-    // ===== ANALYTICS =====
-    let rangeSec = 10 * 60;
-    let lastRows = [];
+    // ====== Hardware pin map + realtime output status ======
+    const hwList = document.getElementById("hw-list");
 
-    const uiRange = document.getElementById("ui-range");
-    const uiPoints = document.getElementById("ui-points");
-    const uiLast = document.getElementById("ui-last");
+    function renderHardware(pinmap, modeState){
+      // modeState: {evaporasi:bool, ...}
+      const rows = [];
 
-    function setChipActive(which){
-      ["chip-1m","chip-10m","chip-1h"].forEach(id => document.getElementById(id).classList.remove("active"));
-      document.getElementById(which).classList.add("active");
-    }
+      rows.push(`<div class="hw-row"><span>Evaporasi</span><span>${pinmap?.tombolA_evaporasi_gpio ?? 15} • <span class="${modeState.evaporasi?'b-on':'b-off'}">${modeState.evaporasi?'ON':'OFF'}</span></span></div>`);
+      rows.push(`<div class="hw-row"><span>Kondensasi</span><span>${pinmap?.tombolB_kondensasi_gpio ?? 2} • <span class="${modeState.kondensasi?'b-on':'b-off'}">${modeState.kondensasi?'ON':'OFF'}</span></span></div>`);
+      rows.push(`<div class="hw-row"><span>Presipitasi</span><span>${pinmap?.tombolC_presipitasi_gpio ?? 4} • <span class="${modeState.presipitasi?'b-on':'b-off'}">${modeState.presipitasi?'ON':'OFF'}</span></span></div>`);
+      rows.push(`<div class="hw-row"><span>Banjir</span><span>${pinmap?.tombolD_banjir_gpio ?? 16} • <span class="${modeState.banjir?'b-on':'b-off'}">${modeState.banjir?'ON':'OFF'}</span></span></div>`);
 
-    document.getElementById("chip-1m").onclick = () => { rangeSec=60; uiRange.innerText="1 menit"; setChipActive("chip-1m"); loadAnalytics(true); };
-    document.getElementById("chip-10m").onclick = () => { rangeSec=600; uiRange.innerText="10 menit"; setChipActive("chip-10m"); loadAnalytics(true); };
-    document.getElementById("chip-1h").onclick = () => { rangeSec=3600; uiRange.innerText="1 jam"; setChipActive("chip-1h"); loadAnalytics(true); };
-    document.getElementById("chip-refresh").onclick = () => loadAnalytics(true);
-    document.getElementById("chip-export").onclick = () => exportCSV();
+      rows.push(`<div class="hw-row"><span>Lampu Desa</span><span>${pinmap?.lampu_desa_gpio ?? 17} • <span id="hwLamp" class="b-hold">-</span></span></div>`);
+      rows.push(`<div class="hw-row"><span>Pompa 2</span><span>${pinmap?.pompa2_gpio ?? 5} • <span id="hwP2" class="b-hold">-</span></span></div>`);
+      rows.push(`<div class="hw-row"><span>YF-S401 (Pulse)</span><span>GPIO ${pinmap?.yf_s401_gpio ?? 25}</span></div>`);
+      rows.push(`<div class="hw-row"><span>Ultrasonik TRIG</span><span>GPIO ${pinmap?.ultrasonik_trig_gpio ?? 32}</span></div>`);
+      rows.push(`<div class="hw-row"><span>Ultrasonik ECHO</span><span>GPIO ${pinmap?.ultrasonik_echo_gpio ?? 33}</span></div>`);
 
-    const labelsFlow = [], dataFlow = [];
-    const labelsLvl = [], dataLvl = [];
+      hwList.innerHTML = rows.join("");
 
-    const hfCtx = document.getElementById("histFlowChart").getContext("2d");
-    const hlCtx = document.getElementById("histLevelChart").getContext("2d");
-
-    const flowChart = new Chart(hfCtx, {
-      type:"line",
-      data:{ labels: labelsFlow, datasets:[{ label:"Flow (L/min)", data: dataFlow, tension:0.25 }]},
-      options:{ responsive:true, animation:false, scales:{ y:{ beginAtZero:true } } }
-    });
-
-    const lvlChart = new Chart(hlCtx, {
-      type:"line",
-      data:{ labels: labelsLvl, datasets:[{ label:"Level (%)", data: dataLvl, tension:0.25 }]},
-      options:{ responsive:true, animation:false, scales:{ y:{ beginAtZero:true, max:100 } } }
-    });
-
-    function clear(a){ a.splice(0,a.length); }
-    function labelTime(sec){ return new Date(sec*1000).toLocaleTimeString("id-ID",{hour12:false}); }
-
-    async function loadAnalytics(showToast=false){
-      if(!isConnected){
-        uiPoints.innerText="-"; uiLast.innerText="-";
-        if(showToast) toast("Offline: tidak bisa ambil histori");
-        return;
-      }
-      bumpActive();
-
-      const nowSec = Math.floor(Date.now()/1000);
-      const startSec = nowSec - rangeSec;
-
-      const q = query(
-        ref(db, "log/ts"),
-        orderByKey(),
-        startAt(String(startSec)),
-        endAt(String(nowSec))
-      );
-
-      try{
-        const snap = await get(q);
-        const obj = snap.val() || {};
-        const keys = Object.keys(obj).sort((a,b)=>Number(a)-Number(b));
-
-        const rows = keys.map(k => {
-          const v = obj[k] || {};
-          return {
-            ts: Number(k),
-            flow: Number(v.flow ?? 0),
-            total: Number(v.total ?? 0),
-            pct: Number(v.pct ?? 0),
-            cm: Number(v.cm ?? 0),
-          };
-        });
-
-        lastRows = rows;
-        uiPoints.innerText = rows.length;
-        uiLast.innerText = rows.length ? labelTime(rows[rows.length-1].ts) : "-";
-
-        clear(labelsFlow); clear(dataFlow);
-        clear(labelsLvl);  clear(dataLvl);
-
-        rows.forEach(r=>{
-          const lab = labelTime(r.ts);
-          labelsFlow.push(lab); dataFlow.push(r.flow);
-          labelsLvl.push(lab);  dataLvl.push(r.pct);
-        });
-
-        flowChart.update();
-        lvlChart.update();
-        if(showToast) toast("Histori ter-update");
-      }catch(e){
-        console.error(e);
-        if(showToast) toast("Gagal ambil histori (cek rules)");
-      }
-    }
-
-    function exportCSV(){
-      if(!lastRows.length){ toast("Data histori kosong"); return; }
-      const header = ["ts_epoch","time","flow_lpm","total_liter","level_pct","jarak_cm"];
-      const lines = [header.join(",")];
-      lastRows.forEach(r=>{
-        lines.push([
-          r.ts,
-          new Date(r.ts*1000).toISOString(),
-          r.flow, r.total, r.pct, r.cm
-        ].join(","));
+      // update lampu desa badge in list
+      db.ref("desa/lampu_aktif").once("value").then(s=>{
+        const on = !!s.val();
+        const el = document.getElementById("hwLamp");
+        if(el){
+          el.classList.remove("b-on","b-off","b-hold");
+          el.classList.add(on ? "b-on" : "b-off");
+          el.textContent = on ? "ON" : "OFF";
+        }
       });
-      const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `niseef_log_${rangeSec}s.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      toast("CSV diunduh");
+
+      // update pompa2 derived in list
+      const p2 = document.getElementById("hwP2");
+      if(p2){
+        let st = "HOLD";
+        if(lastLevelPct != null){
+          if(lastLevelPct >= 80) st = "ON";
+          else if(lastLevelPct <= 25) st = "OFF";
+        }
+        p2.classList.remove("b-on","b-off","b-hold");
+        p2.classList.add(st === "ON" ? "b-on" : st === "OFF" ? "b-off" : "b-hold");
+        p2.textContent = st;
+      }
     }
 
-    // init
+    // Pinmap box in info page
+    const pinmapBox = document.getElementById("pinmap-box");
+
+    let cachedPinmap = null;
+    let cachedModes = { evaporasi:false, kondensasi:false, presipitasi:false, banjir:false };
+
+    db.ref("hardware/pinmap").on("value", snap => {
+      cachedPinmap = snap.val() || null;
+
+      // Info page view
+      if(!cachedPinmap){
+        pinmapBox.innerText = "Belum ada /hardware/pinmap dari firmware.";
+      }else{
+        pinmapBox.innerHTML =
+          `<div>Evaporasi: GPIO <b>${cachedPinmap.tombolA_evaporasi_gpio}</b></div>` +
+          `<div>Kondensasi: GPIO <b>${cachedPinmap.tombolB_kondensasi_gpio}</b></div>` +
+          `<div>Presipitasi: GPIO <b>${cachedPinmap.tombolC_presipitasi_gpio}</b></div>` +
+          `<div>Banjir: GPIO <b>${cachedPinmap.tombolD_banjir_gpio}</b></div>` +
+          `<div>Lampu Desa: GPIO <b>${cachedPinmap.lampu_desa_gpio}</b> (flow >= 2.0 + pulse)</div>` +
+          `<div>Pompa 2: GPIO <b>${cachedPinmap.pompa2_gpio}</b> (ON>=80%, OFF<=25%)</div>` +
+          `<div>YF-S401: GPIO <b>${cachedPinmap.yf_s401_gpio}</b></div>` +
+          `<div>Ultrasonik: TRIG <b>${cachedPinmap.ultrasonik_trig_gpio}</b> / ECHO <b>${cachedPinmap.ultrasonik_echo_gpio}</b></div>`;
+      }
+
+      renderHardware(cachedPinmap, cachedModes);
+    });
+
+    // cache modes for hardware list display
+    Object.keys(modePaths).forEach(name => {
+      db.ref(modePaths[name]).on("value", snap => {
+        cachedModes[name] = !!snap.val();
+        renderHardware(cachedPinmap, cachedModes);
+      });
+    });
+
+    // Init
     bumpActive();
   </script>
 </body>
