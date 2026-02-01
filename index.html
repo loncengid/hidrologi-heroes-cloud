@@ -1,575 +1,399 @@
-<!DOCTYPE html>
-<html lang="id">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Hidrologi Heroes Dashboard - NISEEF v12</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hirdologi Heroes : Lacak si Tirta, Air Ajaib</title>
   <style>
-    :root{
-      --bgcard: rgba(0,0,0,.75);
-      --hi:#00d4ff;
-      --txt:#fff;
-      --mut: rgba(255,255,255,.85);
-      --bd: rgba(255,255,255,.25);
-      --panel: rgba(0,0,0,.55);
-      --ok:#2ecc71; --bad:#ff4757; --warn:#ffa502;
-    }
-    body{
-      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin:0; color:var(--txt);
-      background:url('https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/background%20plmth.png') no-repeat center center fixed;
-      background-size:cover;
-    }
-    .container{ min-height:100vh; padding:18px; display:flex; flex-direction:column; align-items:center; gap:14px; }
-    .card{
-      width:min(720px, 96vw);
-      background:var(--bgcard);
-      backdrop-filter: blur(15px);
-      border-radius:22px;
-      border:2px solid var(--hi);
-      padding:16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.6);
-      display:none;
-    }
-    .card.active{ display:block; animation: up .25s ease-out; }
-    @keyframes up{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform:none;} }
-
-    h1,h2,h3{ margin:0 0 10px 0; font-weight:1000; text-transform:uppercase; text-shadow:3px 3px 6px rgba(0,0,0,.8); }
-    .topbar{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
-    .sub{ font-size:12px; color:var(--mut); font-weight:900; line-height:1.3; }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius:999px;
-      background: rgba(0,0,0,.45);
-      border:1px solid var(--bd);
-      font-weight:1000; font-size:12px;
-      white-space:nowrap;
-    }
-    .dot{ width:10px; height:10px; border-radius:50%; background:var(--warn); box-shadow:0 0 0 3px rgba(255,255,255,.08); }
-    .dot.ok{ background:var(--ok); }
-    .dot.bad{ background:var(--bad); }
-
-    .status{
-      background: var(--panel);
-      border:1px solid var(--bd);
-      border-radius:16px;
-      padding:12px;
-      margin: 10px 0 14px 0;
-      font-weight:900;
-      line-height:1.6;
-    }
-    .row{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
-    .k{ color:var(--mut); font-weight:900; }
-    .v{ text-align:right; font-weight:1000; }
-
-    .btn{
-      width:100%;
-      padding:16px;
-      margin:8px 0;
-      border:none;
-      border-radius:16px;
-      font-size:16px;
-      font-weight:1000;
-      cursor:pointer;
-      text-transform:uppercase;
-      letter-spacing:.8px;
-      transition: transform .06s ease, opacity .2s ease, filter .2s ease;
-      position: relative;
-    }
-    .btn:active{ transform: scale(.99); }
-    .btn[disabled]{ opacity:.55; cursor:not-allowed; filter: grayscale(.35); }
-
-    /* ACTIVE PER-TOGGLE */
-    .btn.active{
-      outline:3px solid rgba(255,255,255,.9);
-      box-shadow:0 0 0 4px rgba(0, 212, 255, .25);
-    }
-    .btn.active::after{
-      content:"ON";
-      position:absolute;
-      top:10px; right:12px;
-      font-size:11px;
-      padding:4px 10px;
-      border-radius:999px;
-      background: rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.35);
-    }
-
-    .nav{ display:flex; gap:10px; margin-top:12px; }
-    .nav button{
-      flex:1;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid var(--bd);
-      background: rgba(0,0,0,.55);
-      color: var(--txt);
-      font-weight:1000;
-      cursor:pointer;
-    }
-    .nav .home{ background:#ff1744; border:none; }
-    .nav button[disabled]{ opacity:.55; cursor:not-allowed; }
-
-    .panel{
-      background: rgba(0,0,0,.35);
-      border:1px solid var(--bd);
-      border-radius:16px;
-      padding:12px;
-      margin-top:12px;
-    }
-    .mini{ font-size:12px; color:var(--mut); font-weight:800; margin-top:8px; line-height:1.4; }
-    code{ color:#c7f6ff; font-weight:900; }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.25);
-      background: rgba(0,0,0,.35);
-      font-weight:1000;
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .b-on{ color: var(--ok); }
-    .b-off{ color: var(--bad); }
-    .b-hold{ color: var(--warn); }
-
-    .hw-row{
-      display:flex;
-      justify-content:space-between;
-      padding:8px 0;
-      border-bottom:1px dashed rgba(255,255,255,.18);
-      font-weight:900;
-    }
-    .hw-row:last-child{ border-bottom:none; }
+    :root{--bg:#0b1220;--card:#111b33;--line:#22345f;--btn:#16244a;--btnOn:#2c5cff;--txt:#e8eefc;}
+    body{font-family:system-ui,Segoe UI,Arial;margin:16px;background:var(--bg);color:var(--txt)}
+    h1{font-size:18px;margin:0 0 12px 0}
+    .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tab{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0e1833;color:var(--txt);font-weight:800}
+    .tab.active{background:var(--btnOn);border-color:var(--btnOn)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{flex:1;min-width:140px;padding:12px;border-radius:12px;border:1px solid #2c4278;background:var(--btn);color:var(--txt);font-weight:800}
+    .btn.on{background:var(--btnOn);border-color:var(--btnOn)}
+    .small{opacity:.9;font-size:13px}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2c4278;background:#0e1833;color:var(--txt);box-sizing:border-box}
+    textarea{min-height:82px}
+    .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .kv>div{background:#0e1833;border:1px solid var(--line);border-radius:10px;padding:10px}
+    .hr{height:1px;background:var(--line);margin:12px 0}
+    .badge{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#0e1833;font-size:12px}
+    .hide{display:none}
   </style>
 </head>
-
 <body>
-  <div class="container">
+<h1>Hirdologi Heroes : Lacak si Tirta, Air Ajaib</h1>
 
-    <!-- PAGE 0: HOME -->
-    <div class="card active" id="page-home">
-      <div class="topbar">
-        <div>
-          <h1 style="font-size:22px;">Hidrologi Heroes</h1>
-          <div class="sub" id="fwLine">Firmware: -</div>
-          <div class="sub">UI sinkron: <code>NISEEF v12</code> • Multi-toggle • Presence</div>
-        </div>
+<div class="nav">
+  <button class="tab active" id="t-proyek">Penjelasan Proyek</button>
+  <button class="tab" id="t-siswa">Siswa</button>
+  <button class="tab" id="t-guru">Guru</button>
+  <button class="tab" id="t-diorama">Diorama</button>
+</div>
 
-        <div class="pill" title="Koneksi ke Firebase RTDB">
-          <span class="dot" id="connDot"></span>
-          <span id="connText">CONNECTING</span>
-        </div>
-      </div>
+<div class="card" id="p-proyek">
+  <div class="badge">Materi</div>
+  <h2 style="margin:8px 0;font-size:16px">Penjelasan Proyek</h2>
+  <div class="small">
+    <b>Evaporasi</b> = penguapan air karena panas matahari.<br><br>
+    <b>Kondensasi</b> = pengembunan uap air menjadi awan.<br><br>
+    <b>Presipitasi</b> = turunnya air dari awan (hujan).<br><br>
+    <b>Aliran Air</b> = air hujan mengalir melalui sungai hingga ke laut.<br><br>
+    <b>Banjir</b> = air berlebih dan tidak tertampung/terkelola.<br><br>
+    <b>PLTMH (Mikrohidro)</b> = aliran air menghasilkan listrik.
+  </div>
+</div>
 
-      <div class="status">
-        <div class="row"><div class="k">Pengunjung Online</div><div class="v" id="ui-viewers">-</div></div>
-        <hr style="opacity:.2">
-        <div class="row"><div class="k">Level Air</div><div class="v"><span id="m-persen">-</span>%</div></div>
-        <div class="row"><div class="k">Debit Air (Flow)</div><div class="v"><span id="m-flow">-</span> L/min</div></div>
-        <hr style="opacity:.2">
-        <div class="row">
-          <div class="k">Status Sistem</div>
-          <div class="v" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-            <span class="badge" id="badgeLampu">Lampu Desa: -</span>
-            <span class="badge" id="badgePompa2">Pompa 2: -</span>
-          </div>
-        </div>
-        <div class="row"><div class="k">Last Log</div><div class="v" id="m-lastlog">-</div></div>
-      </div>
-
-      <button class="btn" style="background:linear-gradient(45deg,#007bff,#00c6ff); color:#fff;"
-              id="go-diorama">MASUK KONTROL DIORAMA</button>
-
-      <div class="panel">
-        <h3 style="margin:0 0 8px 0; font-size:14px;">Pin & Hardware (Realtime)</h3>
-        <div id="hw-list" class="mini">Loading...</div>
-      </div>
-
-      <div class="mini">
-        Data dipakai UI: <code>/sensor/persen</code>, <code>/debit/flow_lpm</code>, <code>/desa/lampu_aktif</code>, <code>/diorama/mode/*</code>
-      </div>
-
-      <div class="nav">
-        <button disabled>BACK</button>
-        <button class="home" disabled>HOME</button>
-        <button id="next-home">NEXT</button>
-      </div>
+<div class="card hide" id="p-siswa">
+  <div class="badge">Siswa</div>
+  <h2 style="margin:8px 0;font-size:16px">Data Siswa</h2>
+  <div class="row">
+    <div style="flex:1;min-width:220px">
+      <div class="small">Nama</div>
+      <input id="s-nama" placeholder="contoh: Aulia"/>
     </div>
-
-    <!-- PAGE 1: DIORAMA -->
-    <div class="card" id="page-diorama">
-      <div class="topbar">
-        <div>
-          <h2 style="font-size:18px; margin-bottom:4px;">Kontrol Diorama</h2>
-          <div class="sub">Tekan sekali ON, tekan lagi OFF. Bisa ON bareng.</div>
-        </div>
-        <div class="pill">👥 <span id="ui-viewers-2">-</span></div>
-      </div>
-
-      <div class="status">
-        <div class="row"><div class="k">Level Air</div><div class="v"><span id="ui-persen">-</span>%</div></div>
-        <div class="row"><div class="k">Debit Air (Flow)</div><div class="v"><span id="ui-flow">-</span> L/min</div></div>
-        <hr style="opacity:.2">
-        <div class="row">
-          <div class="k">Status</div>
-          <div class="v" style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-            <span class="badge" id="badgeLampu2">Lampu Desa: -</span>
-            <span class="badge" id="badgePompa22">Pompa 2: -</span>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn" style="background:#f44336" id="btn-evap">EVAPORASI</button>
-      <button class="btn" style="background:#ff9800" id="btn-kond">KONDENSASI</button>
-      <button class="btn" style="background:#4caf50" id="btn-pres">PRESIPITASI</button>
-      <button class="btn" style="background:#2196f3" id="btn-banj">BANJIR</button>
-      <button class="btn" style="background:#333" id="btn-off">MATIKAN SEMUA</button>
-
-      <div class="nav">
-        <button id="back-diorama">BACK</button>
-        <button class="home" id="home-diorama">HOME</button>
-        <button id="next-diorama">NEXT</button>
-      </div>
+    <div style="flex:1;min-width:120px">
+      <div class="small">Kelas</div>
+      <input id="s-kelas" placeholder="contoh: 5A"/>
     </div>
+  </div>
+  <div style="height:10px"></div>
+  <button class="btn" id="btn-mulai">Mulai Kuis</button>
+  <div class="hr"></div>
+  <div class="badge">Kuis</div>
+  <div id="quiz-area" class="small">Klik “Mulai Kuis”.</div>
+</div>
 
-    <!-- PAGE 2: INFO -->
-    <div class="card" id="page-info">
-      <div class="topbar">
-        <div>
-          <h2 style="font-size:18px; margin-bottom:4px;">Info & Diagnostik</h2>
-          <div class="sub">Cek versi firmware, pinmap, dan path RTDB</div>
-        </div>
-        <div class="pill">👥 <span id="ui-viewers-3">-</span></div>
-      </div>
+<div class="card hide" id="p-guru">
+  <div class="badge">Guru</div>
+  <h2 style="margin:8px 0;font-size:16px">Panel Guru</h2>
 
-      <div class="status">
-        <div class="row"><div class="k">Firmware</div><div class="v" id="info-fw">-</div></div>
-        <div class="row"><div class="k">Build</div><div class="v" id="info-build">-</div></div>
-        <hr style="opacity:.2">
-        <div class="row"><div class="k">Path Mode</div><div class="v"><code>/diorama/mode/*</code></div></div>
-        <div class="row"><div class="k">Sensor</div><div class="v"><code>/sensor/persen</code></div></div>
-        <div class="row"><div class="k">Debit</div><div class="v"><code>/debit/flow_lpm</code></div></div>
-        <div class="row"><div class="k">Lampu Desa</div><div class="v"><code>/desa/lampu_aktif</code></div></div>
-        <div class="row"><div class="k">Presence</div><div class="v"><code>/presence/*</code></div></div>
-      </div>
-
-      <div class="panel">
-        <h3 style="margin:0 0 8px 0; font-size:14px;">Pin Map dari Firmware</h3>
-        <div id="pinmap-box" class="mini">Loading...</div>
-      </div>
-
-      <div class="nav">
-        <button id="back-info">BACK</button>
-        <button class="home" id="home-info">HOME</button>
-        <button disabled>NEXT</button>
-      </div>
+  <div id="guru-login">
+    <div class="small">Masukkan PIN</div>
+    <div class="row">
+      <div style="flex:1"><input id="g-pin" placeholder="PIN" /></div>
+      <div style="width:140px"><button class="btn" id="btn-guru">Masuk</button></div>
     </div>
-
+    <div class="small" id="g-status" style="margin-top:8px"></div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <div id="guru-panel" class="hide">
+    <div class="row">
+      <button class="btn" id="btn-score">Lihat Score</button>
+      <button class="btn" id="btn-edit">Edit Soal</button>
+      <button class="btn" id="btn-add">Tambahkan Soal</button>
+    </div>
 
-  <script>
-    // ====== Firebase RTDB (v8 compat) ======
-    var config = { databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app/" };
-    firebase.initializeApp(config);
-    var db = firebase.database();
+    <div class="hr"></div>
+    <div class="badge">Score (session)</div>
+    <div id="score-area" class="small">Belum dimuat.</div>
 
-    // ====== Pages ======
-    const pages = ["page-home", "page-diorama", "page-info"];
-    let currentIndex = 0;
+    <div class="hr"></div>
+    <div class="badge">Soal</div>
+    <div id="teacher-quiz-area" class="small">Belum dimuat.</div>
 
-    function showPageByIndex(idx){
-      currentIndex = Math.max(0, Math.min(pages.length - 1, idx));
-      pages.forEach(id => document.getElementById(id).classList.remove("active"));
-      document.getElementById(pages[currentIndex]).classList.add("active");
-      window.scrollTo(0,0);
-      bumpActive();
+    <div class="hr"></div>
+    <div class="badge">Tambah Soal</div>
+    <div class="small">
+      <div class="small">Pertanyaan</div>
+      <textarea id="add-q" placeholder="contoh: Apa yang disebut evaporasi?"></textarea>
+      <div style="height:8px"></div>
+      <div class="small">Jawaban (kata kunci)</div>
+      <input id="add-a" placeholder="contoh: penguapan"/>
+      <div style="height:8px"></div>
+      <button class="btn" id="btn-save-q">Simpan Soal</button>
+      <div class="small" id="add-status" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card hide" id="p-diorama">
+  <div class="badge">NISEEF v12 ONLINE</div>
+  <h2 style="margin:8px 0;font-size:16px">Diorama</h2>
+
+  <div class="row">
+    <button id="A" class="btn">Evaporasi (A)</button>
+    <button id="B" class="btn">Kondensasi (B)</button>
+    <button id="C" class="btn">Presipitasi (C)</button>
+    <button id="D" class="btn">Banjir (D)</button>
+  </div>
+
+  <div style="height:10px"></div>
+  <div class="row">
+    <button id="LD" class="btn">Lampu Desa</button>
+    <button id="P2" class="btn">Pompa2</button>
+    <button id="OFF" class="btn">ALL OFF</button>
+  </div>
+
+  <div style="height:10px"></div>
+  <div class="small">Mode Sistem</div>
+  <select id="mode">
+    <option value="demo">demo</option>
+    <option value="edukasi">edukasi</option>
+    <option value="otomatis" selected>otomatis</option>
+    <option value="maintenance">maintenance</option>
+  </select>
+
+  <div style="height:10px"></div>
+  <div class="small">State (khusus demo/edukasi)</div>
+  <select id="state">
+    <option value="idle">idle</option>
+    <option value="evaporasi">evaporasi</option>
+    <option value="kondensasi">kondensasi</option>
+    <option value="presipitasi">presipitasi</option>
+    <option value="aliran">aliran</option>
+    <option value="banjir">banjir</option>
+  </select>
+
+  <div class="hr"></div>
+  <div class="kv" id="kv"></div>
+  <div class="small" id="net">connecting...</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+  // ===== Config Boss (FIX) =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
+    authDomain: "hidrologi-heroes.firebaseapp.com",
+    databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hidrologi-heroes",
+    storageBucket: "hidrologi-heroes.firebasestorage.app",
+    messagingSenderId: "349578733020",
+    appId: "1:349578733020:web:df27bed634e6bdefd5db19",
+    measurementId: "G-HMVQ476SYS"
+  };
+
+  // ===== Settings =====
+  const DEVICE_ID = "niseef_v12_01";
+  const TEACHER_PIN = "1234"; // demo-only (client-side)
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const PATH_TELEM = `devices/${DEVICE_ID}/telemetry`;
+  const PATH_CMD   = `devices/${DEVICE_ID}/cmd`;
+  const PATH_Q     = `quiz/questions`;
+  const PATH_LAST  = `quiz/lastScore`;
+
+  const $ = (id)=>document.getElementById(id);
+  const escapeHtml = (s)=> (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+
+  // ===== Tabs =====
+  function showTab(active){
+    ["proyek","siswa","guru","diorama"].forEach(k=>{
+      $("t-"+k).classList.toggle("active", k===active);
+      $("p-"+k).classList.toggle("hide", k!==active);
+    });
+  }
+  $("t-proyek").onclick = ()=>showTab("proyek");
+  $("t-siswa").onclick  = ()=>showTab("siswa");
+  $("t-guru").onclick   = ()=>showTab("guru");
+  $("t-diorama").onclick= ()=>showTab("diorama");
+
+  // ===== Diorama telemetry =====
+  function setBtn(id,on){ const b=$(id); if(!b) return; b.classList.toggle("on", !!on); }
+
+  onValue(ref(db, PATH_TELEM), (snap)=>{
+    const t = snap.val();
+    if(!t){ $("net").innerText="telemetry belum ada"; return; }
+    $("net").innerText="online ✅";
+
+    setBtn("A", t.outA); setBtn("B", t.outB); setBtn("C", t.outC); setBtn("D", t.outD);
+    setBtn("LD", t.lampuDesa); setBtn("P2", t.pompa2);
+
+    if(t.mode) $("mode").value = t.mode;
+    if(t.state) $("state").value = t.state;
+
+    $("kv").innerHTML = `
+      <div><b>Flow avg</b><br>${(+t.flowAvg||0).toFixed(2)} L/min</div>
+      <div><b>Flow inst</b><br>${(+t.flowInst||0).toFixed(2)} L/min</div>
+      <div><b>Level</b><br>${(+t.level||0).toFixed(1)} %</div>
+      <div><b>Ultrasonic</b><br>${(+t.ultraCm||0).toFixed(1)} cm</div>
+      <div><b>Mode</b><br>${escapeHtml(t.mode||"")}</div>
+      <div><b>State</b><br>${escapeHtml(t.state||"")}</div>
+      <div><b>Safe</b><br>${t.safeMode ? "ON" : "OFF"} ${t.fault? " | "+escapeHtml(t.fault):""}</div>
+      <div><b>Version</b><br>${escapeHtml(t.version||"")}</div>
+    `;
+  });
+
+  // Command sender (seq++)
+  let seq = 0;
+  async function sendCmd(patch){
+    seq++;
+    await update(ref(db, PATH_CMD), { ...patch, seq });
+  }
+
+  $("A").onclick = ()=>sendCmd({k:"A"});
+  $("B").onclick = ()=>sendCmd({k:"B"});
+  $("C").onclick = ()=>sendCmd({k:"C"});
+  $("D").onclick = ()=>sendCmd({k:"D"});
+  $("LD").onclick= ()=>sendCmd({k:"LD"});
+  $("P2").onclick= ()=>sendCmd({k:"P2"});
+  $("OFF").onclick=()=>sendCmd({k:"ALLOFF"});
+
+  $("mode").onchange = (e)=>sendCmd({mode:e.target.value});
+  $("state").onchange= (e)=>sendCmd({state:e.target.value});
+
+  // ===== Quiz (UI scoring) =====
+  async function loadQuestions(){
+    const snap = await get(ref(db, PATH_Q));
+    const items = snap.val();
+    if(!items) return [];
+    if(Array.isArray(items)) return items.filter(Boolean);
+    return Object.values(items).filter(Boolean);
+  }
+
+  function norm(s){
+    return (s||"").toString().toLowerCase().trim().replace(/\s+/g," ");
+  }
+
+  $("btn-mulai").onclick = async ()=>{
+    const nama = ($("s-nama").value||"").trim();
+    const kelas= ($("s-kelas").value||"").trim();
+    if(!nama || !kelas){
+      $("quiz-area").innerHTML = "Isi <b>Nama</b> dan <b>Kelas</b> dulu ya 🙂";
+      return;
     }
-    function back(){ showPageByIndex(currentIndex - 1); }
-    function next(){ showPageByIndex(currentIndex + 1); }
-    function home(){ showPageByIndex(0); }
-
-    document.getElementById("go-diorama").onclick = () => showPageByIndex(1);
-    document.getElementById("next-home").onclick = () => next();
-    document.getElementById("back-diorama").onclick = () => back();
-    document.getElementById("home-diorama").onclick = () => home();
-    document.getElementById("next-diorama").onclick = () => next();
-    document.getElementById("back-info").onclick = () => back();
-    document.getElementById("home-info").onclick = () => home();
-
-    // ====== Connection indicator ======
-    const connDot = document.getElementById("connDot");
-    const connText = document.getElementById("connText");
-    function setConn(state){
-      connDot.classList.remove("ok","bad");
-      if(state === "ok"){ connDot.classList.add("ok"); connText.textContent = "ONLINE"; }
-      else if(state === "bad"){ connDot.classList.add("bad"); connText.textContent = "OFFLINE"; }
-      else { connText.textContent = "CONNECTING"; }
+    const qs = await loadQuestions();
+    if(!qs.length){
+      $("quiz-area").innerHTML = "Soal masih kosong (guru belum input).";
+      return;
     }
-    setConn("warn");
-
-    // Disable buttons when offline
-    const modeButtons = ["btn-evap","btn-kond","btn-pres","btn-banj","btn-off"].map(id => document.getElementById(id));
-    function setButtonsEnabled(en){ modeButtons.forEach(b => b.disabled = !en); }
-
-    // ====== Presence (Realtime viewers) ======
-    const sessionId = "sess_" + Math.random().toString(16).slice(2);
-    const sessionRef = db.ref("presence/sessions/" + sessionId);
-
-    function bumpActive(){
-      const sec = Math.floor(Date.now() / 1000);
-      db.ref("presence/lastActiveSec").set(sec);
-      sessionRef.set({ ts: sec });
-    }
-
-    // keep-alive (20 detik)
-    setInterval(() => bumpActive(), 20000);
-    // bump on interactions
-    document.body.addEventListener("click", () => bumpActive());
-    document.body.addEventListener("touchstart", () => bumpActive(), { passive:true });
-
-    // onDisconnect remove session
-    db.ref(".info/connected").on("value", snap => {
-      const ok = !!snap.val();
-      if(ok){
-        setConn("ok");
-        setButtonsEnabled(true);
-        sessionRef.onDisconnect().remove();
-        bumpActive();
-      }else{
-        setConn("bad");
-        setButtonsEnabled(false);
-      }
+    let html = `<div class="small">Nama: <b>${escapeHtml(nama)}</b> | Kelas: <b>${escapeHtml(kelas)}</b></div><div style="height:8px"></div>`;
+    qs.forEach((it,idx)=>{
+      html += `<div style="margin-bottom:10px"><b>${idx+1}. ${escapeHtml(it.q||"")}</b><br>
+               <input id="ans-${idx}" placeholder="jawaban..."/></div>`;
     });
+    html += `<button class="btn" id="btn-submit">Kirim Jawaban</button>
+             <div class="small" id="quiz-status" style="margin-top:8px"></div>`;
+    $("quiz-area").innerHTML = html;
 
-    // viewers count
-    db.ref("presence/sessions").on("value", snap => {
-      const obj = snap.val() || {};
-      const count = Object.keys(obj).length;
-      document.getElementById("ui-viewers").innerText = count;
-      document.getElementById("ui-viewers-2").innerText = count;
-      document.getElementById("ui-viewers-3").innerText = count;
-    });
-
-    // ====== Helpers ======
-    function setNum(id, v, d=2){
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(v == null) el.innerText = "-";
-      else el.innerText = Number(v).toFixed(d);
-    }
-    function setInt(id, v){
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(v == null) el.innerText = "-";
-      else el.innerText = Math.round(Number(v));
-    }
-
-    function setBadge(el, label, state){
-      el.classList.remove("b-on","b-off","b-hold");
-      if(state === "ON"){ el.classList.add("b-on"); el.textContent = `${label}: ON`; }
-      else if(state === "OFF"){ el.classList.add("b-off"); el.textContent = `${label}: OFF`; }
-      else { el.classList.add("b-hold"); el.textContent = `${label}: HOLD`; }
-    }
-
-    // ====== Firmware info ======
-    db.ref("system").on("value", snap => {
-      const d = snap.val() || {};
-      const ver = d.version || "-";
-      const bld = d.build || "-";
-      document.getElementById("fwLine").innerText = `Firmware: ${ver} | build ${bld}`;
-      document.getElementById("info-fw").innerText = ver;
-      document.getElementById("info-build").innerText = bld;
-    });
-
-    // ====== Realtime sensor: LEVEL (%) only ======
-    let lastLevelPct = null;
-
-    db.ref("sensor/persen").on("value", snap => {
-      const v = snap.val();
-      lastLevelPct = (v == null) ? null : Number(v);
-      setInt("m-persen", lastLevelPct);
-      setInt("ui-persen", lastLevelPct);
-
-      // Pompa2 state derived from level rules (v12): ON>=80, OFF<=25, else HOLD
-      const b1 = document.getElementById("badgePompa2");
-      const b2 = document.getElementById("badgePompa22");
-      if(lastLevelPct == null){
-        setBadge(b1, "Pompa 2", "HOLD");
-        setBadge(b2, "Pompa 2", "HOLD");
-      }else if(lastLevelPct >= 80){
-        setBadge(b1, "Pompa 2", "ON");
-        setBadge(b2, "Pompa 2", "ON");
-      }else if(lastLevelPct <= 25){
-        setBadge(b1, "Pompa 2", "OFF");
-        setBadge(b2, "Pompa 2", "OFF");
-      }else{
-        setBadge(b1, "Pompa 2", "HOLD");
-        setBadge(b2, "Pompa 2", "HOLD");
-      }
-    });
-
-    // ====== Realtime debit: FLOW only ======
-    db.ref("debit/flow_lpm").on("value", snap => {
-      const v = snap.val();
-      setNum("m-flow", v, 3);
-      setNum("ui-flow", v, 3);
-    });
-
-    // ====== Lampu Desa status ======
-    db.ref("desa/lampu_aktif").on("value", snap => {
-      const on = !!snap.val();
-      const b1 = document.getElementById("badgeLampu");
-      const b2 = document.getElementById("badgeLampu2");
-      setBadge(b1, "Lampu Desa", on ? "ON" : "OFF");
-      setBadge(b2, "Lampu Desa", on ? "ON" : "OFF");
-    });
-
-    // ====== last log time ======
-    db.ref("log/lastTs").on("value", snap => {
-      const ts = snap.val();
-      const el = document.getElementById("m-lastlog");
-      if(!el) return;
-      if(!ts){ el.innerText = "-"; return; }
-      const d = new Date(Number(ts) * 1000);
-      el.innerText = d.toLocaleTimeString("id-ID", { hour12:false });
-    });
-
-    // ====== Multi-toggle mode controls ======
-    const modePaths = {
-      evaporasi: "diorama/mode/evaporasi",
-      kondensasi: "diorama/mode/kondensasi",
-      presipitasi: "diorama/mode/presipitasi",
-      banjir: "diorama/mode/banjir",
-    };
-    const btnMap = {
-      evaporasi: document.getElementById("btn-evap"),
-      kondensasi: document.getElementById("btn-kond"),
-      presipitasi: document.getElementById("btn-pres"),
-      banjir: document.getElementById("btn-banj"),
-    };
-
-    function setBtnState(name, on){
-      const b = btnMap[name];
-      if(!b) return;
-      if(on) b.classList.add("active");
-      else b.classList.remove("active");
-    }
-
-    // Listen each mode boolean
-    Object.entries(modePaths).forEach(([name, p]) => {
-      db.ref(p).on("value", snap => setBtnState(name, !!snap.val()));
-    });
-
-    function toggleOne(name){
-      bumpActive();
-      const p = modePaths[name];
-      db.ref(p).once("value").then(snap => {
-        const cur = !!snap.val();
-        db.ref(p).set(!cur);
+    $("btn-submit").onclick = async ()=>{
+      const answers = qs.map((_,i)=> (document.getElementById(`ans-${i}`).value||""));
+      let score = 0;
+      qs.forEach((it,i)=>{
+        const key = norm(it.a||"");
+        const user= norm(answers[i]);
+        if(key && user.includes(key)) score++;
       });
-    }
+      const total = qs.length;
 
-    document.getElementById("btn-evap").onclick = () => toggleOne("evaporasi");
-    document.getElementById("btn-kond").onclick = () => toggleOne("kondensasi");
-    document.getElementById("btn-pres").onclick = () => toggleOne("presipitasi");
-    document.getElementById("btn-banj").onclick = () => toggleOne("banjir");
-
-    // Matikan semua
-    document.getElementById("btn-off").onclick = () => {
-      bumpActive();
-      Promise.all(Object.values(modePaths).map(p => db.ref(p).set(false)));
-    };
-
-    // ====== Hardware pin map + realtime output status ======
-    const hwList = document.getElementById("hw-list");
-
-    function renderHardware(pinmap, modeState){
-      // modeState: {evaporasi:bool, ...}
-      const rows = [];
-
-      rows.push(`<div class="hw-row"><span>Evaporasi</span><span>${pinmap?.tombolA_evaporasi_gpio ?? 15} • <span class="${modeState.evaporasi?'b-on':'b-off'}">${modeState.evaporasi?'ON':'OFF'}</span></span></div>`);
-      rows.push(`<div class="hw-row"><span>Kondensasi</span><span>${pinmap?.tombolB_kondensasi_gpio ?? 2} • <span class="${modeState.kondensasi?'b-on':'b-off'}">${modeState.kondensasi?'ON':'OFF'}</span></span></div>`);
-      rows.push(`<div class="hw-row"><span>Presipitasi</span><span>${pinmap?.tombolC_presipitasi_gpio ?? 4} • <span class="${modeState.presipitasi?'b-on':'b-off'}">${modeState.presipitasi?'ON':'OFF'}</span></span></div>`);
-      rows.push(`<div class="hw-row"><span>Banjir</span><span>${pinmap?.tombolD_banjir_gpio ?? 16} • <span class="${modeState.banjir?'b-on':'b-off'}">${modeState.banjir?'ON':'OFF'}</span></span></div>`);
-
-      rows.push(`<div class="hw-row"><span>Lampu Desa</span><span>${pinmap?.lampu_desa_gpio ?? 17} • <span id="hwLamp" class="b-hold">-</span></span></div>`);
-      rows.push(`<div class="hw-row"><span>Pompa 2</span><span>${pinmap?.pompa2_gpio ?? 5} • <span id="hwP2" class="b-hold">-</span></span></div>`);
-      rows.push(`<div class="hw-row"><span>YF-S401 (Pulse)</span><span>GPIO ${pinmap?.yf_s401_gpio ?? 25}</span></div>`);
-      rows.push(`<div class="hw-row"><span>Ultrasonik TRIG</span><span>GPIO ${pinmap?.ultrasonik_trig_gpio ?? 32}</span></div>`);
-      rows.push(`<div class="hw-row"><span>Ultrasonik ECHO</span><span>GPIO ${pinmap?.ultrasonik_echo_gpio ?? 33}</span></div>`);
-
-      hwList.innerHTML = rows.join("");
-
-      // update lampu desa badge in list
-      db.ref("desa/lampu_aktif").once("value").then(s=>{
-        const on = !!s.val();
-        const el = document.getElementById("hwLamp");
-        if(el){
-          el.classList.remove("b-on","b-off","b-hold");
-          el.classList.add(on ? "b-on" : "b-off");
-          el.textContent = on ? "ON" : "OFF";
-        }
+      await set(ref(db, PATH_LAST), {
+        name:nama, kelas:kelas, score, total,
+        ts: Date.now()
       });
 
-      // update pompa2 derived in list
-      const p2 = document.getElementById("hwP2");
-      if(p2){
-        let st = "HOLD";
-        if(lastLevelPct != null){
-          if(lastLevelPct >= 80) st = "ON";
-          else if(lastLevelPct <= 25) st = "OFF";
-        }
-        p2.classList.remove("b-on","b-off","b-hold");
-        p2.classList.add(st === "ON" ? "b-on" : st === "OFF" ? "b-off" : "b-hold");
-        p2.textContent = st;
-      }
+      $("quiz-status").innerText = `Score kamu: ${score}/${total}`;
+    };
+  };
+
+  // ===== Guru =====
+  let guruOk = false;
+
+  $("btn-guru").onclick = ()=>{
+    const pin = ($("g-pin").value||"").trim();
+    if(pin !== TEACHER_PIN){
+      $("g-status").innerText = "PIN salah.";
+      return;
     }
+    guruOk = true;
+    $("g-status").innerText = "OK. Panel Guru aktif.";
+    $("guru-login").classList.add("hide");
+    $("guru-panel").classList.remove("hide");
+  };
 
-    // Pinmap box in info page
-    const pinmapBox = document.getElementById("pinmap-box");
+  $("btn-score").onclick = async ()=>{
+    const snap = await get(ref(db, PATH_LAST));
+    const j = snap.val();
+    if(!j){ $("score-area").innerHTML = "Belum ada siswa submit kuis."; return; }
+    $("score-area").innerHTML =
+      `Score terakhir:<br>
+       Nama: <b>${escapeHtml(j.name||"")}</b><br>
+       Kelas: <b>${escapeHtml(j.kelas||"")}</b><br>
+       Score: <b>${j.score||0}/${j.total||0}</b>`;
+  };
 
-    let cachedPinmap = null;
-    let cachedModes = { evaporasi:false, kondensasi:false, presipitasi:false, banjir:false };
+  async function renderTeacherQuestions(){
+    const qs = await loadQuestions();
+    if(!qs.length){ $("teacher-quiz-area").innerHTML = "Soal kosong."; return; }
 
-    db.ref("hardware/pinmap").on("value", snap => {
-      cachedPinmap = snap.val() || null;
-
-      // Info page view
-      if(!cachedPinmap){
-        pinmapBox.innerText = "Belum ada /hardware/pinmap dari firmware.";
-      }else{
-        pinmapBox.innerHTML =
-          `<div>Evaporasi: GPIO <b>${cachedPinmap.tombolA_evaporasi_gpio}</b></div>` +
-          `<div>Kondensasi: GPIO <b>${cachedPinmap.tombolB_kondensasi_gpio}</b></div>` +
-          `<div>Presipitasi: GPIO <b>${cachedPinmap.tombolC_presipitasi_gpio}</b></div>` +
-          `<div>Banjir: GPIO <b>${cachedPinmap.tombolD_banjir_gpio}</b></div>` +
-          `<div>Lampu Desa: GPIO <b>${cachedPinmap.lampu_desa_gpio}</b> (flow >= 2.0 + pulse)</div>` +
-          `<div>Pompa 2: GPIO <b>${cachedPinmap.pompa2_gpio}</b> (ON>=80%, OFF<=25%)</div>` +
-          `<div>YF-S401: GPIO <b>${cachedPinmap.yf_s401_gpio}</b></div>` +
-          `<div>Ultrasonik: TRIG <b>${cachedPinmap.ultrasonik_trig_gpio}</b> / ECHO <b>${cachedPinmap.ultrasonik_echo_gpio}</b></div>`;
-      }
-
-      renderHardware(cachedPinmap, cachedModes);
+    let html = "";
+    qs.forEach((it,idx)=>{
+      html += `<div style="margin-bottom:12px;border:1px solid #22345f;border-radius:12px;padding:10px;background:#0e1833">
+        <div class="small"><b>#${idx+1}</b></div>
+        <div class="small">Pertanyaan</div>
+        <textarea id="q-${idx}">${escapeHtml(it.q||"")}</textarea>
+        <div style="height:6px"></div>
+        <div class="small">Jawaban (kata kunci)</div>
+        <input id="a-${idx}" value="${escapeHtml(it.a||"")}"/>
+        <div style="height:8px"></div>
+        <button class="btn" id="save-${idx}">Simpan Perubahan</button>
+      </div>`;
     });
+    $("teacher-quiz-area").innerHTML = html;
 
-    // cache modes for hardware list display
-    Object.keys(modePaths).forEach(name => {
-      db.ref(modePaths[name]).on("value", snap => {
-        cachedModes[name] = !!snap.val();
-        renderHardware(cachedPinmap, cachedModes);
-      });
+    qs.forEach((_,idx)=>{
+      document.getElementById(`save-${idx}`).onclick = async ()=>{
+        const q = (document.getElementById(`q-${idx}`).value||"").trim();
+        const a = (document.getElementById(`a-${idx}`).value||"").trim();
+        const snap = await get(ref(db, PATH_Q));
+        let raw = snap.val();
+
+        let arr = [];
+        if(Array.isArray(raw)) arr = raw.filter(Boolean);
+        else if(raw) arr = Object.values(raw).filter(Boolean);
+
+        arr[idx] = { q, a };
+        await set(ref(db, PATH_Q), arr);
+        $("teacher-quiz-area").insertAdjacentHTML("afterbegin", `<div class="small">✅ Soal #${idx+1} tersimpan.</div><div style="height:8px"></div>`);
+      };
     });
+  }
 
-    // Init
-    bumpActive();
-  </script>
+  $("btn-edit").onclick = async ()=>{
+    if(!guruOk) return;
+    await renderTeacherQuestions();
+  };
+
+  $("btn-add").onclick = ()=> $("add-q").focus();
+
+  $("btn-save-q").onclick = async ()=>{
+    if(!guruOk) return;
+    const q = ($("add-q").value||"").trim();
+    const a = ($("add-a").value||"").trim();
+    if(!q || !a){ $("add-status").innerText="Pertanyaan & jawaban wajib diisi."; return; }
+
+    const qs = await loadQuestions();
+    qs.push({q,a});
+    await set(ref(db, PATH_Q), qs);
+
+    $("add-q").value=""; $("add-a").value="";
+    $("add-status").innerText="Soal ditambahkan ✅";
+    await renderTeacherQuestions();
+  };
+
+  // Init seed data (first run)
+  (async ()=>{
+    const s = await get(ref(db, PATH_CMD));
+    if(!s.exists()){
+      await set(ref(db, PATH_CMD), { seq:0, mode:"otomatis", state:"idle", k:"" });
+    }
+    const q = await get(ref(db, PATH_Q));
+    if(!q.exists()){
+      await set(ref(db, PATH_Q), [
+        { q:"Apa yang disebut evaporasi?", a:"penguapan" },
+        { q:"Apa yang disebut kondensasi?", a:"pengembunan" },
+        { q:"Apa yang disebut presipitasi?", a:"hujan" },
+        { q:"Apa manfaat PLTMH/mikrohidro?", a:"listrik" }
+      ]);
+    }
+  })();
+</script>
 </body>
 </html>
