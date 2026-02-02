@@ -18,11 +18,18 @@ button.warn{background:#ff9800}
 .badge{display:inline-block;padding:6px 12px;background:#e0f2ff;border-radius:999px;font-size:14px;margin-bottom:12px}
 .small{font-size:13px;opacity:.85}
 input{width:100%;padding:12px;margin-top:6px;margin-bottom:10px;border-radius:12px;border:1px solid #ccc;font-size:16px}
-.choice{margin:8px 0}
 .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kv div{background:#f4fbff;border:1px solid #cfeaff;border-radius:14px;padding:12px}
 .footer{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:10px;display:flex;gap:10px;box-shadow:0 -4px 10px rgba(0,0,0,.1)}
 .footer button{font-size:14px;padding:10px}
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:88px;background:#111;color:#fff;
+  padding:10px 14px;border-radius:999px;
+  font-size:13px;opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.toast.on{opacity:.9}
 </style>
 </head>
 
@@ -33,17 +40,14 @@ input{width:100%;padding:12px;margin-top:6px;margin-bottom:10px;border-radius:12
 </header>
 
 <main id="app"></main>
-
 <div class="footer">
   <button id="btnHome">🏠 Home</button>
 </div>
+<div id="toast" class="toast">OK</div>
 
 <script>
-/* ================== KONFIG RTDB ==================
-   Pakai REST: https://<db>.asia-southeast1.firebasedatabase.app/<path>.json
-   Kalau DB rules kamu public, ini langsung jalan.
-==================================================== */
-const DB_BASE = "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app";
+/* ================== KONFIG RTDB (REST) ================== */
+const DB_BASE  = "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app";
 const DEVICE_ID = "niseef_v12_01";
 
 const PATH_CMD   = `/devices/${DEVICE_ID}/cmd`;
@@ -52,7 +56,7 @@ const PATH_PRES  = `/devices/${DEVICE_ID}/presence/lastActiveMs`;
 
 /* =============== HELPERS REST =============== */
 async function rtdbGet(path){
-  const res = await fetch(`${DB_BASE}${path}.json`, {cache:"no-store"});
+  const res = await fetch(`${DB_BASE}${path}.json`, { cache:"no-store" });
   return await res.json();
 }
 async function rtdbPut(path, obj){
@@ -70,17 +74,46 @@ async function rtdbPatch(path, obj){
   });
 }
 
+/* ================== TOAST ================== */
+let toastT=null;
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("on");
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove("on"),700);
+}
+
 /* ================== ONLINE COUNTER ================== */
 const cid = "c_" + Math.random().toString(36).slice(2);
+let onlineCount = 0;
+
 async function heartbeatOnline(){
-  await rtdbPatch(`/online/${cid}`, {ts: Date.now()});
+  await rtdbPatch(`/online/${cid}`, { ts: Date.now() });
 }
 heartbeatOnline();
 setInterval(heartbeatOnline, 5000);
 
+async function pollOnline(){
+  try{
+    const o = await rtdbGet("/online");
+    const now = Date.now();
+    let n=0;
+    if(o){
+      for(const k in o){
+        if(now - (o[k]?.ts||0) < 15000) n++;
+      }
+    }
+    onlineCount = n;
+    if(page==="home") updateHomeOnline();
+  }catch(e){}
+}
+pollOnline();
+setInterval(pollOnline, 3000);
+
 /* ================== PRESENCE KE DEVICE ================== */
 async function heartbeatPresence(){
-  await rtdbPut(PATH_PRES, Date.now());
+  try{ await rtdbPut(PATH_PRES, Date.now()); }catch(e){}
 }
 heartbeatPresence();
 setInterval(heartbeatPresence, 5000);
@@ -102,7 +135,6 @@ const quiz = [
  {q:"Uap air naik karena...",o:["Panas","Hujan","Es"],a:0},
  {q:"Air penting bagi...",o:["Manusia","Hewan","Semua"],a:2},
 ];
-
 const materi = [
  "Evaporasi: air menguap karena panas matahari.",
  "Kondensasi: uap air berubah menjadi awan.",
@@ -121,64 +153,47 @@ let seq = 0;
 
 async function sendCmd(patch){
   seq++;
-  await rtdbPatch(PATH_CMD, {seq, ts: Date.now(), ...patch});
+  try{
+    await rtdbPatch(PATH_CMD, { seq, ts: Date.now(), ...patch });
+    toast("✅ Terkirim");
+  }catch(e){
+    toast("⚠️ Gagal");
+  }
 }
 
-/* ================== POLL TELEMETRY ================== */
+/* ================== POLL TELEMETRY (TANPA RE-RENDER DIORAMA) ================== */
 async function pollTelem(){
   try{
     telem = await rtdbGet(PATH_TELEM);
-    // refresh UI jika lagi di diorama/home/guru
-    if(page==="diorama" || page==="home" || page==="guru") render();
-  }catch(e){
-    // biarin, jangan bikin UI mati
-  }
+    if(page==="diorama") updateDioramaUI();
+    if(page==="home") updateHomeVersion();
+    if(page==="guru") updateGuruUI();
+  }catch(e){}
 }
 pollTelem();
 setInterval(pollTelem, 1000);
 
-/* ================== ONLINE COUNT ================== */
-let onlineCount = 0;
-async function pollOnline(){
-  try{
-    const o = await rtdbGet("/online");
-    const now = Date.now();
-    let n=0;
-    if(o){
-      Object.keys(o).forEach(k=>{
-        if(now - (o[k]?.ts||0) < 15000) n++;
-      });
-    }
-    onlineCount = n;
-    if(page==="home") render();
-  }catch(e){}
-}
-pollOnline();
-setInterval(pollOnline, 3000);
-
-/* ================== RENDER ================== */
+/* ================== RENDER PAGES ================== */
 function render(){
   const app = document.getElementById("app");
   app.innerHTML = "";
 
   if(page==="home"){
-    const version = telem?.version || "-";
-    const c = document.createElement("div");
-    c.className="card";
-    c.innerHTML = `
-      <div class="badge">👥 Online: <span id="on">${onlineCount}</span></div>
-      <div class="small">Versi perangkat: <b>${version}</b></div>
-      <button id="mBelajar">🎒 BELAJAR</button>
-      <button id="mKuis">📝 KUIS</button>
-      <button id="mDiorama">🎥 DIORAMA</button>
-      <button id="mGuru">👩‍🏫 GURU</button>
+    app.innerHTML = `
+      <div class="card">
+        <div class="badge">👥 Online: <span id="on">${onlineCount}</span></div>
+        <div class="small">Versi perangkat: <b id="ver">-</b></div>
+        <button id="mBelajar">🎒 BELAJAR</button>
+        <button id="mKuis">📝 KUIS</button>
+        <button id="mDiorama">🎥 DIORAMA</button>
+        <button id="mGuru">👩‍🏫 GURU</button>
+      </div>
     `;
-    app.appendChild(c);
-
     document.getElementById("mBelajar").onclick=()=>{ belajarStep=0; page="belajar"; render(); };
     document.getElementById("mKuis").onclick=()=>{ page="data"; render(); };
     document.getElementById("mDiorama").onclick=()=>{ page="diorama"; render(); };
     document.getElementById("mGuru").onclick=()=>{ page="guru"; render(); };
+    updateHomeVersion();
   }
 
   if(page==="belajar"){
@@ -187,7 +202,8 @@ function render(){
         <h3>📘 Belajar Siklus Air</h3>
         <p>${materi[belajarStep] || "Selesai 🎉"}</p>
         <button id="nextBelajar">LANJUT ➡</button>
-      </div>`;
+      </div>
+    `;
     document.getElementById("nextBelajar").onclick=()=>{
       belajarStep++;
       if(belajarStep>=materi.length) page="home";
@@ -203,7 +219,8 @@ function render(){
         <input id="nm" placeholder="Nama" value="${s.name||""}">
         <input id="kl" placeholder="Kelas" value="${s.kelas||""}">
         <button id="btnStartQuiz">Mulai Kuis</button>
-      </div>`;
+      </div>
+    `;
     document.getElementById("btnStartQuiz").onclick=()=>{
       const name = document.getElementById("nm").value.trim();
       const kelas = document.getElementById("kl").value.trim();
@@ -221,7 +238,7 @@ function render(){
     q.o.forEach((opt,i)=>{
       const b=document.createElement("button");
       b.className="secondary";
-      b.textContent = opt;
+      b.textContent=opt;
       b.onclick=()=>{
         if(i===q.a) score++;
         quizIndex++;
@@ -247,24 +264,22 @@ function render(){
         <div class="small">${s?.name||"-"} (${s?.kelas||"-"})</div>
         <h2 style="margin:10px 0">${sc}</h2>
         <button id="done">Selesai</button>
-      </div>`;
+      </div>
+    `;
     document.getElementById("done").onclick=()=>{ page="home"; render(); };
   }
 
   if(page==="diorama"){
-    const percent = (telem?.ultra_percent ?? "-");
-    const flow = (telem?.flow_lpm ?? "-");
-    const A = !!telem?.outA, B = !!telem?.outB, Cc = !!telem?.outC, Dd = !!telem?.outD;
-    const LD = !!telem?.lampuDesa, P2 = !!telem?.pompa2;
-
+    // render sekali -> tombol dipasang sekali
     app.innerHTML = `
       <div class="card">
         <h3>🎥 Diorama (Online)</h3>
+
         <div class="kv">
-          <div><b>Ultrasonic</b><br><span class="small">${percent}%</span></div>
-          <div><b>Flow</b><br><span class="small">${flow} L/menit</span></div>
-          <div><b>Output</b><br><span class="small">A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${Cc?"ON":"OFF"} D:${Dd?"ON":"OFF"}</span></div>
-          <div><b>Tambahan</b><br><span class="small">Lampu Desa:${LD?"ON":"OFF"} Pompa2:${P2?"ON":"OFF"}</span></div>
+          <div><b>Ultrasonic</b><br><span class="small" id="uPct">- %</span></div>
+          <div><b>Flow</b><br><span class="small" id="fLpm">- L/menit</span></div>
+          <div><b>Output</b><br><span class="small" id="outS">A:- B:- C:- D:-</span></div>
+          <div><b>Tambahan</b><br><span class="small" id="addS">LD:- P2:-</span></div>
         </div>
 
         <div class="row">
@@ -273,17 +288,19 @@ function render(){
           <button id="bC">Presipitasi (C)</button>
           <button id="bD">Banjir (D)</button>
         </div>
+
         <div class="row">
           <button id="bOff" class="warn">MATIKAN SEMUA</button>
           <button id="bMode" class="secondary">Ganti Mode</button>
         </div>
+
         <div class="small" style="margin-top:10px">
-          Kalau ESP32 belum dihubungkan, tombol tetap mengirim command ke Firebase.
+          Tombol ini mengirim command ke Firebase. ESP32 akan log ke Serial Monitor.
         </div>
       </div>
     `;
 
-    // ini event handler yang pasti nempel (dibuat setelah DOM ada)
+    // pasang event SEKALI
     document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
     document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
     document.getElementById("bC").onclick=()=>sendCmd({k:"C"});
@@ -293,24 +310,63 @@ function render(){
       const next = (telem?.mode==="manual") ? "auto" : "manual";
       sendCmd({mode: next});
     };
+
+    // update angka/status sekarang juga
+    updateDioramaUI();
   }
 
   if(page==="guru"){
-    const s=getSession();
-    const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
     app.innerHTML = `
       <div class="card">
         <h3>👩‍🏫 Monitoring Guru</h3>
         <div class="small">IP pengunjung dimatikan.</div>
         <div class="kv" style="margin-top:10px">
-          <div><b>Online</b><br><span class="small">${onlineCount} orang</span></div>
-          <div><b>Skor terakhir</b><br><span class="small">${sc}</span></div>
-          <div><b>Versi</b><br><span class="small">${telem?.version || "NISEEF v12"}</span></div>
-          <div><b>Status</b><br><span class="small">${telem?.status || "-"}</span></div>
+          <div><b>Online</b><br><span class="small" id="gOn">${onlineCount} orang</span></div>
+          <div><b>Skor terakhir</b><br><span class="small" id="gSc">-</span></div>
+          <div><b>Versi</b><br><span class="small" id="gVer">-</span></div>
+          <div><b>Status</b><br><span class="small" id="gSt">-</span></div>
         </div>
       </div>
     `;
+    updateGuruUI();
   }
+}
+
+/* ================== UPDATE PARTIAL UI ================== */
+function updateHomeOnline(){
+  const el=document.getElementById("on");
+  if(el) el.textContent = onlineCount;
+}
+function updateHomeVersion(){
+  const el=document.getElementById("ver");
+  if(el) el.textContent = telem?.version || "-";
+}
+function updateDioramaUI(){
+  // kalau elemen belum ada, skip
+  const u=document.getElementById("uPct");
+  if(!u) return;
+
+  const percent = (telem?.ultra_percent ?? "-");
+  const flow = (telem?.flow_lpm ?? "-");
+  const A = !!telem?.outA, B = !!telem?.outB, C = !!telem?.outC, D = !!telem?.outD;
+  const LD = !!telem?.lampuDesa, P2 = !!telem?.pompa2;
+
+  document.getElementById("uPct").textContent = `${percent}%`;
+  document.getElementById("fLpm").textContent = `${flow} L/menit`;
+  document.getElementById("outS").textContent = `A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${C?"ON":"OFF"} D:${D?"ON":"OFF"}`;
+  document.getElementById("addS").textContent = `LD:${LD?"ON":"OFF"} P2:${P2?"ON":"OFF"}`;
+}
+function updateGuruUI(){
+  const s=getSession();
+  const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
+  const elOn=document.getElementById("gOn");
+  if(elOn) elOn.textContent = `${onlineCount} orang`;
+  const elSc=document.getElementById("gSc");
+  if(elSc) elSc.textContent = sc;
+  const elVer=document.getElementById("gVer");
+  if(elVer) elVer.textContent = telem?.version || "NISEEF v12";
+  const elSt=document.getElementById("gSt");
+  if(elSt) elSt.textContent = telem?.status || "-";
 }
 
 /* ================== HOME BUTTON ================== */
