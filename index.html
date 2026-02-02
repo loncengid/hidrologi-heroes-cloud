@@ -6,47 +6,38 @@
 <title>Hidrologi Heroes – Lacak si Tirta</title>
 
 <style>
-body{
-  margin:0;font-family:Arial,system-ui;
-  background:#eaf3ff;color:#123;
-}
-header{
-  background:#4da3ff;color:#fff;
-  padding:16px;text-align:center;
-}
+body{margin:0;font-family:Arial,system-ui;background:#eaf3ff;color:#123}
+header{background:#4da3ff;color:#fff;padding:16px;text-align:center}
 h1{margin:0;font-size:22px}
-main{padding:16px}
+main{padding:16px;padding-bottom:80px}
 .card{
   background:#fff;border-radius:18px;
   padding:18px;margin-bottom:16px;
-  box-shadow:0 6px 14px rgba(0,0,0,.1);
+  box-shadow:0 6px 14px rgba(0,0,0,.1)
 }
 button{
   width:100%;padding:14px;margin-top:10px;
   border:none;border-radius:14px;
   font-size:18px;font-weight:bold;
-  background:#4da3ff;color:#fff;
+  background:#4da3ff;color:#fff;cursor:pointer
 }
 button.secondary{background:#8bc34a}
-button.warn{background:#ff9800}
 input{
-  width:100%;padding:12px;
-  margin-top:6px;margin-bottom:10px;
-  border-radius:12px;border:1px solid #ccc;
-  font-size:16px;
+  width:100%;padding:12px;margin-top:6px;margin-bottom:10px;
+  border-radius:12px;border:1px solid #ccc;font-size:16px
 }
-.choice{margin:6px 0}
+.choice{margin:8px 0}
 .footer{
   position:fixed;bottom:0;left:0;right:0;
   background:#fff;padding:10px;
   display:flex;gap:10px;
+  box-shadow:0 -4px 10px rgba(0,0,0,.1)
 }
 .footer button{font-size:14px;padding:10px}
-.hidden{display:none}
 .badge{
   display:inline-block;padding:6px 12px;
   background:#e0f2ff;border-radius:999px;
-  font-size:14px;margin-bottom:10px;
+  font-size:14px;margin-bottom:12px
 }
 </style>
 </head>
@@ -61,41 +52,26 @@ input{
 <main id="app"></main>
 
 <div class="footer">
-  <button onclick="goHome()">🏠 Home</button>
+  <button id="btnHome">🏠 Home</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+<script>
+/* ================= STATE ================= */
+let page = "home";
+let belajarStep = 0;
+let quizIndex = 0;
+let score = 0;
 
-/* ==== Firebase ==== */
-const firebaseConfig = {
-  apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
-  databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
-const appFB = initializeApp(firebaseConfig);
-const db = getDatabase(appFB);
-
-/* ==== Online Counter ==== */
-const cid="c_"+Math.random().toString(36).slice(2);
-update(ref(db,"online/"+cid),{ts:Date.now()});
-setInterval(()=>update(ref(db,"online/"+cid),{ts:Date.now()}),5000);
-
-/* ==== Session Siswa ==== */
+/* ================= DATA SISWA ================= */
 function getSession(){
-  return JSON.parse(localStorage.getItem("hh_student")||"null");
+  return JSON.parse(localStorage.getItem("hh_student") || "null");
 }
 function saveSession(s){
-  localStorage.setItem("hh_student",JSON.stringify(s));
+  localStorage.setItem("hh_student", JSON.stringify(s));
 }
 
-/* ==== State ==== */
-let page="home";
-let quizIndex=0;
-let score=0;
-
-/* ==== Soal ==== */
-const quiz=[
+/* ================= SOAL KUIS ================= */
+const quiz = [
  {q:"Evaporasi adalah...",o:["Hujan","Penguapan","Awan"],a:1},
  {q:"Hujan disebut...",o:["Evaporasi","Presipitasi","Kondensasi"],a:1},
  {q:"Awan terbentuk karena...",o:["Kondensasi","Hujan","Aliran"],a:0},
@@ -108,117 +84,145 @@ const quiz=[
  {q:"Air penting bagi...",o:["Manusia","Hewan","Semua"],a:2},
 ];
 
-/* ==== Render ==== */
+const materi = [
+ "Evaporasi: air menguap karena panas matahari.",
+ "Kondensasi: uap air berubah menjadi awan.",
+ "Presipitasi: hujan turun ke bumi."
+];
+
+/* ================= RENDER ================= */
 function render(){
-  const a=document.getElementById("app");
-  a.innerHTML="";
+  const app = document.getElementById("app");
+  app.innerHTML = "";
 
   /* HOME */
   if(page==="home"){
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`<div class="badge">👥 Online: <span id="on">0</span></div>
-    <button onclick="page='belajar';render()">🎒 BELAJAR</button>
-    <button onclick="page='data';render()">📝 KUIS</button>
-    <button onclick="page='diorama';render()">🎥 DIORAMA</button>
-    <button onclick="page='guru';render()">👩‍🏫 GURU</button>`;
-    a.appendChild(c);
-
-    onValue(ref(db,"online"),s=>{
-      let n=0,now=Date.now();
-      s.forEach(x=>{if(now-x.val().ts<15000)n++;});
-      document.getElementById("on").innerText=n;
-    });
+    app.innerHTML = `
+      <div class="card">
+        <div class="badge">Aplikasi Edukasi SD</div>
+        <button id="mBelajar">🎒 BELAJAR</button>
+        <button id="mKuis">📝 KUIS</button>
+        <button id="mDiorama">🎥 DIORAMA</button>
+        <button id="mGuru">👩‍🏫 GURU</button>
+      </div>`;
+    document.getElementById("mBelajar").onclick=()=>{
+      belajarStep=0;page="belajar";render();
+    };
+    document.getElementById("mKuis").onclick=()=>{
+      page="data";render();
+    };
+    document.getElementById("mDiorama").onclick=()=>{
+      page="diorama";render();
+    };
+    document.getElementById("mGuru").onclick=()=>{
+      page="guru";render();
+    };
   }
 
   /* BELAJAR */
   if(page==="belajar"){
-    const materi=[
-      "Evaporasi: air menguap karena panas matahari.",
-      "Kondensasi: uap air menjadi awan.",
-      "Presipitasi: hujan turun ke bumi."
-    ];
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`<h3>📘 Belajar Siklus Air</h3><p>${materi[quizIndex]||"Selesai 🎉"}</p>
-    <button onclick="quizIndex++;render()">LANJUT ➡</button>`;
-    a.appendChild(c);
+    app.innerHTML=`
+      <div class="card">
+        <h3>📘 Belajar Siklus Air</h3>
+        <p>${materi[belajarStep] || "Selesai 🎉"}</p>
+        <button id="nextBelajar">LANJUT ➡</button>
+      </div>`;
+    document.getElementById("nextBelajar").onclick=()=>{
+      belajarStep++;
+      if(belajarStep>=materi.length) page="home";
+      render();
+    };
   }
 
   /* DATA SISWA */
   if(page==="data"){
     const s=getSession()||{};
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`
-      <h3>🧒 Data Siswa</h3>
-      <input id="nm" placeholder="Nama" value="${s.name||""}">
-      <input id="kl" placeholder="Kelas" value="${s.kelas||""}">
-      <button onclick="saveData()">Mulai Kuis</button>`;
-    a.appendChild(c);
-    window.saveData=()=>{
+    app.innerHTML=`
+      <div class="card">
+        <h3>🧒 Data Siswa</h3>
+        <input id="nm" placeholder="Nama" value="${s.name||""}">
+        <input id="kl" placeholder="Kelas" value="${s.kelas||""}">
+        <button id="btnStartQuiz">Mulai Kuis</button>
+      </div>`;
+    document.getElementById("btnStartQuiz").onclick=()=>{
+      if(!nm.value||!kl.value){alert("Isi nama dan kelas");return;}
       saveSession({name:nm.value,kelas:kl.value,score:null});
-      quizIndex=0;score=0;page="quiz";render();
+      quizIndex=0;score=0;
+      page="quiz";render();
     };
   }
 
   /* KUIS */
   if(page==="quiz"){
     const q=quiz[quizIndex];
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`<h3>${quizIndex+1}. ${q.q}</h3>`;
-    q.o.forEach((o,i)=>{
-      c.innerHTML+=`<div class="choice">
-      <button class="secondary" onclick="answer(${i})">${o}</button></div>`;
+    app.innerHTML=`
+      <div class="card">
+        <h3>${quizIndex+1}. ${q.q}</h3>
+        ${q.o.map((o,i)=>`
+          <div class="choice">
+            <button class="secondary" data-i="${i}">${o}</button>
+          </div>`).join("")}
+      </div>`;
+    document.querySelectorAll("[data-i]").forEach(b=>{
+      b.onclick=()=>{
+        if(Number(b.dataset.i)===q.a) score++;
+        quizIndex++;
+        if(quizIndex>=quiz.length){
+          const s=getSession();
+          s.score=score+"/"+quiz.length;
+          saveSession(s);
+          page="hasil";
+        }
+        render();
+      };
     });
-    a.appendChild(c);
-    window.answer=(i)=>{
-      if(i===q.a) score++;
-      quizIndex++;
-      if(quizIndex>=quiz.length){
-        const s=getSession();s.score=score+"/"+quiz.length;saveSession(s);
-        page="hasil";
-      }
-      render();
-    };
   }
 
   /* HASIL */
   if(page==="hasil"){
     const s=getSession();
-    a.innerHTML=`<div class="card">
-      <h3>🎉 Hasil Kuis</h3>
-      <p>${s.name} (${s.kelas})</p>
-      <h2>${s.score}</h2>
-      <button onclick="page='home';render()">Selesai</button>
-    </div>`;
+    app.innerHTML=`
+      <div class="card">
+        <h3>🎉 Hasil Kuis</h3>
+        <p>${s.name} (${s.kelas})</p>
+        <h2>${s.score}</h2>
+        <button id="done">Selesai</button>
+      </div>`;
+    document.getElementById("done").onclick=()=>{
+      page="home";render();
+    };
   }
 
   /* DIORAMA */
   if(page==="diorama"){
-    a.innerHTML=`<div class="card">
-      <h3>🎥 Diorama</h3>
-      <button onclick="log('Evaporasi')">Evaporasi</button>
-      <button onclick="log('Kondensasi')">Kondensasi</button>
-      <button onclick="log('Presipitasi')">Presipitasi</button>
-    </div>`;
+    app.innerHTML=`
+      <div class="card">
+        <h3>🎥 Diorama</h3>
+        <button onclick="console.log('[DIORAMA] Evaporasi')">Evaporasi</button>
+        <button onclick="console.log('[DIORAMA] Kondensasi')">Kondensasi</button>
+        <button onclick="console.log('[DIORAMA] Presipitasi')">Presipitasi</button>
+      </div>`;
   }
 
   /* GURU */
   if(page==="guru"){
     const s=getSession();
-    a.innerHTML=`<div class="card">
-      <h3>👩‍🏫 Monitoring Guru</h3>
-      <p>Online saat ini ditampilkan di menu utama.</p>
-      <p>Skor terakhir: <b>${s?.score||"-"}</b></p>
-      <p>Versi: NISEEF v12</p>
-    </div>`;
+    app.innerHTML=`
+      <div class="card">
+        <h3>👩‍🏫 Monitoring Guru</h3>
+        <p>Skor terakhir siswa:</p>
+        <h2>${s?.score||"-"}</h2>
+        <p>Versi: NISEEF v12</p>
+      </div>`;
   }
 }
 
-function goHome(){page="home";render();}
-window.log=(m)=>console.log("[DIORAMA]",m);
+/* HOME BUTTON */
+document.getElementById("btnHome").onclick=()=>{
+  page="home";render();
+};
+
+/* INIT */
 render();
 </script>
 
