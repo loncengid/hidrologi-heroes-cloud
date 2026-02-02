@@ -1,164 +1,392 @@
 <!doctype html>
-<html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hirdologi Heroes : Lacak si Tirta, Air Ajaib</title>
   <style>
-    :root{--bg:#0b1220;--card:#111b33;--line:#22345f;--btn:#16244a;--btnOn:#2c5cff;--txt:#e8eefc;}
-    body{font-family:system-ui,Segoe UI,Arial;margin:16px;background:var(--bg);color:var(--txt)}
-    h1{font-size:18px;margin:0 0 12px 0}
-    .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .tab{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0e1833;color:var(--txt);font-weight:800}
-    .tab.active{background:var(--btnOn);border-color:var(--btnOn)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+    :root{
+      --bg1:#f7fbff;
+      --bg2:#eef6ff;
+      --ink:#1b2b44;
+      --muted:#526782;
+
+      --card:#ffffff;
+      --stroke:#dbe8ff;
+
+      --primary:#2c5cff;
+      --primary2:#00c2ff;
+      --accent:#ffcc00;
+      --good:#1db954;
+      --bad:#ff4d6d;
+
+      --shadow: 0 10px 30px rgba(31, 78, 190, .12);
+      --r16:16px;
+      --r22:22px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      color:var(--ink);
+      background: radial-gradient(1200px 600px at 10% 0%, #dff1ff 0%, transparent 60%),
+                  radial-gradient(1000px 600px at 90% 10%, #ffe9b8 0%, transparent 55%),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+    }
+
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 14px 32px}
+
+    /* Header */
+    .hero{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;
+      background: linear-gradient(135deg, #2c5cff, #00c2ff);
+      border-radius: var(--r22);
+      padding:14px 14px;
+      color:#fff;
+      box-shadow: var(--shadow);
+      position:sticky;top:0;z-index:9;
+      border:1px solid rgba(255,255,255,.22);
+    }
+    .hero-left{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: rgba(255,255,255,.18);
+      display:grid;place-items:center;
+      font-size:22px;
+      border:1px solid rgba(255,255,255,.25);
+    }
+    .title{line-height:1.1}
+    .title b{display:block;font-size:14px;letter-spacing:.2px}
+    .title span{display:block;font-size:12px;opacity:.95}
+    .status-pill{
+      display:flex;gap:8px;align-items:center;
+      background: rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.25);
+      padding:8px 10px;border-radius:999px;
+      font-weight:800;font-size:12px;
+      white-space:nowrap;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:#ffd35c;box-shadow:0 0 0 4px rgba(255,211,92,.22)}
+    .dot.ok{background:#a7ffb7;box-shadow:0 0 0 4px rgba(167,255,183,.18)}
+    .dot.bad{background:#ff9fb2;box-shadow:0 0 0 4px rgba(255,159,178,.18)}
+
+    /* Tabs */
+    .tabs{
+      margin-top:12px;
+      display:flex;gap:10px;flex-wrap:wrap;
+    }
+    .tab{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(10px);
+      padding:10px 12px;
+      border-radius:999px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(21,76,185,.10);
+      transition: transform .08s ease, box-shadow .15s ease;
+      user-select:none;
+    }
+    .tab:active{transform: translateY(1px)}
+    .tab.active{
+      background: linear-gradient(135deg, #ffffff, #f2f8ff);
+      border-color: #bcd4ff;
+      box-shadow: 0 10px 22px rgba(21,76,185,.14);
+      outline: 3px solid rgba(44,92,255,.15);
+    }
+
+    /* Layout cards */
+    .grid{display:grid;grid-template-columns: 1fr;gap:14px;margin-top:14px}
+    @media (min-width: 880px){
+      .grid.two{grid-template-columns: 1.1fr .9fr}
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--stroke);
+      border-radius: var(--r22);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{margin:4px 0 8px;font-size:16px}
+    .muted{color:var(--muted);font-size:13px}
+    .badge{
+      display:inline-flex;gap:6px;align-items:center;
+      padding:6px 10px;border-radius:999px;
+      background: #f2f8ff;
+      border:1px solid #d7e7ff;
+      font-weight:900;
+      font-size:12px;
+    }
+
+    /* Buttons */
     .row{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{flex:1;min-width:140px;padding:12px;border-radius:12px;border:1px solid #2c4278;background:var(--btn);color:var(--txt);font-weight:800}
-    .btn.on{background:var(--btnOn);border-color:var(--btnOn)}
-    .small{opacity:.9;font-size:13px}
-    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2c4278;background:#0e1833;color:var(--txt);box-sizing:border-box}
-    textarea{min-height:82px}
-    .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .kv>div{background:#0e1833;border:1px solid var(--line);border-radius:10px;padding:10px}
-    .hr{height:1px;background:var(--line);margin:12px 0}
-    .badge{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#0e1833;font-size:12px}
+    .btn{
+      border:1px solid #cfe0ff;
+      background: #f2f8ff;
+      color:var(--ink);
+      padding:12px 12px;
+      border-radius: 16px;
+      font-weight:1000;
+      cursor:pointer;
+      min-width: 140px;
+      flex:1;
+      box-shadow: 0 8px 16px rgba(21,76,185,.10);
+      transition: transform .08s ease, box-shadow .15s ease;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      background: linear-gradient(135deg, #2c5cff, #00c2ff);
+      color:#fff;border-color: rgba(255,255,255,.35);
+    }
+    .btn.warn{
+      background: linear-gradient(135deg, #ff4d6d, #ff9f3f);
+      color:#fff;border-color: rgba(255,255,255,.35);
+    }
+    .btn.on{
+      outline: 4px solid rgba(44,92,255,.20);
+      border-color:#9bbcff;
+      background: linear-gradient(135deg, #ffffff, #eaf2ff);
+    }
+    .btn.tog.on{
+      background: linear-gradient(135deg, #a7ffb7, #7de8ff);
+      border-color:#a7ffb7;
+      outline: 4px solid rgba(29,185,84,.15);
+    }
+
+    /* Inputs */
+    input, select, textarea{
+      width:100%;
+      border-radius: 14px;
+      border:1px solid #d7e7ff;
+      padding:12px;
+      background:#fbfdff;
+      font-size:14px;
+      outline:none;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:#9bbcff;
+      box-shadow: 0 0 0 4px rgba(44,92,255,.12);
+    }
+    textarea{min-height:88px;resize:vertical}
+
+    /* Divider */
+    .hr{height:1px;background: #edf3ff;margin:12px 0}
+
+    /* Stats */
+    .stats{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (min-width: 880px){
+      .stats{grid-template-columns: 1fr 1fr 1fr 1fr}
+    }
+    .stat{
+      padding:12px;
+      border-radius: 18px;
+      border:1px solid #e3efff;
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+    }
+    .stat b{display:block;font-size:12px;color:var(--muted)}
+    .stat span{display:block;font-size:18px;font-weight:1000;margin-top:3px}
+
     .hide{display:none}
+    .tiny{font-size:12px;color:var(--muted)}
+    .ok{color:var(--good);font-weight:900}
+    .bad{color:var(--bad);font-weight:900}
   </style>
 </head>
+
 <body>
-<h1>Hirdologi Heroes : Lacak si Tirta, Air Ajaib</h1>
+  <div class="wrap">
 
-<div class="nav">
-  <button class="tab active" id="t-proyek">Penjelasan Proyek</button>
-  <button class="tab" id="t-siswa">Siswa</button>
-  <button class="tab" id="t-guru">Guru</button>
-  <button class="tab" id="t-diorama">Diorama</button>
-</div>
-
-<div class="card" id="p-proyek">
-  <div class="badge">Materi</div>
-  <h2 style="margin:8px 0;font-size:16px">Penjelasan Proyek</h2>
-  <div class="small">
-    <b>Evaporasi</b> = penguapan air karena panas matahari.<br><br>
-    <b>Kondensasi</b> = pengembunan uap air menjadi awan.<br><br>
-    <b>Presipitasi</b> = turunnya air dari awan (hujan).<br><br>
-    <b>Aliran Air</b> = air hujan mengalir melalui sungai hingga ke laut.<br><br>
-    <b>Banjir</b> = air berlebih dan tidak tertampung/terkelola.<br><br>
-    <b>PLTMH (Mikrohidro)</b> = aliran air menghasilkan listrik.
-  </div>
-</div>
-
-<div class="card hide" id="p-siswa">
-  <div class="badge">Siswa</div>
-  <h2 style="margin:8px 0;font-size:16px">Data Siswa</h2>
-  <div class="row">
-    <div style="flex:1;min-width:220px">
-      <div class="small">Nama</div>
-      <input id="s-nama" placeholder="contoh: Aulia"/>
-    </div>
-    <div style="flex:1;min-width:120px">
-      <div class="small">Kelas</div>
-      <input id="s-kelas" placeholder="contoh: 5A"/>
-    </div>
-  </div>
-  <div style="height:10px"></div>
-  <button class="btn" id="btn-mulai">Mulai Kuis</button>
-  <div class="hr"></div>
-  <div class="badge">Kuis</div>
-  <div id="quiz-area" class="small">Klik “Mulai Kuis”.</div>
-</div>
-
-<div class="card hide" id="p-guru">
-  <div class="badge">Guru</div>
-  <h2 style="margin:8px 0;font-size:16px">Panel Guru</h2>
-
-  <div id="guru-login">
-    <div class="small">Masukkan PIN</div>
-    <div class="row">
-      <div style="flex:1"><input id="g-pin" placeholder="PIN" /></div>
-      <div style="width:140px"><button class="btn" id="btn-guru">Masuk</button></div>
-    </div>
-    <div class="small" id="g-status" style="margin-top:8px"></div>
-  </div>
-
-  <div id="guru-panel" class="hide">
-    <div class="row">
-      <button class="btn" id="btn-score">Lihat Score</button>
-      <button class="btn" id="btn-edit">Edit Soal</button>
-      <button class="btn" id="btn-add">Tambahkan Soal</button>
+    <!-- HERO HEADER -->
+    <div class="hero">
+      <div class="hero-left">
+        <div class="logo">💧</div>
+        <div class="title">
+          <b>Hirdologi Heroes</b>
+          <span>Lacak si Tirta, Air Ajaib • NISEEF v12 (Online)</span>
+        </div>
+      </div>
+      <div class="status-pill" title="Status koneksi realtime ke ESP32 via RTDB">
+        <span class="dot" id="dot"></span>
+        <span id="netText">connecting…</span>
+      </div>
     </div>
 
-    <div class="hr"></div>
-    <div class="badge">Score (session)</div>
-    <div id="score-area" class="small">Belum dimuat.</div>
-
-    <div class="hr"></div>
-    <div class="badge">Soal</div>
-    <div id="teacher-quiz-area" class="small">Belum dimuat.</div>
-
-    <div class="hr"></div>
-    <div class="badge">Tambah Soal</div>
-    <div class="small">
-      <div class="small">Pertanyaan</div>
-      <textarea id="add-q" placeholder="contoh: Apa yang disebut evaporasi?"></textarea>
-      <div style="height:8px"></div>
-      <div class="small">Jawaban (kata kunci)</div>
-      <input id="add-a" placeholder="contoh: penguapan"/>
-      <div style="height:8px"></div>
-      <button class="btn" id="btn-save-q">Simpan Soal</button>
-      <div class="small" id="add-status" style="margin-top:8px"></div>
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" id="t-proyek">📚 Penjelasan Proyek</div>
+      <div class="tab" id="t-siswa">🧒 Siswa</div>
+      <div class="tab" id="t-guru">🧑‍🏫 Guru</div>
+      <div class="tab" id="t-diorama">🎛️ Diorama</div>
     </div>
-  </div>
-</div>
 
-<div class="card hide" id="p-diorama">
-  <div class="badge">NISEEF v12 ONLINE</div>
-  <h2 style="margin:8px 0;font-size:16px">Diorama</h2>
+    <!-- PANELS -->
+    <div class="grid">
 
-  <div class="row">
-    <button id="A" class="btn">Evaporasi (A)</button>
-    <button id="B" class="btn">Kondensasi (B)</button>
-    <button id="C" class="btn">Presipitasi (C)</button>
-    <button id="D" class="btn">Banjir (D)</button>
-  </div>
+      <!-- PROYEK -->
+      <div class="card" id="p-proyek">
+        <div class="badge">✨ Materi singkat</div>
+        <h2>Penjelasan Proyek</h2>
+        <div class="muted">
+          Kita belajar siklus air + dampaknya + pemanfaatan energi air (PLTMH) dengan diorama yang bisa dikontrol online.
+        </div>
+        <div class="hr"></div>
+        <div class="stats">
+          <div class="stat"><b>☀️ Evaporasi</b><span>Penguapan</span><div class="tiny">Air naik ke atas karena panas.</div></div>
+          <div class="stat"><b>☁️ Kondensasi</b><span>Awan</span><div class="tiny">Uap berubah jadi titik air.</div></div>
+          <div class="stat"><b>🌧️ Presipitasi</b><span>Hujan</span><div class="tiny">Air turun dari awan.</div></div>
+          <div class="stat"><b>⚡ PLTMH</b><span>Listrik</span><div class="tiny">Aliran air jadi energi.</div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="muted">
+          <b>Banjir</b> terjadi saat air berlebih dan tidak tertampung/terkelola. Diorama ini membantu kita melihat prosesnya dengan jelas.
+        </div>
+      </div>
 
-  <div style="height:10px"></div>
-  <div class="row">
-    <button id="LD" class="btn">Lampu Desa</button>
-    <button id="P2" class="btn">Pompa2</button>
-    <button id="OFF" class="btn">ALL OFF</button>
-  </div>
+      <!-- SISWA -->
+      <div class="card hide" id="p-siswa">
+        <div class="badge">🎯 Kuis & skor</div>
+        <h2>Mode Siswa</h2>
 
-  <div style="height:10px"></div>
-  <div class="small">Mode Sistem</div>
-  <select id="mode">
-    <option value="demo">demo</option>
-    <option value="edukasi">edukasi</option>
-    <option value="otomatis" selected>otomatis</option>
-    <option value="maintenance">maintenance</option>
-  </select>
+        <div class="row">
+          <div style="flex:1;min-width:220px">
+            <div class="tiny">Nama</div>
+            <input id="s-nama" placeholder="contoh: Aulia" />
+          </div>
+          <div style="flex:1;min-width:140px">
+            <div class="tiny">Kelas</div>
+            <input id="s-kelas" placeholder="contoh: 5A" />
+          </div>
+        </div>
 
-  <div style="height:10px"></div>
-  <div class="small">State (khusus demo/edukasi)</div>
-  <select id="state">
-    <option value="idle">idle</option>
-    <option value="evaporasi">evaporasi</option>
-    <option value="kondensasi">kondensasi</option>
-    <option value="presipitasi">presipitasi</option>
-    <option value="aliran">aliran</option>
-    <option value="banjir">banjir</option>
-  </select>
+        <div style="height:10px"></div>
+        <button class="btn primary" id="btn-mulai">🚀 Mulai Kuis</button>
 
-  <div class="hr"></div>
-  <div class="kv" id="kv"></div>
-  <div class="small" id="net">connecting...</div>
-</div>
+        <div class="hr"></div>
+        <div id="quiz-area" class="muted">Klik <b>Mulai Kuis</b> untuk mengerjakan soal.</div>
+      </div>
+
+      <!-- GURU -->
+      <div class="card hide" id="p-guru">
+        <div class="badge">🔐 Panel Guru</div>
+        <h2>Mode Guru</h2>
+
+        <div id="guru-login">
+          <div class="tiny">Masukkan PIN</div>
+          <div class="row">
+            <div style="flex:1">
+              <input id="g-pin" placeholder="PIN" />
+            </div>
+            <div style="width:160px;flex:0">
+              <button class="btn primary" id="btn-guru">Masuk</button>
+            </div>
+          </div>
+          <div class="tiny" id="g-status" style="margin-top:8px"></div>
+        </div>
+
+        <div id="guru-panel" class="hide">
+          <div class="row">
+            <button class="btn" id="btn-score">📊 Lihat Score</button>
+            <button class="btn" id="btn-edit">📝 Edit Soal</button>
+            <button class="btn" id="btn-add">➕ Tambah Soal</button>
+          </div>
+
+          <div class="hr"></div>
+          <div class="badge">📌 Score terakhir</div>
+          <div id="score-area" class="muted" style="margin-top:8px">Belum dimuat.</div>
+
+          <div class="hr"></div>
+          <div class="badge">🧩 Daftar soal</div>
+          <div id="teacher-quiz-area" class="muted" style="margin-top:8px">Belum dimuat.</div>
+
+          <div class="hr"></div>
+          <div class="badge">➕ Tambah soal</div>
+          <div style="margin-top:8px">
+            <div class="tiny">Pertanyaan</div>
+            <textarea id="add-q" placeholder="contoh: Apa yang disebut evaporasi?"></textarea>
+            <div style="height:8px"></div>
+            <div class="tiny">Jawaban (kata kunci)</div>
+            <input id="add-a" placeholder="contoh: penguapan" />
+            <div style="height:10px"></div>
+            <button class="btn primary" id="btn-save-q">Simpan Soal</button>
+            <div class="tiny" id="add-status" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIORAMA -->
+      <div class="card hide" id="p-diorama">
+        <div class="badge">🌐 Kontrol Diorama (Realtime)</div>
+        <h2>NISEEF v12</h2>
+
+        <div class="muted">Tips: kalau mau bebas toggle manual, pilih mode <b>demo</b>.</div>
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <button id="A" class="btn tog">☀️ Evaporasi (A)</button>
+          <button id="B" class="btn tog">☁️ Kondensasi (B)</button>
+          <button id="C" class="btn tog">🌧️ Presipitasi (C)</button>
+          <button id="D" class="btn tog">🌊 Banjir (D)</button>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="row">
+          <button id="LD" class="btn tog">💡 Lampu Desa</button>
+          <button id="P2" class="btn tog">🚰 Pompa 2</button>
+          <button id="OFF" class="btn warn">🛑 ALL OFF</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="grid two">
+          <div class="card" style="box-shadow:none;border-radius:18px;border:1px solid #e3efff;background:#fbfdff">
+            <div class="tiny">Mode Sistem</div>
+            <select id="mode">
+              <option value="demo">demo</option>
+              <option value="edukasi">edukasi</option>
+              <option value="otomatis" selected>otomatis</option>
+              <option value="maintenance">maintenance</option>
+            </select>
+
+            <div style="height:10px"></div>
+            <div class="tiny">State (khusus demo/edukasi)</div>
+            <select id="state">
+              <option value="idle">idle</option>
+              <option value="evaporasi">evaporasi</option>
+              <option value="kondensasi">kondensasi</option>
+              <option value="presipitasi">presipitasi</option>
+              <option value="aliran">aliran</option>
+              <option value="banjir">banjir</option>
+            </select>
+
+            <div style="height:10px"></div>
+            <div class="tiny" id="safeLine"></div>
+          </div>
+
+          <div class="card" style="box-shadow:none;border-radius:18px;border:1px solid #e3efff;background:#fbfdff">
+            <div class="badge">📡 Monitoring</div>
+            <div style="height:10px"></div>
+            <div class="stats" id="kv"></div>
+            <div style="height:10px"></div>
+            <div class="tiny">Versi: <b id="verLine">-</b></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </div><!-- /wrap -->
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-  // ===== Config Boss (FIX) =====
+  // ===== Config Boss =====
   const firebaseConfig = {
     apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
     authDomain: "hidrologi-heroes.firebaseapp.com",
@@ -172,7 +400,8 @@
 
   // ===== Settings =====
   const DEVICE_ID = "niseef_v12_01";
-  const TEACHER_PIN = "1234"; // demo-only (client-side)
+  const TEACHER_PIN = "1234"; // client-side pin (demo)
+
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
@@ -182,7 +411,14 @@
   const PATH_LAST  = `quiz/lastScore`;
 
   const $ = (id)=>document.getElementById(id);
-  const escapeHtml = (s)=> (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+
+  function escapeHtml(s){
+    return (s||"").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;");
+  }
 
   // ===== Tabs =====
   function showTab(active){
@@ -197,29 +433,187 @@
   $("t-diorama").onclick= ()=>showTab("diorama");
 
   // ===== Diorama telemetry =====
-  function setBtn(id,on){ const b=$(id); if(!b) return; b.classList.toggle("on", !!on); }
+  function setTog(id,on){
+    const b=$(id); if(!b) return;
+    b.classList.toggle("on", !!on);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    // warna ON khusus untuk tombol toggle
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // ON = hijau biru (kids friendly)
+    if (b.classList.contains("on")) b.classList.add("tog","on");
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // final: toggle style
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // apply special class for ON look
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+
+    // simplified: use .tog.on
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // final toggle marker
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // ensure ON class updates
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    // Clean: keep only .on and .tog
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+
+    b.classList.toggle("tog", true);
+    b.classList.toggle("tog", true);
+  }
+
+  function setNet(ok, text){
+    $("netText").textContent = text;
+    const dot = $("dot");
+    dot.classList.remove("ok","bad");
+    dot.classList.add(ok ? "ok":"bad");
+  }
 
   onValue(ref(db, PATH_TELEM), (snap)=>{
     const t = snap.val();
-    if(!t){ $("net").innerText="telemetry belum ada"; return; }
-    $("net").innerText="online ✅";
+    if(!t){
+      setNet(false, "telemetry belum ada");
+      return;
+    }
+    setNet(true, "online ✅");
 
-    setBtn("A", t.outA); setBtn("B", t.outB); setBtn("C", t.outC); setBtn("D", t.outD);
-    setBtn("LD", t.lampuDesa); setBtn("P2", t.pompa2);
+    // Toggles
+    $("A").classList.toggle("on", !!t.outA);
+    $("B").classList.toggle("on", !!t.outB);
+    $("C").classList.toggle("on", !!t.outC);
+    $("D").classList.toggle("on", !!t.outD);
+    $("LD").classList.toggle("on", !!t.lampuDesa);
+    $("P2").classList.toggle("on", !!t.pompa2);
+
+    // On-state color for toggle buttons
+    ["A","B","C","D","LD","P2"].forEach(id=>{
+      const b=$(id); b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      b.classList.toggle("tog", true);
+      // actual style: .btn.tog.on already defined
+    });
 
     if(t.mode) $("mode").value = t.mode;
     if(t.state) $("state").value = t.state;
 
+    const safeTxt = t.safeMode ? `🛡️ SafeMode: <span class="bad">ON</span> ${t.fault? " • "+escapeHtml(t.fault):""}` :
+                                 `🛡️ SafeMode: <span class="ok">OFF</span>`;
+    $("safeLine").innerHTML = safeTxt;
+
+    $("verLine").textContent = (t.version || "-");
+
+    // stats cards
+    const flowAvg = (+t.flowAvg||0).toFixed(2);
+    const flowInst= (+t.flowInst||0).toFixed(2);
+    const lvl     = (+t.level||0).toFixed(1);
+    const cm      = (+t.ultraCm||0).toFixed(1);
+
     $("kv").innerHTML = `
-      <div><b>Flow avg</b><br>${(+t.flowAvg||0).toFixed(2)} L/min</div>
-      <div><b>Flow inst</b><br>${(+t.flowInst||0).toFixed(2)} L/min</div>
-      <div><b>Level</b><br>${(+t.level||0).toFixed(1)} %</div>
-      <div><b>Ultrasonic</b><br>${(+t.ultraCm||0).toFixed(1)} cm</div>
-      <div><b>Mode</b><br>${escapeHtml(t.mode||"")}</div>
-      <div><b>State</b><br>${escapeHtml(t.state||"")}</div>
-      <div><b>Safe</b><br>${t.safeMode ? "ON" : "OFF"} ${t.fault? " | "+escapeHtml(t.fault):""}</div>
-      <div><b>Version</b><br>${escapeHtml(t.version||"")}</div>
+      <div class="stat"><b>🌊 Flow Avg</b><span>${flowAvg}</span><div class="tiny">L/min</div></div>
+      <div class="stat"><b>💨 Flow Inst</b><span>${flowInst}</span><div class="tiny">L/min</div></div>
+      <div class="stat"><b>📏 Ultrasonic</b><span>${cm}</span><div class="tiny">cm</div></div>
+      <div class="stat"><b>🧺 Level</b><span>${lvl}</span><div class="tiny">%</div></div>
     `;
+  }, (e)=>{
+    setNet(false, "offline ❌");
   });
 
   // Command sender (seq++)
@@ -229,16 +623,16 @@
     await update(ref(db, PATH_CMD), { ...patch, seq });
   }
 
-  $("A").onclick = ()=>sendCmd({k:"A"});
-  $("B").onclick = ()=>sendCmd({k:"B"});
-  $("C").onclick = ()=>sendCmd({k:"C"});
-  $("D").onclick = ()=>sendCmd({k:"D"});
-  $("LD").onclick= ()=>sendCmd({k:"LD"});
-  $("P2").onclick= ()=>sendCmd({k:"P2"});
-  $("OFF").onclick=()=>sendCmd({k:"ALLOFF"});
+  $("A").onclick  = ()=>sendCmd({k:"A"});
+  $("B").onclick  = ()=>sendCmd({k:"B"});
+  $("C").onclick  = ()=>sendCmd({k:"C"});
+  $("D").onclick  = ()=>sendCmd({k:"D"});
+  $("LD").onclick = ()=>sendCmd({k:"LD"});
+  $("P2").onclick = ()=>sendCmd({k:"P2"});
+  $("OFF").onclick= ()=>sendCmd({k:"ALLOFF"});
 
-  $("mode").onchange = (e)=>sendCmd({mode:e.target.value});
-  $("state").onchange= (e)=>sendCmd({state:e.target.value});
+  $("mode").onchange  = (e)=>sendCmd({mode:e.target.value});
+  $("state").onchange = (e)=>sendCmd({state:e.target.value});
 
   // ===== Quiz (UI scoring) =====
   async function loadQuestions(){
@@ -248,7 +642,6 @@
     if(Array.isArray(items)) return items.filter(Boolean);
     return Object.values(items).filter(Boolean);
   }
-
   function norm(s){
     return (s||"").toString().toLowerCase().trim().replace(/\s+/g," ");
   }
@@ -257,21 +650,42 @@
     const nama = ($("s-nama").value||"").trim();
     const kelas= ($("s-kelas").value||"").trim();
     if(!nama || !kelas){
-      $("quiz-area").innerHTML = "Isi <b>Nama</b> dan <b>Kelas</b> dulu ya 🙂";
+      $("quiz-area").innerHTML = `⚠️ Isi <b>Nama</b> dan <b>Kelas</b> dulu ya 😊`;
       return;
     }
+
     const qs = await loadQuestions();
     if(!qs.length){
-      $("quiz-area").innerHTML = "Soal masih kosong (guru belum input).";
+      $("quiz-area").innerHTML = "Soal masih kosong. Tunggu guru input ya.";
       return;
     }
-    let html = `<div class="small">Nama: <b>${escapeHtml(nama)}</b> | Kelas: <b>${escapeHtml(kelas)}</b></div><div style="height:8px"></div>`;
+
+    let html = `
+      <div class="badge">🧾 Data Siswa</div>
+      <div style="margin-top:8px" class="muted">
+        Nama: <b>${escapeHtml(nama)}</b> • Kelas: <b>${escapeHtml(kelas)}</b>
+      </div>
+      <div class="hr"></div>
+      <div class="badge">🧠 Pertanyaan</div>
+      <div style="height:8px"></div>
+    `;
+
     qs.forEach((it,idx)=>{
-      html += `<div style="margin-bottom:10px"><b>${idx+1}. ${escapeHtml(it.q||"")}</b><br>
-               <input id="ans-${idx}" placeholder="jawaban..."/></div>`;
+      html += `
+        <div class="card" style="box-shadow:none;border-radius:18px;border:1px solid #e3efff;background:#fbfdff;margin-top:10px">
+          <div class="tiny"><b>${idx+1}.</b> ${escapeHtml(it.q||"")}</div>
+          <div style="height:8px"></div>
+          <input id="ans-${idx}" placeholder="Jawaban kamu..." />
+        </div>
+      `;
     });
-    html += `<button class="btn" id="btn-submit">Kirim Jawaban</button>
-             <div class="small" id="quiz-status" style="margin-top:8px"></div>`;
+
+    html += `
+      <div style="height:10px"></div>
+      <button class="btn primary" id="btn-submit">✅ Kirim Jawaban</button>
+      <div class="tiny" id="quiz-status" style="margin-top:8px"></div>
+    `;
+
     $("quiz-area").innerHTML = html;
 
     $("btn-submit").onclick = async ()=>{
@@ -284,12 +698,12 @@
       });
       const total = qs.length;
 
-      await set(ref(db, PATH_LAST), {
-        name:nama, kelas:kelas, score, total,
-        ts: Date.now()
-      });
+      await set(ref(db, PATH_LAST), { name:nama, kelas:kelas, score, total, ts: Date.now() });
 
-      $("quiz-status").innerText = `Score kamu: ${score}/${total}`;
+      const msg = (score === total)
+        ? `🎉 Keren! Score kamu: <b class="ok">${score}/${total}</b>`
+        : `✨ Score kamu: <b>${score}/${total}</b> • Coba lagi biar full ya!`;
+      $("quiz-status").innerHTML = msg;
     };
   };
 
@@ -299,11 +713,11 @@
   $("btn-guru").onclick = ()=>{
     const pin = ($("g-pin").value||"").trim();
     if(pin !== TEACHER_PIN){
-      $("g-status").innerText = "PIN salah.";
+      $("g-status").innerHTML = `<span class="bad">PIN salah.</span>`;
       return;
     }
     guruOk = true;
-    $("g-status").innerText = "OK. Panel Guru aktif.";
+    $("g-status").innerHTML = `<span class="ok">OK. Panel Guru aktif ✅</span>`;
     $("guru-login").classList.add("hide");
     $("guru-panel").classList.remove("hide");
   };
@@ -311,10 +725,12 @@
   $("btn-score").onclick = async ()=>{
     const snap = await get(ref(db, PATH_LAST));
     const j = snap.val();
-    if(!j){ $("score-area").innerHTML = "Belum ada siswa submit kuis."; return; }
+    if(!j){
+      $("score-area").innerHTML = "Belum ada siswa submit kuis.";
+      return;
+    }
     $("score-area").innerHTML =
-      `Score terakhir:<br>
-       Nama: <b>${escapeHtml(j.name||"")}</b><br>
+      `Nama: <b>${escapeHtml(j.name||"")}</b><br>
        Kelas: <b>${escapeHtml(j.kelas||"")}</b><br>
        Score: <b>${j.score||0}/${j.total||0}</b>`;
   };
@@ -325,16 +741,19 @@
 
     let html = "";
     qs.forEach((it,idx)=>{
-      html += `<div style="margin-bottom:12px;border:1px solid #22345f;border-radius:12px;padding:10px;background:#0e1833">
-        <div class="small"><b>#${idx+1}</b></div>
-        <div class="small">Pertanyaan</div>
-        <textarea id="q-${idx}">${escapeHtml(it.q||"")}</textarea>
-        <div style="height:6px"></div>
-        <div class="small">Jawaban (kata kunci)</div>
-        <input id="a-${idx}" value="${escapeHtml(it.a||"")}"/>
-        <div style="height:8px"></div>
-        <button class="btn" id="save-${idx}">Simpan Perubahan</button>
-      </div>`;
+      html += `
+        <div class="card" style="box-shadow:none;border-radius:18px;border:1px solid #e3efff;background:#fbfdff;margin-top:10px">
+          <div class="badge">Soal #${idx+1}</div>
+          <div style="height:8px"></div>
+          <div class="tiny">Pertanyaan</div>
+          <textarea id="q-${idx}">${escapeHtml(it.q||"")}</textarea>
+          <div style="height:8px"></div>
+          <div class="tiny">Jawaban (kata kunci)</div>
+          <input id="a-${idx}" value="${escapeHtml(it.a||"")}" />
+          <div style="height:10px"></div>
+          <button class="btn primary" id="save-${idx}">Simpan Perubahan</button>
+        </div>
+      `;
     });
     $("teacher-quiz-area").innerHTML = html;
 
@@ -342,16 +761,20 @@
       document.getElementById(`save-${idx}`).onclick = async ()=>{
         const q = (document.getElementById(`q-${idx}`).value||"").trim();
         const a = (document.getElementById(`a-${idx}`).value||"").trim();
+
         const snap = await get(ref(db, PATH_Q));
         let raw = snap.val();
-
         let arr = [];
         if(Array.isArray(raw)) arr = raw.filter(Boolean);
         else if(raw) arr = Object.values(raw).filter(Boolean);
 
         arr[idx] = { q, a };
         await set(ref(db, PATH_Q), arr);
-        $("teacher-quiz-area").insertAdjacentHTML("afterbegin", `<div class="small">✅ Soal #${idx+1} tersimpan.</div><div style="height:8px"></div>`);
+
+        $("teacher-quiz-area").insertAdjacentHTML(
+          "afterbegin",
+          `<div class="badge">✅ Soal #${idx+1} tersimpan</div><div style="height:8px"></div>`
+        );
       };
     });
   }
@@ -367,18 +790,18 @@
     if(!guruOk) return;
     const q = ($("add-q").value||"").trim();
     const a = ($("add-a").value||"").trim();
-    if(!q || !a){ $("add-status").innerText="Pertanyaan & jawaban wajib diisi."; return; }
+    if(!q || !a){ $("add-status").innerHTML = `<span class="bad">Pertanyaan & jawaban wajib diisi.</span>`; return; }
 
     const qs = await loadQuestions();
     qs.push({q,a});
     await set(ref(db, PATH_Q), qs);
 
     $("add-q").value=""; $("add-a").value="";
-    $("add-status").innerText="Soal ditambahkan ✅";
+    $("add-status").innerHTML = `<span class="ok">Soal ditambahkan ✅</span>`;
     await renderTeacherQuestions();
   };
 
-  // Init seed data (first run)
+  // Init seed data
   (async ()=>{
     const s = await get(ref(db, PATH_CMD));
     if(!s.exists()){
@@ -395,5 +818,6 @@
     }
   })();
 </script>
+
 </body>
 </html>
