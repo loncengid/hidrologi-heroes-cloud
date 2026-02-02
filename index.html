@@ -255,7 +255,7 @@
   }
   .toast.on{opacity:.9}
 
-  /* Tirta guide bubble */
+  /* ================= Tirta draggable ================= */
   .guide{
     position:fixed;
     right:14px;
@@ -263,16 +263,11 @@
     display:flex;
     align-items:flex-end;
     gap:10px;
-    z-index:8;
-    pointer-events:none;
+    z-index:20;
+    user-select:none;
+    touch-action:none; /* penting biar drag di HP gak scroll */
   }
-  .guide img{
-    width:64px; height:64px; border-radius:22px;
-    background:#fff;
-    border:1px solid rgba(13,43,69,.12);
-    box-shadow:0 10px 18px rgba(0,0,0,.12);
-    object-fit:cover;
-  }
+  /* bubble bisa diklik untuk hide/show, tapi tidak menghalangi klik konten (kita taruh pointer hanya di elemen) */
   .bubble{
     max-width:220px;
     background:rgba(255,255,255,.92);
@@ -284,6 +279,39 @@
     font-weight:900;
     font-size:12px;
     line-height:1.25;
+    pointer-events:auto;
+    cursor:pointer;
+  }
+  .bubble small{display:block; margin-top:6px; font-weight:800; opacity:.8}
+  .guide img{
+    width:64px; height:64px; border-radius:22px;
+    background:#fff;
+    border:1px solid rgba(13,43,69,.12);
+    box-shadow:0 10px 18px rgba(0,0,0,.12);
+    object-fit:cover;
+    pointer-events:auto;
+    cursor:grab;
+  }
+  .guide.dragging img{cursor:grabbing}
+  .hideBubble .bubble{display:none}
+
+  .floatTools{
+    position:fixed;
+    left:14px;
+    bottom:112px;
+    z-index:20;
+    display:flex;
+    gap:8px;
+  }
+  .miniBtn{
+    border:none;
+    cursor:pointer;
+    border-radius:999px;
+    padding:10px 12px;
+    font-weight:1000;
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(13,43,69,.12);
+    box-shadow:0 10px 18px rgba(0,0,0,.10);
   }
 </style>
 </head>
@@ -319,12 +347,20 @@
 
 <div id="toast" class="toast">OK</div>
 
+<!-- tools kecil -->
+<div class="floatTools">
+  <button class="miniBtn" id="btnResetTirta" title="Kembalikan posisi Tirta">💧 Reset Tirta</button>
+</div>
+
+<!-- Tirta Draggable -->
 <div class="guide" id="guide">
-  <div class="bubble" id="guideText">Hai! Aku Tirta 💧 Klik menu yang kamu mau ya!</div>
+  <div class="bubble" id="guideText" title="Klik untuk sembunyikan/tampilkan chat">
+    Hai! Aku Tirta 💧 Klik menu yang kamu mau ya!
+    <small>(drag aku kalau nutup tombol)</small>
+  </div>
   <img id="tirtaGuide" alt="Tirta Guide">
 </div>
 
-<!-- Backsound (autoplay biasanya diblok browser, jadi kita pakai tombol Play) -->
 <audio id="bgm" preload="auto" loop></audio>
 
 <script>
@@ -344,13 +380,13 @@ document.getElementById("tirtaGuide").src = IMG_TIRTA;
 
 const bgm = document.getElementById("bgm");
 bgm.src = AUDIO_BGM;
-bgm.volume = 0.35; // aman buat SD
+bgm.volume = 0.35;
 
 let musicOn = false;
 async function toggleMusic(){
   try{
     if(!musicOn){
-      await bgm.play(); // butuh gesture user, tombol ini memenuhi
+      await bgm.play();
       musicOn = true;
       document.getElementById("musicLabel").textContent = "Pause";
       toast("🎵 Musik ON");
@@ -365,6 +401,142 @@ async function toggleMusic(){
   }
 }
 document.getElementById("btnMusic").onclick = toggleMusic;
+
+/* ================== Tirta draggable + persist ================== */
+const guide = document.getElementById("guide");
+const bubble = document.getElementById("guideText");
+const tirta = document.getElementById("tirtaGuide");
+const STORAGE_POS = "hh_tirta_pos";
+const STORAGE_BUB = "hh_tirta_bubble_hidden";
+
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+function applySavedTirtaPos(){
+  const raw = localStorage.getItem(STORAGE_POS);
+  if(!raw) return;
+  try{
+    const p = JSON.parse(raw);
+    if(typeof p?.x !== "number" || typeof p?.y !== "number") return;
+    guide.style.left = p.x + "px";
+    guide.style.top  = p.y + "px";
+    guide.style.right = "auto";
+    guide.style.bottom = "auto";
+  }catch(e){}
+}
+function saveTirtaPos(x,y){
+  localStorage.setItem(STORAGE_POS, JSON.stringify({x,y}));
+}
+function resetTirta(){
+  localStorage.removeItem(STORAGE_POS);
+  guide.style.left = "";
+  guide.style.top  = "";
+  guide.style.right = "14px";
+  guide.style.bottom = "112px";
+  guide.style.position = "fixed";
+  toast("💧 Tirta balik ke posisi awal");
+}
+document.getElementById("btnResetTirta").onclick = resetTirta;
+
+function applyBubbleHidden(){
+  const hidden = localStorage.getItem(STORAGE_BUB) === "1";
+  guide.classList.toggle("hideBubble", hidden);
+}
+bubble.onclick = ()=>{
+  const nowHidden = !guide.classList.contains("hideBubble");
+  guide.classList.toggle("hideBubble", nowHidden);
+  localStorage.setItem(STORAGE_BUB, nowHidden ? "1" : "0");
+};
+
+applySavedTirtaPos();
+applyBubbleHidden();
+
+let dragging = false;
+let startX=0, startY=0, baseX=0, baseY=0;
+
+function getGuideXY(){
+  const r = guide.getBoundingClientRect();
+  return {x: r.left, y: r.top, w:r.width, h:r.height};
+}
+
+function onDragStart(clientX, clientY){
+  dragging = true;
+  guide.classList.add("dragging");
+  const g = getGuideXY();
+  startX = clientX;
+  startY = clientY;
+  baseX = g.x;
+  baseY = g.y;
+}
+
+function onDragMove(clientX, clientY){
+  if(!dragging) return;
+  const dx = clientX - startX;
+  const dy = clientY - startY;
+
+  const g = getGuideXY();
+  const w = g.w, h = g.h;
+
+  const maxX = window.innerWidth  - w - 6;
+  const maxY = window.innerHeight - h - 96; // hindari nutup footer
+
+  let nx = clamp(baseX + dx, 6, maxX);
+  let ny = clamp(baseY + dy, 6, maxY);
+
+  guide.style.left = nx + "px";
+  guide.style.top  = ny + "px";
+  guide.style.right = "auto";
+  guide.style.bottom = "auto";
+
+  saveTirtaPos(nx, ny);
+}
+
+function snapToEdge(){
+  if(!localStorage.getItem(STORAGE_POS)) return;
+  const g = getGuideXY();
+  const edge = (g.x + g.w/2 < window.innerWidth/2) ? 6 : (window.innerWidth - g.w - 6);
+  guide.style.left = edge + "px";
+  guide.style.right = "auto";
+  saveTirtaPos(edge, g.y);
+}
+
+function onDragEnd(){
+  if(!dragging) return;
+  dragging = false;
+  guide.classList.remove("dragging");
+  snapToEdge(); // rapihin ke tepi terdekat
+}
+
+/* drag pakai pointer events (support mouse + touch) */
+tirta.addEventListener("pointerdown", (e)=>{
+  e.preventDefault();
+  tirta.setPointerCapture(e.pointerId);
+  onDragStart(e.clientX, e.clientY);
+});
+tirta.addEventListener("pointermove", (e)=>{
+  onDragMove(e.clientX, e.clientY);
+});
+tirta.addEventListener("pointerup", ()=>{
+  onDragEnd();
+});
+tirta.addEventListener("pointercancel", ()=>{
+  onDragEnd();
+});
+window.addEventListener("resize", ()=>{
+  // jaga agar posisi tidak keluar layar saat resize
+  const raw = localStorage.getItem(STORAGE_POS);
+  if(!raw) return;
+  try{
+    const p = JSON.parse(raw);
+    const g = getGuideXY();
+    const maxX = window.innerWidth  - g.w - 6;
+    const maxY = window.innerHeight - g.h - 96;
+    const nx = clamp(p.x, 6, maxX);
+    const ny = clamp(p.y, 6, maxY);
+    guide.style.left = nx + "px";
+    guide.style.top  = ny + "px";
+    saveTirtaPos(nx, ny);
+  }catch(e){}
+});
 
 /* ================== KONFIG RTDB (REST) ================== */
 const DB_BASE  = "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -463,7 +635,8 @@ let page = "home";
 let historyStack = ["home"];
 
 function setGuide(text){
-  document.getElementById("guideText").textContent = text;
+  // jika bubble disembunyikan, tetap update text (nanti kalau ditampilkan sudah update)
+  document.getElementById("guideText").childNodes[0].textContent = text + " ";
 }
 function go(p){
   if(page !== p){
@@ -509,10 +682,7 @@ function imgPres(){
   </svg>`);
 }
 
-/* ================== BANK SOAL (BERGAMBAR) ==================
-   Note: gambar real dipakai untuk Evap/Kond/Banjir/PLTMH.
-         Presipitasi pakai SVG sampai ada asset PNG-nya.
-*/
+/* ================== BANK SOAL (BERGAMBAR) ================== */
 const QUESTION_BANK = [
   { img: IMG_EVAP,  q:"Apa yang disebut evaporasi?", o:["Air berubah jadi es","Air menguap karena panas","Awan turun jadi hujan"], a:1 },
   { img: IMG_KOND,  q:"Kondensasi itu terjadi saat...", o:["Uap air jadi awan","Hujan jadi sungai","Air jadi batu"], a:0 },
@@ -524,8 +694,6 @@ const QUESTION_BANK = [
   { img: IMG_BANJIR, q:"Cara mengurangi risiko banjir adalah...", o:["Buang sampah ke sungai","Menjaga saluran air bersih","Menutup semua pohon"], a:1 },
   { img: IMG_PLTMH, q:"PLTMH itu singkatan dari...", o:["Pembangkit Listrik Tenaga Mikrohidro","Pabrik Lampu Tengah Malam","Perahu Listrik Tenaga Matahari"], a:0 },
   { img: IMG_PLTMH, q:"PLTMH memanfaatkan energi dari...", o:["Angin","Arus air","Pasir"], a:1 },
-
-  // extra bank (biar random tetap aman)
   { img: IMG_EVAP,  q:"Contoh evaporasi di rumah adalah...", o:["Air jemuran kering","Es membeku","Kipas angin berputar"], a:0 },
   { img: IMG_KOND,  q:"Contoh kondensasi yang mudah dilihat adalah...", o:["Embun di gelas dingin","Air mendidih","Batu panas"], a:0 },
   { img: IMG_BANJIR, q:"Saat banjir, tindakan aman adalah...", o:["Main air deras","Naik ke tempat lebih tinggi","Menyentuh kabel listrik"], a:1 },
@@ -553,7 +721,7 @@ function render(){
   app.innerHTML = "";
 
   if(page==="home"){
-    setGuide("Hai! Aku Tirta 💧 Klik menu yang kamu mau ya! (Kalau mau musik, tekan 🎵)");
+    setGuide("Hai! Aku Tirta 💧 Klik menu yang kamu mau ya! (Kalau nutup tombol, drag aku 😄)");
     app.innerHTML = `
       <div class="grid">
         <div class="card hero">
@@ -593,7 +761,7 @@ function render(){
   }
 
   if(page==="kisah"){
-    setGuide("Scan QR ini ya! Nanti kamu bisa lihat kisah Tirta di channel 🙂");
+    setGuide("Scan QR ini ya! Nanti kamu bisa lihat kisah Tirta 🙂");
     app.innerHTML = `
       <div class="card">
         <div class="h2">📺 Kisah Perjalanan si Tirta, Air Ajaib</div>
