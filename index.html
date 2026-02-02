@@ -9,41 +9,24 @@
 body{margin:0;font-family:Arial,system-ui;background:#eaf3ff;color:#123}
 header{background:#4da3ff;color:#fff;padding:16px;text-align:center}
 h1{margin:0;font-size:22px}
-main{padding:16px;padding-bottom:80px}
-.card{
-  background:#fff;border-radius:18px;
-  padding:18px;margin-bottom:16px;
-  box-shadow:0 6px 14px rgba(0,0,0,.1)
-}
-button{
-  width:100%;padding:14px;margin-top:10px;
-  border:none;border-radius:14px;
-  font-size:18px;font-weight:bold;
-  background:#4da3ff;color:#fff;cursor:pointer
-}
+main{padding:16px;padding-bottom:92px}
+.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 6px 14px rgba(0,0,0,.1)}
+button{width:100%;padding:14px;margin-top:10px;border:none;border-radius:14px;font-size:18px;font-weight:bold;background:#4da3ff;color:#fff;cursor:pointer}
 button.secondary{background:#8bc34a}
-input{
-  width:100%;padding:12px;margin-top:6px;margin-bottom:10px;
-  border-radius:12px;border:1px solid #ccc;font-size:16px
-}
+button.warn{background:#ff9800}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.badge{display:inline-block;padding:6px 12px;background:#e0f2ff;border-radius:999px;font-size:14px;margin-bottom:12px}
+.small{font-size:13px;opacity:.85}
+input{width:100%;padding:12px;margin-top:6px;margin-bottom:10px;border-radius:12px;border:1px solid #ccc;font-size:16px}
 .choice{margin:8px 0}
-.footer{
-  position:fixed;bottom:0;left:0;right:0;
-  background:#fff;padding:10px;
-  display:flex;gap:10px;
-  box-shadow:0 -4px 10px rgba(0,0,0,.1)
-}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv div{background:#f4fbff;border:1px solid #cfeaff;border-radius:14px;padding:12px}
+.footer{position:fixed;bottom:0;left:0;right:0;background:#fff;padding:10px;display:flex;gap:10px;box-shadow:0 -4px 10px rgba(0,0,0,.1)}
 .footer button{font-size:14px;padding:10px}
-.badge{
-  display:inline-block;padding:6px 12px;
-  background:#e0f2ff;border-radius:999px;
-  font-size:14px;margin-bottom:12px
-}
 </style>
 </head>
 
 <body>
-
 <header>
   <h1>Hidrologi Heroes</h1>
   <div>Lacak si Tirta, Air Ajaib 💧</div>
@@ -55,22 +38,47 @@ input{
   <button id="btnHome">🏠 Home</button>
 </div>
 
-<script>
-/* ================= STATE ================= */
-let page = "home";
-let belajarStep = 0;
-let quizIndex = 0;
-let score = 0;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-/* ================= DATA SISWA ================= */
-function getSession(){
-  return JSON.parse(localStorage.getItem("hh_student") || "null");
-}
-function saveSession(s){
-  localStorage.setItem("hh_student", JSON.stringify(s));
-}
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
+  authDomain: "hidrologi-heroes.firebaseapp.com",
+  databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hidrologi-heroes",
+};
+const appFB = initializeApp(firebaseConfig);
+const db = getDatabase(appFB);
 
-/* ================= SOAL KUIS ================= */
+/* ================= DEVICE ================= */
+const DEVICE_ID = "niseef_v12_01";
+const PATH_CMD = `devices/${DEVICE_ID}/cmd`;
+const PATH_TELEM = `devices/${DEVICE_ID}/telemetry`;
+const PATH_PRES = `devices/${DEVICE_ID}/presence/lastActiveMs`;
+
+/* ================= ONLINE COUNTER (VISITOR) ================= */
+const cid="c_"+Math.random().toString(36).slice(2);
+const PATH_ONLINE = `online/${cid}`;
+async function heartbeatOnline(){
+  await update(ref(db, PATH_ONLINE), {ts: Date.now()});
+}
+heartbeatOnline();
+setInterval(heartbeatOnline, 5000);
+
+/* ================= PRESENCE TO DEVICE ================= */
+async function heartbeatPresence(){
+  await set(ref(db, PATH_PRES), Date.now());
+}
+heartbeatPresence();
+setInterval(heartbeatPresence, 5000);
+
+/* ================= SESSION SISWA ================= */
+function getSession(){ return JSON.parse(localStorage.getItem("hh_student") || "null"); }
+function saveSession(s){ localStorage.setItem("hh_student", JSON.stringify(s)); }
+
+/* ================= QUIZ ================= */
 const quiz = [
  {q:"Evaporasi adalah...",o:["Hujan","Penguapan","Awan"],a:1},
  {q:"Hujan disebut...",o:["Evaporasi","Presipitasi","Kondensasi"],a:1},
@@ -83,12 +91,32 @@ const quiz = [
  {q:"Uap air naik karena...",o:["Panas","Hujan","Es"],a:0},
  {q:"Air penting bagi...",o:["Manusia","Hewan","Semua"],a:2},
 ];
-
 const materi = [
  "Evaporasi: air menguap karena panas matahari.",
  "Kondensasi: uap air berubah menjadi awan.",
  "Presipitasi: hujan turun ke bumi."
 ];
+
+/* ================= UI STATE ================= */
+let page="home";
+let belajarStep=0;
+let quizIndex=0;
+let score=0;
+
+/* ================= COMMAND BUS ================= */
+let seq = 0;
+async function sendCmd(patch){
+  seq++;
+  const payload = { seq, ts: Date.now(), ...patch };
+  await update(ref(db, PATH_CMD), payload);
+}
+
+/* ================= TELEMETRY SUBSCRIBE ================= */
+let telem = null;
+onValue(ref(db, PATH_TELEM), (snap)=>{
+  telem = snap.val() || null;
+  if(page==="diorama") render(); // refresh diorama panel realtime
+});
 
 /* ================= RENDER ================= */
 function render(){
@@ -97,31 +125,34 @@ function render(){
 
   /* HOME */
   if(page==="home"){
-    app.innerHTML = `
-      <div class="card">
-        <div class="badge">Aplikasi Edukasi SD</div>
-        <button id="mBelajar">🎒 BELAJAR</button>
-        <button id="mKuis">📝 KUIS</button>
-        <button id="mDiorama">🎥 DIORAMA</button>
-        <button id="mGuru">👩‍🏫 GURU</button>
-      </div>`;
-    document.getElementById("mBelajar").onclick=()=>{
-      belajarStep=0;page="belajar";render();
-    };
-    document.getElementById("mKuis").onclick=()=>{
-      page="data";render();
-    };
-    document.getElementById("mDiorama").onclick=()=>{
-      page="diorama";render();
-    };
-    document.getElementById("mGuru").onclick=()=>{
-      page="guru";render();
-    };
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML = `
+      <div class="badge">👥 Online: <span id="on">0</span></div>
+      <div class="small">Versi perangkat: <b>${telem?.version || "-"}</b></div>
+      <button id="mBelajar">🎒 BELAJAR</button>
+      <button id="mKuis">📝 KUIS</button>
+      <button id="mDiorama">🎥 DIORAMA</button>
+      <button id="mGuru">👩‍🏫 GURU</button>
+    `;
+    app.appendChild(c);
+
+    onValue(ref(db,"online"), s=>{
+      let n=0, now=Date.now();
+      s.forEach(x=>{ if(now - (x.val().ts||0) < 15000) n++; });
+      const el=document.getElementById("on");
+      if(el) el.innerText=n;
+    });
+
+    document.getElementById("mBelajar").onclick=()=>{ belajarStep=0; page="belajar"; render(); };
+    document.getElementById("mKuis").onclick=()=>{ page="data"; render(); };
+    document.getElementById("mDiorama").onclick=()=>{ page="diorama"; render(); };
+    document.getElementById("mGuru").onclick=()=>{ page="guru"; render(); };
   }
 
   /* BELAJAR */
   if(page==="belajar"){
-    app.innerHTML=`
+    app.innerHTML = `
       <div class="card">
         <h3>📘 Belajar Siklus Air</h3>
         <p>${materi[belajarStep] || "Selesai 🎉"}</p>
@@ -137,7 +168,7 @@ function render(){
   /* DATA SISWA */
   if(page==="data"){
     const s=getSession()||{};
-    app.innerHTML=`
+    app.innerHTML = `
       <div class="card">
         <h3>🧒 Data Siswa</h3>
         <input id="nm" placeholder="Nama" value="${s.name||""}">
@@ -145,86 +176,118 @@ function render(){
         <button id="btnStartQuiz">Mulai Kuis</button>
       </div>`;
     document.getElementById("btnStartQuiz").onclick=()=>{
-      if(!nm.value||!kl.value){alert("Isi nama dan kelas");return;}
-      saveSession({name:nm.value,kelas:kl.value,score:null});
-      quizIndex=0;score=0;
-      page="quiz";render();
+      const name = document.getElementById("nm").value.trim();
+      const kelas = document.getElementById("kl").value.trim();
+      if(!name || !kelas){ alert("Isi nama dan kelas dulu ya 🙂"); return; }
+      saveSession({name, kelas, score:null});
+      quizIndex=0; score=0; page="quiz"; render();
     };
   }
 
-  /* KUIS */
+  /* QUIZ */
   if(page==="quiz"){
     const q=quiz[quizIndex];
-    app.innerHTML=`
-      <div class="card">
-        <h3>${quizIndex+1}. ${q.q}</h3>
-        ${q.o.map((o,i)=>`
-          <div class="choice">
-            <button class="secondary" data-i="${i}">${o}</button>
-          </div>`).join("")}
-      </div>`;
-    document.querySelectorAll("[data-i]").forEach(b=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML = `<h3>${quizIndex+1}. ${q.q}</h3>`;
+    q.o.forEach((opt,i)=>{
+      const b=document.createElement("button");
+      b.className="secondary";
+      b.textContent = opt;
       b.onclick=()=>{
-        if(Number(b.dataset.i)===q.a) score++;
+        if(i===q.a) score++;
         quizIndex++;
         if(quizIndex>=quiz.length){
-          const s=getSession();
-          s.score=score+"/"+quiz.length;
+          const s=getSession()||{};
+          s.score = {score, total: quiz.length};
           saveSession(s);
           page="hasil";
         }
         render();
       };
+      c.appendChild(b);
     });
+    app.appendChild(c);
   }
 
   /* HASIL */
   if(page==="hasil"){
     const s=getSession();
-    app.innerHTML=`
+    const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
+    app.innerHTML = `
       <div class="card">
         <h3>🎉 Hasil Kuis</h3>
-        <p>${s.name} (${s.kelas})</p>
-        <h2>${s.score}</h2>
+        <div class="small">${s?.name||"-"} (${s?.kelas||"-"})</div>
+        <h2 style="margin:10px 0">${sc}</h2>
         <button id="done">Selesai</button>
       </div>`;
-    document.getElementById("done").onclick=()=>{
-      page="home";render();
-    };
+    document.getElementById("done").onclick=()=>{ page="home"; render(); };
   }
 
   /* DIORAMA */
   if(page==="diorama"){
-    app.innerHTML=`
+    const percent = (telem?.ultra_percent ?? "-");
+    const flow = (telem?.flow_lpm ?? "-");
+    const A = !!telem?.outA, B = !!telem?.outB, C = !!telem?.outC, D = !!telem?.outD;
+    const LD = !!telem?.lampuDesa, P2 = !!telem?.pompa2;
+
+    app.innerHTML = `
       <div class="card">
-        <h3>🎥 Diorama</h3>
-        <button onclick="console.log('[DIORAMA] Evaporasi')">Evaporasi</button>
-        <button onclick="console.log('[DIORAMA] Kondensasi')">Kondensasi</button>
-        <button onclick="console.log('[DIORAMA] Presipitasi')">Presipitasi</button>
-      </div>`;
+        <h3>🎥 Diorama (Online)</h3>
+        <div class="kv">
+          <div><b>Ultrasonic</b><br><span class="small">${percent}%</span></div>
+          <div><b>Flow</b><br><span class="small">${flow} L/menit</span></div>
+          <div><b>Output</b><br><span class="small">A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${C?"ON":"OFF"} D:${D?"ON":"OFF"}</span></div>
+          <div><b>Tambahan</b><br><span class="small">Lampu Desa:${LD?"ON":"OFF"} Pompa2:${P2?"ON":"OFF"}</span></div>
+        </div>
+
+        <div class="row">
+          <button id="bA">Evaporasi (A)</button>
+          <button id="bB">Kondensasi (B)</button>
+          <button id="bC">Presipitasi (C)</button>
+          <button id="bD">Banjir (D)</button>
+        </div>
+        <div class="row">
+          <button id="bOff" class="warn">MATIKAN SEMUA</button>
+          <button id="bMode" class="secondary">Mode: ${telem?.mode || "auto"}</button>
+        </div>
+
+        <div class="small" style="margin-top:10px">Catatan: ESP32 akan mencetak semua aksi ke Serial Monitor.</div>
+      </div>
+    `;
+
+    document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
+    document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
+    document.getElementById("bC").onclick=()=>sendCmd({k:"C"});
+    document.getElementById("bD").onclick=()=>sendCmd({k:"D"});
+    document.getElementById("bOff").onclick=()=>sendCmd({k:"ALLOFF"});
+    document.getElementById("bMode").onclick=()=>{
+      const next = (telem?.mode==="manual") ? "auto" : "manual";
+      sendCmd({mode: next});
+    };
   }
 
-  /* GURU */
+  /* GURU (TANPA IP) */
   if(page==="guru"){
     const s=getSession();
-    app.innerHTML=`
+    const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
+    app.innerHTML = `
       <div class="card">
         <h3>👩‍🏫 Monitoring Guru</h3>
-        <p>Skor terakhir siswa:</p>
-        <h2>${s?.score||"-"}</h2>
-        <p>Versi: NISEEF v12</p>
-      </div>`;
+        <div class="small">Tanpa IP (dimatikan).</div>
+        <div class="kv" style="margin-top:10px">
+          <div><b>Online</b><br><span class="small">lihat di menu utama</span></div>
+          <div><b>Skor terakhir</b><br><span class="small">${sc}</span></div>
+          <div><b>Versi</b><br><span class="small">${telem?.version || "NISEEF v12"}</span></div>
+          <div><b>Status</b><br><span class="small">${telem?.status || "-"}</span></div>
+        </div>
+      </div>
+    `;
   }
 }
 
-/* HOME BUTTON */
-document.getElementById("btnHome").onclick=()=>{
-  page="home";render();
-};
-
-/* INIT */
+document.getElementById("btnHome").onclick=()=>{ page="home"; render(); };
 render();
 </script>
-
 </body>
 </html>
