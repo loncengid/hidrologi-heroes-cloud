@@ -1,782 +1,290 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Hirdologi Heroes : Lacak si Tirta, Air Ajaib</title>
-  <style>
-    :root{
-      --bg:#f6fbff;
-      --ink:#17304d;
-      --muted:#4a6480;
-      --card:#ffffff;
-      --stroke:#d9e8ff;
-      --shadow: 0 10px 30px rgba(26, 88, 200, .12);
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hidrologi Heroes : Lacak si Tirta, Air Ajaib</title>
 
-      --primary:#2c5cff;
-      --cyan:#00c2ff;
-      --good:#1db954;
-      --bad:#ff4d6d;
-      --amber:#ffcc00;
+<style>
+:root{
+  --bg:#0b1220;--card:#111b33;--line:#22345f;
+  --btn:#16244a;--btnOn:#2c5cff;--txt:#e8eefc;
+  --accent:#6cf2c2;
+}
+body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--txt)}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0e1833;border-bottom:1px solid var(--line)}
+header img{width:44px;height:44px}
+h1{font-size:18px;margin:0}
+.small{font-size:13px;opacity:.9}
 
-      --r18:18px;
-      --r22:22px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
-      background:
-        radial-gradient(1000px 600px at 12% 0%, #dff3ff 0%, transparent 60%),
-        radial-gradient(900px 520px at 90% 10%, #ffe9b8 0%, transparent 55%),
-        linear-gradient(180deg, #f6fbff, #edf6ff);
-      color:var(--ink);
-      min-height:100vh;
-    }
+#breadcrumb{padding:8px 16px;font-size:13px;opacity:.85}
+#content{padding:16px}
 
-    .wrap{max-width:1180px;margin:0 auto;padding:14px 14px 28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:16px;text-align:center;
+  cursor:pointer;transition:.2s;
+}
+.card:hover{transform:translateY(-2px);border-color:var(--btnOn)}
+.card .icon{font-size:32px;margin-bottom:8px}
 
-    /* Header */
-    .hero{
-      display:flex;gap:12px;align-items:center;justify-content:space-between;
-      background: linear-gradient(135deg, var(--primary), var(--cyan));
-      border-radius: var(--r22);
-      padding:12px;
-      color:#fff;
-      box-shadow: var(--shadow);
-      border:1px solid rgba(255,255,255,.22);
-      position:sticky;top:0;z-index:10;
-    }
-    .hero-left{display:flex;gap:12px;align-items:center}
-    .hero-title b{display:block;font-size:14px;letter-spacing:.2px}
-    .hero-title span{display:block;font-size:12px;opacity:.95}
+.navbar{
+  position:fixed;left:0;right:0;bottom:0;
+  display:flex;gap:10px;padding:12px;background:#0e1833;border-top:1px solid var(--line)
+}
+.navbar button{
+  flex:1;padding:12px;border-radius:14px;
+  border:1px solid var(--line);background:var(--btn);color:var(--txt);
+  font-weight:700
+}
+.navbar button:disabled{opacity:.4}
 
-    .pill{
-      display:flex;gap:8px;align-items:center;
-      padding:8px 10px;border-radius:999px;
-      background: rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.25);
-      font-weight:900;font-size:12px;
-      white-space:nowrap;
-    }
-    .dot{width:10px;height:10px;border-radius:999px;background:#ffd35c;box-shadow:0 0 0 4px rgba(255,211,92,.22)}
-    .dot.ok{background:#a7ffb7;box-shadow:0 0 0 4px rgba(167,255,183,.18)}
-    .dot.bad{background:#ff9fb2;box-shadow:0 0 0 4px rgba(255,159,178,.18)}
+input,select{
+  width:100%;padding:10px;border-radius:12px;
+  border:1px solid var(--line);background:#0e1833;color:var(--txt)
+}
+.quiz-card{
+  background:#0e1833;border:1px solid var(--line);
+  border-radius:14px;padding:14px;margin-bottom:12px
+}
+.choice{margin:6px 0}
 
-    /* Layout: sidebar + content */
-    .layout{display:grid;grid-template-columns: 280px 1fr;gap:14px;margin-top:14px}
-    @media (max-width: 920px){
-      .layout{grid-template-columns:1fr}
-    }
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;
+  background:#0e1833;border:1px solid var(--line);font-size:12px}
 
-    .card{
-      background: var(--card);
-      border:1px solid var(--stroke);
-      border-radius: var(--r22);
-      box-shadow: var(--shadow);
-      padding:14px;
-    }
-
-    /* Sidebar menu (NISEEF v10 vibe) */
-    .menuTitle{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .menuTitle b{font-size:14px}
-    .mute{color:var(--muted);font-size:13px}
-
-    .mainMenu{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .mBtn{
-      display:flex;align-items:center;justify-content:space-between;
-      gap:10px;
-      padding:12px 12px;border-radius:16px;
-      border:1px solid #cfe0ff;
-      background: linear-gradient(180deg,#ffffff,#f3f8ff);
-      cursor:pointer;
-      font-weight:1000;
-      box-shadow: 0 8px 16px rgba(26, 88, 200, .10);
-      user-select:none;
-      transition: transform .08s ease, box-shadow .15s ease;
-    }
-    .mBtn:active{transform:translateY(1px)}
-    .mBtn.active{
-      outline: 4px solid rgba(44,92,255,.14);
-      border-color:#a9c6ff;
-      background: linear-gradient(135deg,#ffffff,#eaf2ff);
-    }
-    .mBtn small{font-weight:900;color:var(--muted)}
-    .subMenu{margin-top:10px;display:flex;flex-wrap:wrap;gap:10px}
-    .sBtn{
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid #cfe0ff;
-      background:#f3f8ff;
-      cursor:pointer;
-      font-weight:1000;
-      box-shadow: 0 8px 16px rgba(26, 88, 200, .08);
-      user-select:none;
-    }
-    .sBtn.active{
-      background: linear-gradient(135deg, var(--primary), var(--cyan));
-      color:#fff;border-color: rgba(255,255,255,.35);
-    }
-
-    /* Content */
-    h2{margin:0 0 8px;font-size:16px}
-    .badge{
-      display:inline-flex;gap:6px;align-items:center;
-      padding:6px 10px;border-radius:999px;
-      background:#f2f8ff;border:1px solid #d7e7ff;
-      font-weight:1000;font-size:12px;
-    }
-    .hr{height:1px;background:#edf3ff;margin:12px 0}
-
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{
-      border:1px solid #cfe0ff;
-      background:#f2f8ff;
-      color:var(--ink);
-      padding:12px 12px;border-radius:16px;
-      font-weight:1000;cursor:pointer;
-      min-width: 150px;
-      flex:1;
-      box-shadow: 0 8px 16px rgba(26,88,200,.10);
-      transition: transform .08s ease, box-shadow .15s ease;
-    }
-    .btn:active{transform:translateY(1px)}
-    .btn.primary{
-      background: linear-gradient(135deg, var(--primary), var(--cyan));
-      color:#fff;border-color: rgba(255,255,255,.35);
-    }
-    .btn.warn{
-      background: linear-gradient(135deg, #ff4d6d, #ff9f3f);
-      color:#fff;border-color: rgba(255,255,255,.35);
-    }
-    .btn.tog.on{
-      background: linear-gradient(135deg, #a7ffb7, #7de8ff);
-      border-color:#a7ffb7;
-      outline: 4px solid rgba(29,185,84,.15);
-    }
-
-    input, select, textarea{
-      width:100%;
-      border-radius:14px;
-      border:1px solid #d7e7ff;
-      padding:12px;background:#fbfdff;
-      font-size:14px;outline:none;
-    }
-    input:focus, select:focus, textarea:focus{
-      border-color:#9bbcff;
-      box-shadow:0 0 0 4px rgba(44,92,255,.12);
-    }
-
-    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (min-width: 920px){ .stats{grid-template-columns:1fr 1fr 1fr 1fr} }
-    .stat{
-      padding:12px;border-radius:18px;
-      border:1px solid #e3efff;
-      background: linear-gradient(180deg,#ffffff,#f7fbff);
-    }
-    .stat b{display:block;font-size:12px;color:var(--muted)}
-    .stat span{display:block;font-size:18px;font-weight:1000;margin-top:3px}
-
-    .tiny{font-size:12px;color:var(--muted)}
-    .ok{color:var(--good);font-weight:1000}
-    .bad{color:var(--bad);font-weight:1000}
-
-    /* Avatar Tirta */
-    .tirtaWrap{display:flex;gap:10px;align-items:center}
-    .tirtaSvg{width:54px;height:54px}
-    .tirtaName{line-height:1.1}
-    .tirtaName b{display:block;font-size:13px}
-    .tirtaName span{display:block;font-size:12px;opacity:.9}
-  </style>
+.log{background:#000;color:#6cf2c2;padding:10px;border-radius:10px;font-family:monospace}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <div class="hero-left">
-        <div class="tirtaWrap">
-          <!-- Avatar Tirta (SVG) -->
-          <svg class="tirtaSvg" viewBox="0 0 64 64" aria-label="Tirta">
-            <defs>
-              <linearGradient id="g1" x1="0" x2="1">
-                <stop offset="0" stop-color="#2c5cff"/>
-                <stop offset="1" stop-color="#00c2ff"/>
-              </linearGradient>
-            </defs>
-            <path d="M32 4 C32 4, 16 22, 12 32 C8 44, 14 58, 32 60 C50 58, 56 44, 52 32 C48 22, 32 4, 32 4 Z"
-                  fill="url(#g1)" opacity=".95"/>
-            <ellipse cx="24" cy="30" rx="4" ry="5" fill="#fff"/>
-            <ellipse cx="40" cy="30" rx="4" ry="5" fill="#fff"/>
-            <circle cx="25" cy="31" r="2" fill="#17304d"/>
-            <circle cx="41" cy="31" r="2" fill="#17304d"/>
-            <path d="M24 42 C28 46, 36 46, 40 42" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            <circle cx="18" cy="40" r="4" fill="#ffcc00" opacity=".8"/>
-            <circle cx="46" cy="40" r="4" fill="#ffcc00" opacity=".8"/>
-          </svg>
 
-          <div class="hero-title">
-            <b>Hirdologi Heroes</b>
-            <span>Lacak si Tirta, Air Ajaib • NISEEF v12 (Online)</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="pill" title="Status koneksi realtime ke ESP32 via RTDB">
-        <span class="dot" id="dot"></span>
-        <span id="netText">connecting…</span>
-      </div>
-    </div>
-
-    <div class="layout">
-      <!-- SIDEBAR -->
-      <div class="card">
-        <div class="menuTitle">
-          <b>📌 Menu Utama</b>
-          <span class="mute" id="subHint">—</span>
-        </div>
-
-        <div class="mainMenu">
-          <div class="mBtn active" id="m-proyek"><span>📚 Penjelasan Proyek</span><small>Materi</small></div>
-          <div class="mBtn" id="m-siswa"><span>🧒 Siswa</span><small>Kuis</small></div>
-          <div class="mBtn" id="m-guru"><span>🧑‍🏫 Guru</span><small>Panel</small></div>
-          <div class="mBtn" id="m-diorama"><span>🎛️ Diorama</span><small>Control</small></div>
-        </div>
-
-        <div class="hr"></div>
-        <div class="badge">➡️ Sub Menu</div>
-        <div class="subMenu" id="subMenu"></div>
-
-        <div class="hr"></div>
-        <div class="tiny">
-          Tips: suara bisa dimatikan di bawah.
-          <div style="height:8px"></div>
-          <label style="display:flex;gap:10px;align-items:center">
-            <input type="checkbox" id="soundOn" checked style="width:18px;height:18px"/>
-            <span><b>Sound effect</b> aktif</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- CONTENT -->
-      <div class="card" id="content">
-        <!-- Filled by JS -->
-      </div>
-    </div>
+<header>
+  <img src="https://i.imgur.com/7QZQZ6R.png" alt="Tirta"/>
+  <div>
+    <h1>Hidrologi Heroes</h1>
+    <div class="small">Lacak si Tirta, Air Ajaib</div>
   </div>
+</header>
+
+<div id="breadcrumb"></div>
+<div id="content"></div>
+
+<div class="navbar">
+  <button id="btnBack">⬅ Back</button>
+  <button id="btnHome">🏠 Home</button>
+  <button id="btnNext">➡ Next</button>
+</div>
+
+<audio id="sndClick" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import { getDatabase, ref, onValue, get, set, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-  // ===== Firebase Config Boss =====
-  const firebaseConfig = {
-    apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
-    authDomain: "hidrologi-heroes.firebaseapp.com",
-    databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "hidrologi-heroes",
-    storageBucket: "hidrologi-heroes.firebasestorage.app",
-    messagingSenderId: "349578733020",
-    appId: "1:349578733020:web:df27bed634e6bdefd5db19",
-    measurementId: "G-HMVQ476SYS"
-  };
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
+  authDomain: "hidrologi-heroes.firebaseapp.com",
+  databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hidrologi-heroes",
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  const DEVICE_ID = "niseef_v12_01";
-  const TEACHER_PIN = "1234"; // demo (client-side)
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+/* ================= MENU TREE ================= */
+const tree = {
+  home:{title:"Menu Utama",type:"menu",children:["proyek","siswa","guru","diorama"]},
 
-  const PATH_TELEM = `devices/${DEVICE_ID}/telemetry`;
-  const PATH_CMD   = `devices/${DEVICE_ID}/cmd`;
-  const PATH_LAST  = `quiz/lastScore`;
+  proyek:{title:"Penjelasan Proyek",type:"menu",parent:"home",children:["materi"]},
+  materi:{title:"Materi Dasar",type:"menu",parent:"proyek",children:["evap","kond","pres"]},
+  evap:{title:"Evaporasi",type:"page",parent:"materi",content:"Evaporasi adalah proses perubahan air menjadi uap air karena panas matahari."},
+  kond:{title:"Kondensasi",type:"page",parent:"materi",content:"Kondensasi adalah proses perubahan uap air menjadi titik-titik air di awan."},
+  pres:{title:"Presipitasi",type:"page",parent:"materi",content:"Presipitasi adalah peristiwa turunnya hujan ke permukaan bumi."},
 
-  const $ = (id)=>document.getElementById(id);
-  const escapeHtml = (s)=> (s||"").toString()
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  siswa:{title:"Siswa",type:"menu",parent:"home",children:["data","quiz","hasil"]},
+  data:{title:"Isi Data Siswa",type:"page",parent:"siswa"},
+  quiz:{title:"Kuis",type:"page",parent:"siswa"},
+  hasil:{title:"Hasil Kuis",type:"page",parent:"siswa"},
 
-  // ===== Simple Sound (WebAudio) =====
-  let audioCtx = null;
-  function beep(freq=440, ms=70, type="sine", gain=0.08){
-    if(!$("soundOn").checked) return;
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type;
-    o.frequency.value = freq;
-    g.gain.value = gain;
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start();
-    setTimeout(()=>{ o.stop(); }, ms);
-  }
-  const sClick = ()=>beep(520,60,"triangle",0.06);
-  const sGood  = ()=>{ beep(740,70,"sine",0.08); setTimeout(()=>beep(980,90,"sine",0.08),80); };
-  const sBad   = ()=>{ beep(180,120,"sawtooth",0.06); };
+  guru:{title:"Guru",type:"menu",parent:"home",children:["monitor"]},
+  monitor:{title:"Monitoring Guru",type:"page",parent:"guru"},
 
-  // ===== Menu Model (Main -> Sub) =====
-  const MENU = {
-    proyek: [
-      {key:"materi", label:"✨ Materi"},
-      {key:"siklus",  label:"💧 Siklus Air"},
-      {key:"banjir",  label:"🌊 Banjir"},
-      {key:"pltmh",   label:"⚡ PLTMH"}
-    ],
-    siswa: [
-      {key:"profil", label:"🧾 Isi Data"},
-      {key:"kuis",   label:"🎯 Kuis"},
-      {key:"hasil",  label:"🏅 Hasil"}
-    ],
-    guru: [
-      {key:"login",  label:"🔐 Login"},
-      {key:"score",  label:"📊 Score Terakhir"}
-    ],
-    diorama: [
-      {key:"kontrol", label:"🎛️ Kontrol"},
-      {key:"monitor", label:"📡 Monitoring"}
-    ]
-  };
+  diorama:{title:"Diorama",type:"page",parent:"home"},
+};
 
-  let activeMain = "proyek";
-  let activeSub  = "materi";
+/* ================= STATE ================= */
+let current="home";
+let history=[];
 
-  function setNet(ok, text){
-    $("netText").textContent = text;
-    const dot = $("dot");
-    dot.classList.remove("ok","bad");
-    dot.classList.add(ok ? "ok" : "bad");
-  }
+/* ================= SESSION SISWA ================= */
+function getStudent(){
+  return JSON.parse(localStorage.getItem("hh_student")||"null");
+}
+function setStudent(d){
+  localStorage.setItem("hh_student",JSON.stringify(d));
+}
 
-  function setMain(mainKey){
-    activeMain = mainKey;
-    activeSub = MENU[mainKey][0].key;
+/* ================= ONLINE ================= */
+const cid="c_"+Math.random().toString(36).slice(2);
+update(ref(db,"online/"+cid),{ts:Date.now()});
+setInterval(()=>update(ref(db,"online/"+cid),{ts:Date.now()}),5000);
 
-    ["proyek","siswa","guru","diorama"].forEach(k=>{
-      $("m-"+k).classList.toggle("active", k===mainKey);
-    });
+/* ================= RENDER ================= */
+function render(){
+  const n=tree[current];
+  document.getElementById("breadcrumb").innerText=breadcrumb(current);
 
-    $("subHint").textContent = "pilih sub menu…";
-    renderSubMenu();
-    renderContent();
-  }
+  const c=document.getElementById("content");
+  c.innerHTML="";
 
-  function setSub(subKey){
-    activeSub = subKey;
-    renderSubMenu();
-    renderContent();
-  }
-
-  function renderSubMenu(){
-    const items = MENU[activeMain];
-    $("subMenu").innerHTML = items.map(it=>{
-      const on = (it.key===activeSub) ? "active":"";
-      return `<div class="sBtn ${on}" data-sub="${it.key}">${it.label}</div>`;
-    }).join("");
-    $("subMenu").querySelectorAll(".sBtn").forEach(b=>{
-      b.onclick = ()=>{ sClick(); setSub(b.dataset.sub); };
-    });
-  }
-
-  // ===== RTDB cmd sender =====
-  let seq = 0;
-  async function sendCmd(patch){
-    seq++;
-    await update(ref(db, PATH_CMD), { ...patch, seq });
-  }
-
-  // ===== QUIZ: 10 questions, 3 options =====
-  const QUIZ = [
-    { q:"Apa yang disebut evaporasi?", choices:["Penguapan air karena panas","Pembekuan air jadi es","Air meresap ke tanah"], correct:0 },
-    { q:"Apa yang disebut kondensasi?", choices:["Uap air menjadi titik air (awan)","Air berubah jadi garam","Air mengalir ke laut"], correct:0 },
-    { q:"Presipitasi adalah…", choices:["Turunnya hujan/salju dari awan","Air menguap ke langit","Air tersimpan di tanah"], correct:0 },
-    { q:"Mengapa awan bisa terbentuk?", choices:["Uap air naik lalu mendingin","Karena air menjadi batu","Karena angin berhenti total"], correct:0 },
-    { q:"Sungai meluap bisa menyebabkan…", choices:["Banjir","Gempa bumi","Letusan gunung"], correct:0 },
-    { q:"Salah satu cara mengurangi banjir adalah…", choices:["Menjaga saluran air & menanam pohon","Membuang sampah ke sungai","Menutup semua parit"], correct:0 },
-    { q:"PLTMH (mikrohidro) memanfaatkan…", choices:["Aliran air untuk menghasilkan listrik","Panas matahari untuk listrik","Angin kencang untuk listrik"], correct:0 },
-    { q:"Air hujan yang meresap ke tanah disebut…", choices:["Infiltrasi","Evaporasi","Presipitasi"], correct:0 },
-    { q:"Siklus air penting karena…", choices:["Menjaga ketersediaan air di bumi","Membuat air hilang selamanya","Menghentikan hujan"], correct:0 },
-    { q:"Contoh penggunaan air sehari-hari adalah…", choices:["Minum dan menyiram tanaman","Membuat awan jadi batu","Menahan napas di air"], correct:0 }
-  ];
-
-  // ===== Content renderer =====
-  function renderContent(){
-    const c = $("content");
-
-    // PROYEK
-    if(activeMain==="proyek"){
-      if(activeSub==="materi"){
-        c.innerHTML = `
-          <div class="badge">✨ Materi singkat</div>
-          <h2>Penjelasan Proyek</h2>
-          <div class="mute">Kita belajar siklus air + dampaknya + energi air (PLTMH) pakai diorama yang bisa dikontrol online.</div>
-          <div class="hr"></div>
-          <div class="stats">
-            <div class="stat"><b>☀️ Evaporasi</b><span>Penguapan</span><div class="tiny">Air naik karena panas matahari.</div></div>
-            <div class="stat"><b>☁️ Kondensasi</b><span>Awan</span><div class="tiny">Uap jadi titik air.</div></div>
-            <div class="stat"><b>🌧️ Presipitasi</b><span>Hujan</span><div class="tiny">Air turun dari awan.</div></div>
-            <div class="stat"><b>⚡ PLTMH</b><span>Listrik</span><div class="tiny">Aliran air jadi energi.</div></div>
-          </div>
-        `;
-        return;
-      }
-      if(activeSub==="siklus"){
-        c.innerHTML = `
-          <div class="badge">💧 Siklus Air</div>
-          <h2>Dari Laut → Awan → Hujan → Sungai → Laut</h2>
-          <div class="mute">
-            1) Air menguap (evaporasi) • 2) jadi awan (kondensasi) • 3) turun hujan (presipitasi) • 4) mengalir kembali ke laut.
-          </div>
-        `;
-        return;
-      }
-      if(activeSub==="banjir"){
-        c.innerHTML = `
-          <div class="badge">🌊 Banjir</div>
-          <h2>Kenapa banjir bisa terjadi?</h2>
-          <div class="mute">
-            Saat air berlebih dan saluran tersumbat / tanah tidak menyerap cukup, sungai bisa meluap.
-          </div>
-          <div class="hr"></div>
-          <div class="mute"><b>Contoh pencegahan:</b> buang sampah pada tempatnya, jaga drainase, tanam pohon.</div>
-        `;
-        return;
-      }
-      if(activeSub==="pltmh"){
-        c.innerHTML = `
-          <div class="badge">⚡ PLTMH</div>
-          <h2>Mikrohidro = listrik dari aliran air</h2>
-          <div class="mute">
-            Turbin diputar oleh aliran air → generator menghasilkan listrik. Cocok untuk daerah yang punya sungai/aliran stabil.
-          </div>
-        `;
-        return;
-      }
-    }
-
-    // SISWA
-    if(activeMain==="siswa"){
-      if(activeSub==="profil"){
-        c.innerHTML = `
-          <div class="badge">🧾 Data Siswa</div>
-          <h2>Isi Nama & Kelas</h2>
-          <div class="row">
-            <div style="flex:1;min-width:220px">
-              <div class="tiny">Nama</div>
-              <input id="s-nama" placeholder="contoh: Aulia" />
-            </div>
-            <div style="flex:1;min-width:160px">
-              <div class="tiny">Kelas</div>
-              <input id="s-kelas" placeholder="contoh: 5A" />
-            </div>
-          </div>
-          <div class="hr"></div>
-          <div class="mute">Lanjut ke sub menu <b>🎯 Kuis</b>.</div>
-        `;
-        return;
-      }
-
-      if(activeSub==="kuis"){
-        c.innerHTML = `
-          <div class="badge">🎯 Kuis Pilihan Ganda</div>
-          <h2>10 Soal • 3 Pilihan</h2>
-          <div class="mute">Pastikan kamu sudah isi <b>Nama</b> & <b>Kelas</b> ya.</div>
-          <div style="height:10px"></div>
-          <button class="btn primary" id="btn-start">🚀 Mulai</button>
-          <div class="hr"></div>
-          <div id="quizBox" class="mute">Klik <b>Mulai</b> untuk tampilkan soal.</div>
-        `;
-
-        $("btn-start").onclick = ()=>{
-          sClick();
-          const nama = (document.querySelector("#s-nama")?.value || localStorage.getItem("hh_nama") || "").trim();
-          const kelas= (document.querySelector("#s-kelas")?.value || localStorage.getItem("hh_kelas") || "").trim();
-
-          // ambil data dari localStorage kalau user isi di sub menu Profil
-          const n2 = (document.getElementById("s-nama")?.value || "").trim();
-          const k2 = (document.getElementById("s-kelas")?.value || "").trim();
-          const finalNama = n2 || nama;
-          const finalKelas= k2 || kelas;
-
-          if(!finalNama || !finalKelas){
-            $("quizBox").innerHTML = `⚠️ Isi dulu di sub menu <b>🧾 Isi Data</b> ya 😊`;
-            sBad();
-            return;
-          }
-          localStorage.setItem("hh_nama", finalNama);
-          localStorage.setItem("hh_kelas", finalKelas);
-
-          let html = `
-            <div class="badge">🧾 Data</div>
-            <div class="mute" style="margin-top:8px">
-              Nama: <b>${escapeHtml(finalNama)}</b> • Kelas: <b>${escapeHtml(finalKelas)}</b>
-            </div>
-            <div class="hr"></div>
-          `;
-
-          QUIZ.forEach((it, i)=>{
-            html += `
-              <div class="card" style="box-shadow:none;border-radius:18px;border:1px solid #e3efff;background:#fbfdff;margin-top:10px">
-                <div class="tiny"><b>${i+1}.</b> ${escapeHtml(it.q)}</div>
-                <div style="height:8px"></div>
-                <label style="display:flex;gap:10px;align-items:center;margin:8px 0">
-                  <input type="radio" name="q${i}" value="0" style="width:18px;height:18px"/>
-                  <span>${escapeHtml(it.choices[0])}</span>
-                </label>
-                <label style="display:flex;gap:10px;align-items:center;margin:8px 0">
-                  <input type="radio" name="q${i}" value="1" style="width:18px;height:18px"/>
-                  <span>${escapeHtml(it.choices[1])}</span>
-                </label>
-                <label style="display:flex;gap:10px;align-items:center;margin:8px 0">
-                  <input type="radio" name="q${i}" value="2" style="width:18px;height:18px"/>
-                  <span>${escapeHtml(it.choices[2])}</span>
-                </label>
-              </div>
-            `;
-          });
-
-          html += `
-            <div style="height:10px"></div>
-            <button class="btn primary" id="btn-submit">✅ Kirim Jawaban</button>
-            <div class="tiny" id="quizResult" style="margin-top:10px"></div>
-          `;
-          $("quizBox").innerHTML = html;
-
-          $("btn-submit").onclick = async ()=>{
-            sClick();
-            let score = 0;
-            for(let i=0;i<QUIZ.length;i++){
-              const pick = document.querySelector(`input[name="q${i}"]:checked`);
-              if(pick && (+pick.value === QUIZ[i].correct)) score++;
-            }
-            const total = QUIZ.length;
-
-            // save lastScore to RTDB (simple)
-            await set(ref(db, PATH_LAST), {
-              name: localStorage.getItem("hh_nama") || "",
-              kelas: localStorage.getItem("hh_kelas") || "",
-              score, total,
-              ts: Date.now()
-            });
-
-            const msg = (score===total)
-              ? `🎉 PERFECT! Score: <b class="ok">${score}/${total}</b>`
-              : `✨ Score kamu: <b>${score}/${total}</b> • Ayo coba lagi biar full!`;
-            $("quizResult").innerHTML = msg;
-
-            if(score===total) sGood(); else sBad();
-          };
-        };
-        return;
-      }
-
-      if(activeSub==="hasil"){
-        c.innerHTML = `
-          <div class="badge">🏅 Hasil Kuis</div>
-          <h2>Score Terakhir</h2>
-          <div class="mute" id="lastScoreBox">Memuat…</div>
-        `;
-        onValue(ref(db, PATH_LAST), (snap)=>{
-          const j = snap.val();
-          if(!j){ $("lastScoreBox").innerHTML = "Belum ada yang submit kuis."; return; }
-          $("lastScoreBox").innerHTML =
-            `Nama: <b>${escapeHtml(j.name||"")}</b><br>
-             Kelas: <b>${escapeHtml(j.kelas||"")}</b><br>
-             Score: <b>${j.score||0}/${j.total||0}</b>`;
+  if(n.type==="menu"){
+    if(current==="home"){
+      c.innerHTML=`<div class="badge">👥 Online: <span id="onlineCount">0</span></div><br><br>`;
+      onValue(ref(db,"online"),snap=>{
+        const now=Date.now();
+        let cnt=0;
+        snap.forEach(s=>{
+          if(now-s.val().ts<15000) cnt++;
         });
-        return;
-      }
+        document.getElementById("onlineCount").innerText=cnt;
+      });
     }
-
-    // GURU
-    if(activeMain==="guru"){
-      if(activeSub==="login"){
-        c.innerHTML = `
-          <div class="badge">🔐 Panel Guru</div>
-          <h2>Login PIN</h2>
-          <div class="row">
-            <div style="flex:1">
-              <div class="tiny">PIN</div>
-              <input id="g-pin" placeholder="PIN" />
-            </div>
-            <div style="width:180px;flex:0">
-              <div class="tiny">&nbsp;</div>
-              <button class="btn primary" id="g-login">Masuk</button>
-            </div>
-          </div>
-          <div class="tiny" id="g-msg" style="margin-top:10px"></div>
-        `;
-        $("g-login").onclick = ()=>{
-          sClick();
-          const pin = ($("g-pin").value||"").trim();
-          if(pin !== TEACHER_PIN){
-            $("g-msg").innerHTML = `<span class="bad">PIN salah.</span>`;
-            sBad();
-            return;
-          }
-          $("g-msg").innerHTML = `<span class="ok">OK ✅</span> Lanjut ke sub menu <b>📊 Score Terakhir</b>.`;
-          sGood();
-          localStorage.setItem("hh_guru_ok","1");
-        };
-        return;
-      }
-      if(activeSub==="score"){
-        const ok = localStorage.getItem("hh_guru_ok")==="1";
-        c.innerHTML = `
-          <div class="badge">📊 Score Terakhir</div>
-          <h2>Monitoring Nilai</h2>
-          <div class="mute" id="gScoreBox">${ok ? "Memuat…" : "⚠️ Login dulu di sub menu <b>🔐 Login</b>."}</div>
-        `;
-        if(ok){
-          onValue(ref(db, PATH_LAST), (snap)=>{
-            const j = snap.val();
-            if(!j){ $("gScoreBox").innerHTML = "Belum ada yang submit kuis."; return; }
-            $("gScoreBox").innerHTML =
-              `Nama: <b>${escapeHtml(j.name||"")}</b><br>
-               Kelas: <b>${escapeHtml(j.kelas||"")}</b><br>
-               Score: <b>${j.score||0}/${j.total||0}</b>`;
-          });
-        }
-        return;
-      }
+    const g=document.createElement("div");
+    g.className="grid";
+    n.children.forEach(id=>{
+      const d=document.createElement("div");
+      d.className="card";
+      d.innerHTML=`<div class="icon">📘</div><b>${tree[id].title}</b>`;
+      d.onclick=()=>go(id);
+      g.appendChild(d);
+    });
+    c.appendChild(g);
+  }else{
+    if(current==="data"){
+      const s=getStudent()||{};
+      c.innerHTML=`
+      <div class="quiz-card">
+        <b>Nama</b><input id="nama" value="${s.name||""}">
+        <b>Kelas</b><input id="kelas" value="${s.kelas||""}">
+        <br><br><button onclick="saveData()">Simpan & Lanjut</button>
+      </div>`;
+      window.saveData=()=>{
+        setStudent({name:nama.value,kelas:kelas.value,score:null});
+        go("quiz");
+      };
     }
-
-    // DIORAMA
-    if(activeMain==="diorama"){
-      if(activeSub==="kontrol"){
-        c.innerHTML = `
-          <div class="badge">🎛️ Kontrol Diorama</div>
-          <h2>NISEEF v12</h2>
-          <div class="mute">Semua command dikirim ke RTDB. ESP32 akan menampilkan hasilnya di <b>Serial Monitor</b>.</div>
-          <div class="hr"></div>
-
-          <div class="row">
-            <button id="A" class="btn tog">☀️ Evaporasi (A)</button>
-            <button id="B" class="btn tog">☁️ Kondensasi (B)</button>
-            <button id="C" class="btn tog">🌧️ Presipitasi (C)</button>
-            <button id="D" class="btn tog">🌊 Banjir (D)</button>
-          </div>
-
-          <div style="height:10px"></div>
-          <div class="row">
-            <button id="LD" class="btn tog">💡 Lampu Desa</button>
-            <button id="P2" class="btn tog">🚰 Pompa 2</button>
-            <button id="OFF" class="btn warn">🛑 ALL OFF</button>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="row">
-            <div style="flex:1;min-width:220px">
-              <div class="tiny">Mode</div>
-              <select id="mode">
-                <option value="demo">demo</option>
-                <option value="edukasi">edukasi</option>
-                <option value="otomatis" selected>otomatis</option>
-                <option value="maintenance">maintenance</option>
-              </select>
-            </div>
-            <div style="flex:1;min-width:220px">
-              <div class="tiny">State (demo/edukasi)</div>
-              <select id="state">
-                <option value="idle">idle</option>
-                <option value="evaporasi">evaporasi</option>
-                <option value="kondensasi">kondensasi</option>
-                <option value="presipitasi">presipitasi</option>
-                <option value="aliran">aliran</option>
-                <option value="banjir">banjir</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-          <div class="tiny">Catatan: Tombol akan ON/OFF mengikuti telemetry dari ESP32.</div>
-        `;
-
-        // bind buttons
-        const bind = (id, patch)=>{ $(id).onclick=async()=>{ sClick(); await sendCmd(patch); }; };
-        bind("A",{k:"A"}); bind("B",{k:"B"}); bind("C",{k:"C"}); bind("D",{k:"D"});
-        bind("LD",{k:"LD"}); bind("P2",{k:"P2"}); bind("OFF",{k:"ALLOFF"});
-
-        $("mode").onchange = async (e)=>{ sClick(); await sendCmd({mode:e.target.value}); };
-        $("state").onchange= async (e)=>{ sClick(); await sendCmd({state:e.target.value}); };
-
-        return;
-      }
-
-      if(activeSub==="monitor"){
-        c.innerHTML = `
-          <div class="badge">📡 Monitoring</div>
-          <h2>Realtime Telemetry</h2>
-          <div class="mute">Ultrasonic ditampilkan hanya <b>%</b> (cm disembunyikan).</div>
-          <div class="hr"></div>
-          <div class="stats" id="kv"></div>
-          <div class="hr"></div>
-          <div class="tiny">Versi: <b id="verLine">-</b></div>
-          <div class="tiny" id="safeLine" style="margin-top:6px"></div>
-        `;
-        return;
-      }
+    else if(current==="quiz"){
+      const s=getStudent();
+      if(!s){c.innerHTML="Isi data dulu.";return;}
+      renderQuiz(c);
     }
-
-    c.innerHTML = `<div class="mute">Menu belum dibuat.</div>`;
+    else if(current==="hasil"){
+      const s=getStudent();
+      c.innerHTML=s?`Score ${s.name}: <b>${s.score??"-"}</b>`:"Belum ada data.";
+    }
+    else if(current==="monitor"){
+      c.innerHTML="<b>IP / Client Online</b><div id='list'></div>";
+      onValue(ref(db,"online"),snap=>{
+        let html="";
+        snap.forEach(s=>{
+          html+=`<div class="small">${s.key}</div>`;
+        });
+        document.getElementById("list").innerHTML=html;
+      });
+    }
+    else if(current==="diorama"){
+      c.innerHTML=`
+      <div class="quiz-card">
+        <b>Diorama (Mode Serial)</b>
+        <div class="log" id="log"></div>
+        <button onclick="logIt('Evaporasi ON')">Evaporasi</button>
+        <button onclick="logIt('Kondensasi ON')">Kondensasi</button>
+        <button onclick="logIt('Presipitasi ON')">Presipitasi</button>
+      </div>`;
+      window.logIt=(m)=>{
+        console.log("[DIORAMA]",m);
+        log.innerText+=m+"\\n";
+      };
+    }
+    else{
+      c.innerHTML=n.content;
+    }
   }
 
-  // ===== Telemetry listener =====
-  onValue(ref(db, PATH_TELEM), (snap)=>{
-    const t = snap.val();
-    if(!t){ setNet(false, "telemetry belum ada"); return; }
-    setNet(true, "online ✅");
+  btnBack.disabled=history.length===0;
+  btnNext.disabled=!nextSibling();
+}
 
-    // update toggle visual if those buttons exist on page
-    const setOn = (id, on)=>{ const b = document.getElementById(id); if(b) b.classList.toggle("on", !!on); };
-    setOn("A", t.outA); setOn("B", t.outB); setOn("C", t.outC); setOn("D", t.outD);
-    setOn("LD", t.lampuDesa); setOn("P2", t.pompa2);
+/* ================= NAV ================= */
+function go(id){
+  history.push(current);
+  current=id;
+  click();render();
+}
+function back(){if(history.length){current=history.pop();render();}}
+function home(){history.push(current);current="home";render();}
+function nextSibling(){
+  const p=tree[current].parent;
+  if(!p) return null;
+  const s=tree[p].children||[];
+  const i=s.indexOf(current);
+  return s[i+1]||null;
+}
+function next(){
+  const n=nextSibling();
+  if(n) go(n);
+}
+function breadcrumb(id){
+  const a=[];
+  while(id){a.unshift(tree[id].title);id=tree[id].parent;}
+  return a.join(" / ");
+}
+function click(){document.getElementById("sndClick").play();}
 
-    // update dropdowns if exist
-    if(document.getElementById("mode") && t.mode) document.getElementById("mode").value = t.mode;
-    if(document.getElementById("state") && t.state) document.getElementById("state").value = t.state;
+/* ================= QUIZ ================= */
+const quiz=[
+  {q:"Evaporasi adalah...",o:["Hujan","Penguapan","Pengendapan"],a:1},
+  {q:"Hujan disebut...",o:["Kondensasi","Presipitasi","Evaporasi"],a:1},
+  {q:"Energi air dimanfaatkan pada...",o:["PLTMH","PLTU","PLTS"],a:0},
+  {q:"Awan terbentuk saat...",o:["Evaporasi","Kondensasi","Presipitasi"],a:1},
+  {q:"Air mengalir ke sungai disebut...",o:["Evaporasi","Aliran","Kondensasi"],a:1},
+  {q:"Banjir terjadi karena...",o:["Air kurang","Air berlebih","Udara panas"],a:1},
+  {q:"Siklus air dimulai dari...",o:["Hujan","Penguapan","Awan"],a:1},
+  {q:"PLTMH singkatan dari...",o:["Pembangkit Listrik Tenaga Mikrohidro","Tenaga Matahari","Tenaga Uap"],a:0},
+  {q:"Uap air naik karena...",o:["Gravitasi","Panas","Hujan"],a:1},
+  {q:"Air penting bagi...",o:["Manusia","Hewan","Semua makhluk"],a:2},
+];
+function renderQuiz(c){
+  let html="";
+  quiz.forEach((x,i)=>{
+    html+=`<div class="quiz-card"><b>${i+1}. ${x.q}</b>`;
+    x.o.forEach((o,j)=>{
+      html+=`<div class="choice">
+        <input type="radio" name="q${i}" value="${j}"> ${o}
+      </div>`;
+    });
+    html+="</div>";
+  });
+  html+=`<button onclick="submitQuiz()">Kirim Jawaban</button>`;
+  c.innerHTML=html;
+}
+window.submitQuiz=()=>{
+  let score=0;
+  quiz.forEach((x,i)=>{
+    const v=document.querySelector(`input[name=q${i}]:checked`);
+    if(v && Number(v.value)===x.a) score++;
+  });
+  const s=getStudent();s.score=score+"/"+quiz.length;setStudent(s);
+  go("hasil");
+};
 
-    // monitor stats (only show ultrasonic %)
-    const kv = document.getElementById("kv");
-    if(kv){
-      const flowAvg = (+t.flowAvg||0).toFixed(2);
-      const flowInst= (+t.flowInst||0).toFixed(2);
-      const lvl     = (+t.level||0).toFixed(1);
-
-      kv.innerHTML = `
-        <div class="stat"><b>🌊 Flow Avg</b><span>${flowAvg}</span><div class="tiny">L/min</div></div>
-        <div class="stat"><b>💨 Flow Inst</b><span>${flowInst}</span><div class="tiny">L/min</div></div>
-        <div class="stat"><b>🧺 Level</b><span>${lvl}</span><div class="tiny">%</div></div>
-        <div class="stat"><b>🧠 State</b><span>${escapeHtml(t.state||"-")}</span><div class="tiny">${escapeHtml(t.mode||"-")}</div></div>
-      `;
-    }
-
-    const ver = document.getElementById("verLine");
-    if(ver) ver.textContent = (t.version || "-");
-
-    const safeLine = document.getElementById("safeLine");
-    if(safeLine){
-      const safeTxt = t.safeMode
-        ? `🛡️ SafeMode: <span class="bad">ON</span> ${t.fault? " • "+escapeHtml(t.fault):""}`
-        : `🛡️ SafeMode: <span class="ok">OFF</span>`;
-      safeLine.innerHTML = safeTxt;
-    }
-  }, ()=> setNet(false, "offline ❌"));
-
-  // ===== Seed cmd if empty =====
-  (async ()=>{
-    const s = await get(ref(db, PATH_CMD));
-    if(!s.exists()){
-      await set(ref(db, PATH_CMD), { seq:0, mode:"otomatis", state:"idle", k:"" });
-    }
-  })();
-
-  // ===== Sidebar button wiring =====
-  $("m-proyek").onclick = ()=>{ sClick(); setMain("proyek"); };
-  $("m-siswa").onclick  = ()=>{ sClick(); setMain("siswa"); };
-  $("m-guru").onclick   = ()=>{ sClick(); setMain("guru"); };
-  $("m-diorama").onclick= ()=>{ sClick(); setMain("diorama"); };
-
-  // Initial
-  renderSubMenu();
-  renderContent();
+/* ================= INIT ================= */
+btnBack.onclick=back;
+btnHome.onclick=home;
+btnNext.onclick=next;
+render();
 </script>
+
 </body>
 </html>
