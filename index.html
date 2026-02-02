@@ -1,288 +1,224 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Hidrologi Heroes : Lacak si Tirta, Air Ajaib</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hidrologi Heroes – Lacak si Tirta</title>
 
 <style>
-:root{
-  --bg:#0b1220;--card:#111b33;--line:#22345f;
-  --btn:#16244a;--btnOn:#2c5cff;--txt:#e8eefc;
-  --accent:#6cf2c2;
+body{
+  margin:0;font-family:Arial,system-ui;
+  background:#eaf3ff;color:#123;
 }
-body{margin:0;font-family:system-ui,Segoe UI,Arial;background:var(--bg);color:var(--txt)}
-header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0e1833;border-bottom:1px solid var(--line)}
-header img{width:44px;height:44px}
-h1{font-size:18px;margin:0}
-.small{font-size:13px;opacity:.9}
-
-#breadcrumb{padding:8px 16px;font-size:13px;opacity:.85}
-#content{padding:16px}
-
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+header{
+  background:#4da3ff;color:#fff;
+  padding:16px;text-align:center;
+}
+h1{margin:0;font-size:22px}
+main{padding:16px}
 .card{
-  background:var(--card);border:1px solid var(--line);
-  border-radius:16px;padding:16px;text-align:center;
-  cursor:pointer;transition:.2s;
+  background:#fff;border-radius:18px;
+  padding:18px;margin-bottom:16px;
+  box-shadow:0 6px 14px rgba(0,0,0,.1);
 }
-.card:hover{transform:translateY(-2px);border-color:var(--btnOn)}
-.card .icon{font-size:32px;margin-bottom:8px}
-
-.navbar{
-  position:fixed;left:0;right:0;bottom:0;
-  display:flex;gap:10px;padding:12px;background:#0e1833;border-top:1px solid var(--line)
+button{
+  width:100%;padding:14px;margin-top:10px;
+  border:none;border-radius:14px;
+  font-size:18px;font-weight:bold;
+  background:#4da3ff;color:#fff;
 }
-.navbar button{
-  flex:1;padding:12px;border-radius:14px;
-  border:1px solid var(--line);background:var(--btn);color:var(--txt);
-  font-weight:700
-}
-.navbar button:disabled{opacity:.4}
-
-input,select{
-  width:100%;padding:10px;border-radius:12px;
-  border:1px solid var(--line);background:#0e1833;color:var(--txt)
-}
-.quiz-card{
-  background:#0e1833;border:1px solid var(--line);
-  border-radius:14px;padding:14px;margin-bottom:12px
+button.secondary{background:#8bc34a}
+button.warn{background:#ff9800}
+input{
+  width:100%;padding:12px;
+  margin-top:6px;margin-bottom:10px;
+  border-radius:12px;border:1px solid #ccc;
+  font-size:16px;
 }
 .choice{margin:6px 0}
-
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;
-  background:#0e1833;border:1px solid var(--line);font-size:12px}
-
-.log{background:#000;color:#6cf2c2;padding:10px;border-radius:10px;font-family:monospace}
+.footer{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;padding:10px;
+  display:flex;gap:10px;
+}
+.footer button{font-size:14px;padding:10px}
+.hidden{display:none}
+.badge{
+  display:inline-block;padding:6px 12px;
+  background:#e0f2ff;border-radius:999px;
+  font-size:14px;margin-bottom:10px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  <img src="https://i.imgur.com/7QZQZ6R.png" alt="Tirta"/>
-  <div>
-    <h1>Hidrologi Heroes</h1>
-    <div class="small">Lacak si Tirta, Air Ajaib</div>
-  </div>
+  <h1>Hidrologi Heroes</h1>
+  <div>Lacak si Tirta, Air Ajaib 💧</div>
 </header>
 
-<div id="breadcrumb"></div>
-<div id="content"></div>
+<main id="app"></main>
 
-<div class="navbar">
-  <button id="btnBack">⬅ Back</button>
-  <button id="btnHome">🏠 Home</button>
-  <button id="btnNext">➡ Next</button>
+<div class="footer">
+  <button onclick="goHome()">🏠 Home</button>
 </div>
-
-<audio id="sndClick" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
 
-/* ================= FIREBASE ================= */
+/* ==== Firebase ==== */
 const firebaseConfig = {
   apiKey: "AIzaSyCbKNlViQO-BRj818y-sNd7LjvMkf6Q0Wg",
-  authDomain: "hidrologi-heroes.firebaseapp.com",
-  databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "hidrologi-heroes",
+  databaseURL: "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const appFB = initializeApp(firebaseConfig);
+const db = getDatabase(appFB);
 
-/* ================= MENU TREE ================= */
-const tree = {
-  home:{title:"Menu Utama",type:"menu",children:["proyek","siswa","guru","diorama"]},
-
-  proyek:{title:"Penjelasan Proyek",type:"menu",parent:"home",children:["materi"]},
-  materi:{title:"Materi Dasar",type:"menu",parent:"proyek",children:["evap","kond","pres"]},
-  evap:{title:"Evaporasi",type:"page",parent:"materi",content:"Evaporasi adalah proses perubahan air menjadi uap air karena panas matahari."},
-  kond:{title:"Kondensasi",type:"page",parent:"materi",content:"Kondensasi adalah proses perubahan uap air menjadi titik-titik air di awan."},
-  pres:{title:"Presipitasi",type:"page",parent:"materi",content:"Presipitasi adalah peristiwa turunnya hujan ke permukaan bumi."},
-
-  siswa:{title:"Siswa",type:"menu",parent:"home",children:["data","quiz","hasil"]},
-  data:{title:"Isi Data Siswa",type:"page",parent:"siswa"},
-  quiz:{title:"Kuis",type:"page",parent:"siswa"},
-  hasil:{title:"Hasil Kuis",type:"page",parent:"siswa"},
-
-  guru:{title:"Guru",type:"menu",parent:"home",children:["monitor"]},
-  monitor:{title:"Monitoring Guru",type:"page",parent:"guru"},
-
-  diorama:{title:"Diorama",type:"page",parent:"home"},
-};
-
-/* ================= STATE ================= */
-let current="home";
-let history=[];
-
-/* ================= SESSION SISWA ================= */
-function getStudent(){
-  return JSON.parse(localStorage.getItem("hh_student")||"null");
-}
-function setStudent(d){
-  localStorage.setItem("hh_student",JSON.stringify(d));
-}
-
-/* ================= ONLINE ================= */
+/* ==== Online Counter ==== */
 const cid="c_"+Math.random().toString(36).slice(2);
 update(ref(db,"online/"+cid),{ts:Date.now()});
 setInterval(()=>update(ref(db,"online/"+cid),{ts:Date.now()}),5000);
 
-/* ================= RENDER ================= */
+/* ==== Session Siswa ==== */
+function getSession(){
+  return JSON.parse(localStorage.getItem("hh_student")||"null");
+}
+function saveSession(s){
+  localStorage.setItem("hh_student",JSON.stringify(s));
+}
+
+/* ==== State ==== */
+let page="home";
+let quizIndex=0;
+let score=0;
+
+/* ==== Soal ==== */
+const quiz=[
+ {q:"Evaporasi adalah...",o:["Hujan","Penguapan","Awan"],a:1},
+ {q:"Hujan disebut...",o:["Evaporasi","Presipitasi","Kondensasi"],a:1},
+ {q:"Awan terbentuk karena...",o:["Kondensasi","Hujan","Aliran"],a:0},
+ {q:"PLTMH adalah...",o:["Tenaga uap","Tenaga air","Tenaga angin"],a:1},
+ {q:"Air mengalir ke sungai disebut...",o:["Aliran","Uap","Awan"],a:0},
+ {q:"Banjir terjadi karena...",o:["Air berlebih","Air habis","Angin"],a:0},
+ {q:"Siklus air dimulai dari...",o:["Penguapan","Hujan","Awan"],a:0},
+ {q:"Energi air digunakan untuk...",o:["Mainan","Listrik","Makanan"],a:1},
+ {q:"Uap air naik karena...",o:["Panas","Hujan","Es"],a:0},
+ {q:"Air penting bagi...",o:["Manusia","Hewan","Semua"],a:2},
+];
+
+/* ==== Render ==== */
 function render(){
-  const n=tree[current];
-  document.getElementById("breadcrumb").innerText=breadcrumb(current);
+  const a=document.getElementById("app");
+  a.innerHTML="";
 
-  const c=document.getElementById("content");
-  c.innerHTML="";
+  /* HOME */
+  if(page==="home"){
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<div class="badge">👥 Online: <span id="on">0</span></div>
+    <button onclick="page='belajar';render()">🎒 BELAJAR</button>
+    <button onclick="page='data';render()">📝 KUIS</button>
+    <button onclick="page='diorama';render()">🎥 DIORAMA</button>
+    <button onclick="page='guru';render()">👩‍🏫 GURU</button>`;
+    a.appendChild(c);
 
-  if(n.type==="menu"){
-    if(current==="home"){
-      c.innerHTML=`<div class="badge">👥 Online: <span id="onlineCount">0</span></div><br><br>`;
-      onValue(ref(db,"online"),snap=>{
-        const now=Date.now();
-        let cnt=0;
-        snap.forEach(s=>{
-          if(now-s.val().ts<15000) cnt++;
-        });
-        document.getElementById("onlineCount").innerText=cnt;
-      });
-    }
-    const g=document.createElement("div");
-    g.className="grid";
-    n.children.forEach(id=>{
-      const d=document.createElement("div");
-      d.className="card";
-      d.innerHTML=`<div class="icon">📘</div><b>${tree[id].title}</b>`;
-      d.onclick=()=>go(id);
-      g.appendChild(d);
+    onValue(ref(db,"online"),s=>{
+      let n=0,now=Date.now();
+      s.forEach(x=>{if(now-x.val().ts<15000)n++;});
+      document.getElementById("on").innerText=n;
     });
-    c.appendChild(g);
-  }else{
-    if(current==="data"){
-      const s=getStudent()||{};
-      c.innerHTML=`
-      <div class="quiz-card">
-        <b>Nama</b><input id="nama" value="${s.name||""}">
-        <b>Kelas</b><input id="kelas" value="${s.kelas||""}">
-        <br><br><button onclick="saveData()">Simpan & Lanjut</button>
-      </div>`;
-      window.saveData=()=>{
-        setStudent({name:nama.value,kelas:kelas.value,score:null});
-        go("quiz");
-      };
-    }
-    else if(current==="quiz"){
-      const s=getStudent();
-      if(!s){c.innerHTML="Isi data dulu.";return;}
-      renderQuiz(c);
-    }
-    else if(current==="hasil"){
-      const s=getStudent();
-      c.innerHTML=s?`Score ${s.name}: <b>${s.score??"-"}</b>`:"Belum ada data.";
-    }
-    else if(current==="monitor"){
-      c.innerHTML="<b>IP / Client Online</b><div id='list'></div>";
-      onValue(ref(db,"online"),snap=>{
-        let html="";
-        snap.forEach(s=>{
-          html+=`<div class="small">${s.key}</div>`;
-        });
-        document.getElementById("list").innerHTML=html;
-      });
-    }
-    else if(current==="diorama"){
-      c.innerHTML=`
-      <div class="quiz-card">
-        <b>Diorama (Mode Serial)</b>
-        <div class="log" id="log"></div>
-        <button onclick="logIt('Evaporasi ON')">Evaporasi</button>
-        <button onclick="logIt('Kondensasi ON')">Kondensasi</button>
-        <button onclick="logIt('Presipitasi ON')">Presipitasi</button>
-      </div>`;
-      window.logIt=(m)=>{
-        console.log("[DIORAMA]",m);
-        log.innerText+=m+"\\n";
-      };
-    }
-    else{
-      c.innerHTML=n.content;
-    }
   }
 
-  btnBack.disabled=history.length===0;
-  btnNext.disabled=!nextSibling();
-}
+  /* BELAJAR */
+  if(page==="belajar"){
+    const materi=[
+      "Evaporasi: air menguap karena panas matahari.",
+      "Kondensasi: uap air menjadi awan.",
+      "Presipitasi: hujan turun ke bumi."
+    ];
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<h3>📘 Belajar Siklus Air</h3><p>${materi[quizIndex]||"Selesai 🎉"}</p>
+    <button onclick="quizIndex++;render()">LANJUT ➡</button>`;
+    a.appendChild(c);
+  }
 
-/* ================= NAV ================= */
-function go(id){
-  history.push(current);
-  current=id;
-  click();render();
-}
-function back(){if(history.length){current=history.pop();render();}}
-function home(){history.push(current);current="home";render();}
-function nextSibling(){
-  const p=tree[current].parent;
-  if(!p) return null;
-  const s=tree[p].children||[];
-  const i=s.indexOf(current);
-  return s[i+1]||null;
-}
-function next(){
-  const n=nextSibling();
-  if(n) go(n);
-}
-function breadcrumb(id){
-  const a=[];
-  while(id){a.unshift(tree[id].title);id=tree[id].parent;}
-  return a.join(" / ");
-}
-function click(){document.getElementById("sndClick").play();}
+  /* DATA SISWA */
+  if(page==="data"){
+    const s=getSession()||{};
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`
+      <h3>🧒 Data Siswa</h3>
+      <input id="nm" placeholder="Nama" value="${s.name||""}">
+      <input id="kl" placeholder="Kelas" value="${s.kelas||""}">
+      <button onclick="saveData()">Mulai Kuis</button>`;
+    a.appendChild(c);
+    window.saveData=()=>{
+      saveSession({name:nm.value,kelas:kl.value,score:null});
+      quizIndex=0;score=0;page="quiz";render();
+    };
+  }
 
-/* ================= QUIZ ================= */
-const quiz=[
-  {q:"Evaporasi adalah...",o:["Hujan","Penguapan","Pengendapan"],a:1},
-  {q:"Hujan disebut...",o:["Kondensasi","Presipitasi","Evaporasi"],a:1},
-  {q:"Energi air dimanfaatkan pada...",o:["PLTMH","PLTU","PLTS"],a:0},
-  {q:"Awan terbentuk saat...",o:["Evaporasi","Kondensasi","Presipitasi"],a:1},
-  {q:"Air mengalir ke sungai disebut...",o:["Evaporasi","Aliran","Kondensasi"],a:1},
-  {q:"Banjir terjadi karena...",o:["Air kurang","Air berlebih","Udara panas"],a:1},
-  {q:"Siklus air dimulai dari...",o:["Hujan","Penguapan","Awan"],a:1},
-  {q:"PLTMH singkatan dari...",o:["Pembangkit Listrik Tenaga Mikrohidro","Tenaga Matahari","Tenaga Uap"],a:0},
-  {q:"Uap air naik karena...",o:["Gravitasi","Panas","Hujan"],a:1},
-  {q:"Air penting bagi...",o:["Manusia","Hewan","Semua makhluk"],a:2},
-];
-function renderQuiz(c){
-  let html="";
-  quiz.forEach((x,i)=>{
-    html+=`<div class="quiz-card"><b>${i+1}. ${x.q}</b>`;
-    x.o.forEach((o,j)=>{
-      html+=`<div class="choice">
-        <input type="radio" name="q${i}" value="${j}"> ${o}
-      </div>`;
+  /* KUIS */
+  if(page==="quiz"){
+    const q=quiz[quizIndex];
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<h3>${quizIndex+1}. ${q.q}</h3>`;
+    q.o.forEach((o,i)=>{
+      c.innerHTML+=`<div class="choice">
+      <button class="secondary" onclick="answer(${i})">${o}</button></div>`;
     });
-    html+="</div>";
-  });
-  html+=`<button onclick="submitQuiz()">Kirim Jawaban</button>`;
-  c.innerHTML=html;
-}
-window.submitQuiz=()=>{
-  let score=0;
-  quiz.forEach((x,i)=>{
-    const v=document.querySelector(`input[name=q${i}]:checked`);
-    if(v && Number(v.value)===x.a) score++;
-  });
-  const s=getStudent();s.score=score+"/"+quiz.length;setStudent(s);
-  go("hasil");
-};
+    a.appendChild(c);
+    window.answer=(i)=>{
+      if(i===q.a) score++;
+      quizIndex++;
+      if(quizIndex>=quiz.length){
+        const s=getSession();s.score=score+"/"+quiz.length;saveSession(s);
+        page="hasil";
+      }
+      render();
+    };
+  }
 
-/* ================= INIT ================= */
-btnBack.onclick=back;
-btnHome.onclick=home;
-btnNext.onclick=next;
+  /* HASIL */
+  if(page==="hasil"){
+    const s=getSession();
+    a.innerHTML=`<div class="card">
+      <h3>🎉 Hasil Kuis</h3>
+      <p>${s.name} (${s.kelas})</p>
+      <h2>${s.score}</h2>
+      <button onclick="page='home';render()">Selesai</button>
+    </div>`;
+  }
+
+  /* DIORAMA */
+  if(page==="diorama"){
+    a.innerHTML=`<div class="card">
+      <h3>🎥 Diorama</h3>
+      <button onclick="log('Evaporasi')">Evaporasi</button>
+      <button onclick="log('Kondensasi')">Kondensasi</button>
+      <button onclick="log('Presipitasi')">Presipitasi</button>
+    </div>`;
+  }
+
+  /* GURU */
+  if(page==="guru"){
+    const s=getSession();
+    a.innerHTML=`<div class="card">
+      <h3>👩‍🏫 Monitoring Guru</h3>
+      <p>Online saat ini ditampilkan di menu utama.</p>
+      <p>Skor terakhir: <b>${s?.score||"-"}</b></p>
+      <p>Versi: NISEEF v12</p>
+    </div>`;
+  }
+}
+
+function goHome(){page="home";render();}
+window.log=(m)=>console.log("[DIORAMA]",m);
 render();
 </script>
 
