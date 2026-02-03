@@ -256,7 +256,7 @@
   }
   .toast.on{opacity:.9}
 
-  /* ================= Tirta draggable ================= */
+  /* Tirta draggable */
   .guide{
     position:fixed;
     right:14px;
@@ -269,7 +269,7 @@
     touch-action:none;
   }
   .bubble{
-    max-width:220px;
+    max-width:240px;
     background:rgba(255,255,255,.92);
     border:1px solid rgba(13,43,69,.10);
     border-radius:18px;
@@ -314,7 +314,7 @@
     box-shadow:0 10px 18px rgba(0,0,0,.10);
   }
 
-  /* ================= STAR POP FX ================= */
+  /* Star pop FX */
   .fx-layer{
     position:fixed; inset:0;
     pointer-events:none;
@@ -333,7 +333,6 @@
     70%{opacity:1; transform:translate(-50%,-120%) scale(1.1) rotate(-8deg)}
     100%{opacity:0; transform:translate(-50%,-160%) scale(.85) rotate(12deg)}
   }
-
   .spark{
     position:absolute;
     width:8px; height:8px;
@@ -347,6 +346,28 @@
     0%{opacity:0; transform:translate(-50%,-50%) scale(.5)}
     20%{opacity:1}
     100%{opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2)}
+  }
+
+  /* PIN gate */
+  .pinWrap{
+    display:grid;
+    gap:10px;
+    padding:14px;
+    border-radius:18px;
+    border:1px dashed rgba(13,43,69,.18);
+    background:rgba(255,255,255,.70);
+  }
+  .pinRow{
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  .pinRow input{
+    flex:1;
+    padding:12px 14px;
+    border-radius:16px;
+    border:1px solid rgba(13,43,69,.12);
+    font-weight:1000;
+    font-size:16px;
+    letter-spacing:2px;
   }
 </style>
 </head>
@@ -394,7 +415,6 @@
   <img id="tirtaGuide" alt="Tirta Guide">
 </div>
 
-<!-- FX layer -->
 <div class="fx-layer" id="fx"></div>
 
 <audio id="bgm" preload="auto" loop></audio>
@@ -409,6 +429,10 @@ const IMG_KOND    = ASSETS_BASE + "Scene%20Kondensasi.png";
 const IMG_PLTMH   = ASSETS_BASE + "Scene%20PLTMH.png";
 const IMG_QR      = ASSETS_BASE + "qrcode%20yt%20channel%20aksa%20swastika.png";
 const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
+
+/* ================== DIORAMA PIN ================== */
+const DIORAMA_PIN = "654321";
+const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 
 /* set Tirta images + audio */
 document.getElementById("tirtaLogo").src  = IMG_TIRTA;
@@ -474,14 +498,25 @@ function beep({freq=600, dur=0.10, type="sine", gain=0.06}={}){
   osc.stop(t0 + dur + 0.02);
 }
 
-function sfxCorrect(){
-  // “ting-ting”
+function sfxCorrect(){ // ting-ting
   beep({freq:880, dur:0.09, type:"triangle", gain:0.07});
   setTimeout(()=>beep({freq:1175, dur:0.11, type:"triangle", gain:0.07}), 90);
 }
-function sfxWrong(){
-  // “bup”
+function sfxWrong(){ // bup
   beep({freq:220, dur:0.14, type:"sawtooth", gain:0.045});
+}
+
+/* PIN specific voices */
+function sfxPinOk(){
+  // "ta-da" ceria
+  beep({freq:784, dur:0.10, type:"triangle", gain:0.07});
+  setTimeout(()=>beep({freq:988, dur:0.12, type:"triangle", gain:0.07}), 110);
+  setTimeout(()=>beep({freq:1319, dur:0.14, type:"triangle", gain:0.07}), 240);
+}
+function sfxPinBad(){
+  // "wah-wah" pendek
+  beep({freq:196, dur:0.12, type:"sawtooth", gain:0.05});
+  setTimeout(()=>beep({freq:160, dur:0.16, type:"sawtooth", gain:0.05}), 120);
 }
 
 /* ================== STAR POP FX ================== */
@@ -496,7 +531,6 @@ function starPopAt(x,y){
   s.style.top  = y + "px";
   fx.appendChild(s);
 
-  // sparks
   for(let i=0;i<7;i++){
     const p = document.createElement("div");
     p.className = "spark";
@@ -506,12 +540,10 @@ function starPopAt(x,y){
     const dy = Math.round(rand(-75,35)) + "px";
     p.style.setProperty("--dx", dx);
     p.style.setProperty("--dy", dy);
-    // variasi warna dikit biar ceria
     p.style.background = (i%3===0) ? "#53d5ff" : (i%3===1) ? "#ffd36a" : "#87f5d0";
     fx.appendChild(p);
     setTimeout(()=>p.remove(), 700);
   }
-
   setTimeout(()=>s.remove(), 750);
 }
 
@@ -624,7 +656,6 @@ function onDragEnd(){
   snapToEdge();
 }
 
-/* drag pakai pointer events */
 tirta.addEventListener("pointerdown", (e)=>{
   e.preventDefault();
   tirta.setPointerCapture(e.pointerId);
@@ -768,6 +799,14 @@ function back(){
 /* ================== SESSION SISWA ================== */
 function getSession(){ return JSON.parse(localStorage.getItem("hh_student") || "null"); }
 function saveSession(s){ localStorage.setItem("hh_student", JSON.stringify(s)); }
+
+/* ================== DIORAMA AUTH ================== */
+function dioramaAllowed(){
+  return sessionStorage.getItem(STORAGE_DIORAMA_OK) === "1";
+}
+function setDioramaAllowed(ok){
+  sessionStorage.setItem(STORAGE_DIORAMA_OK, ok ? "1" : "0");
+}
 
 /* ================== SVG fallback (Presipitasi) ================== */
 function svgData(svg){
@@ -1035,13 +1074,13 @@ function render(){
   }
 
   if(page==="guru"){
-    setGuide("Menu Guru: monitoring sederhana. IP pengunjung dimatikan sesuai request Boss.");
+    setGuide("Menu Guru: monitoring sederhana.");
     const s=getSession();
     const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
     app.innerHTML = `
       <div class="card">
         <div class="h2">👩‍🏫 Menu Guru</div>
-        <div class="mini">Monitoring sederhana.</div>
+        <div class="mini">Monitoring sederhana. (IP pengunjung dimatikan sesuai request Boss.)</div>
 
         <div style="height:10px"></div>
         <div class="grid">
@@ -1060,12 +1099,78 @@ function render(){
     `;
   }
 
+  /* ===================== DIORAMA WITH PIN GATE ===================== */
   if(page==="diorama"){
-    setGuide("Diorama: tombol besar biar gampang dipencet. Perintah dikirim ke Firebase → ESP32.");
+    const ok = dioramaAllowed();
+
+    if(!ok){
+      setGuide("Menu Diorama terkunci 🔒 Masukkan PIN dulu ya, Boss 🙂");
+      app.innerHTML = `
+        <div class="card">
+          <div class="h2">🎥 Diorama (Terkunci)</div>
+          <div class="mini">Untuk keamanan, kontrol diorama hanya bisa dibuka dengan PIN.</div>
+        </div>
+
+        <div class="card">
+          <div class="pinWrap">
+            <div style="font-weight:1000">🔒 Masukkan PIN Diorama</div>
+            <div class="mini">Hanya orang yang punya PIN yang bisa menyalakan Evaporasi/Kondensasi/dll.</div>
+
+            <div class="pinRow">
+              <input id="pinInput" inputmode="numeric" placeholder="••••••" maxlength="6">
+              <button class="btn b-orange" id="btnPin" style="flex:0 0 auto;min-width:160px">
+                <span><i>✅</i> Buka</span><span>➡</span>
+              </button>
+            </div>
+
+            <div class="mini" id="pinMsg" style="font-weight:1000"></div>
+          </div>
+        </div>
+      `;
+
+      const pinEl = document.getElementById("pinInput");
+      const msgEl = document.getElementById("pinMsg");
+      const btnEl = document.getElementById("btnPin");
+
+      const tryPin = async ()=>{
+        await unlockAudio();
+        const entered = (pinEl.value||"").trim();
+        if(entered === DIORAMA_PIN){
+          setDioramaAllowed(true);
+          msgEl.style.color = "#0c7a5c";
+          msgEl.textContent = "Selamat berpetualang di dunia Hidrologi Heroes";
+          sfxPinOk();
+          toast("🔓 Diorama terbuka!");
+          setTimeout(()=>render(), 350);
+        }else{
+          msgEl.style.color = "#b02020";
+          msgEl.textContent = "Anda memasukkan PIN yang salah";
+          sfxPinBad();
+          toast("❌ PIN salah");
+          pinEl.value = "";
+          pinEl.focus();
+        }
+      };
+
+      btnEl.onclick = tryPin;
+      pinEl.addEventListener("keydown", (e)=>{
+        if(e.key==="Enter") tryPin();
+      });
+
+      return updateFooterNav();
+    }
+
+    // if PIN OK
+    setGuide("Selamat berpetualang di dunia Hidrologi Heroes! 🎉 Klik tombol diorama ya!");
     app.innerHTML = `
       <div class="card">
-        <div class="h2">🎥 Diorama</div>
+        <div class="h2">🎥 Diorama (Unlocked)</div>
         <div class="mini">Klik tombol proses siklus air. Perintah dikirim ke Firebase, lalu ESP32 mengeksekusi.</div>
+        <div class="mini" style="margin-top:8px;font-weight:1000;color:#0c7a5c">
+          ✅ Selamat berpetualang di dunia Hidrologi Heroes
+        </div>
+        <div style="height:10px"></div>
+        <button class="pill" id="btnLock" title="Kunci lagi Diorama">🔒 Kunci Lagi</button>
       </div>
 
       <div class="card">
@@ -1099,6 +1204,12 @@ function render(){
         </div>
       </div>
     `;
+
+    document.getElementById("btnLock").onclick = ()=>{
+      setDioramaAllowed(false);
+      toast("🔒 Diorama dikunci");
+      render();
+    };
 
     document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
     document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
