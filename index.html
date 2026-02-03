@@ -235,7 +235,6 @@
     background: linear-gradient(90deg, #20c997, #53d5ff);
   }
 
-  /* footer */
   .footer{
     position:fixed; left:0; right:0; bottom:0;
     background: rgba(255,255,255,.88);
@@ -256,7 +255,6 @@
   }
   .toast.on{opacity:.9}
 
-  /* Tirta draggable */
   .guide{
     position:fixed;
     right:14px;
@@ -314,7 +312,6 @@
     box-shadow:0 10px 18px rgba(0,0,0,.10);
   }
 
-  /* Star pop FX */
   .fx-layer{
     position:fixed; inset:0;
     pointer-events:none;
@@ -348,7 +345,6 @@
     100%{opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2)}
   }
 
-  /* PIN gate */
   .pinWrap{
     display:grid;
     gap:10px;
@@ -389,6 +385,7 @@
       </button>
       <div class="badge">👥 <small>Online:</small> <span id="hdrOnline">0</span></div>
       <div class="badge">🧠 <small>Versi:</small> <span id="hdrVer">-</span></div>
+      <div class="badge">⚙️ <small>Mode:</small> <span id="hdrMode">-</span></div>
     </div>
   </div>
 </header>
@@ -430,9 +427,11 @@ const IMG_PLTMH   = ASSETS_BASE + "Scene%20PLTMH.png";
 const IMG_QR      = ASSETS_BASE + "qrcode%20yt%20channel%20aksa%20swastika.png";
 const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 
-/* ================== DIORAMA PIN ================== */
+/* ================== PIN ================== */
 const DIORAMA_PIN = "654321";
+const GURU_PIN    = "1234";
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
+const STORAGE_GURU_OK    = "hh_guru_ok";
 
 /* set Tirta images + audio */
 document.getElementById("tirtaLogo").src  = IMG_TIRTA;
@@ -498,23 +497,20 @@ function beep({freq=600, dur=0.10, type="sine", gain=0.06}={}){
   osc.stop(t0 + dur + 0.02);
 }
 
-function sfxCorrect(){ // ting-ting
+function sfxCorrect(){
   beep({freq:880, dur:0.09, type:"triangle", gain:0.07});
   setTimeout(()=>beep({freq:1175, dur:0.11, type:"triangle", gain:0.07}), 90);
 }
-function sfxWrong(){ // bup
+function sfxWrong(){
   beep({freq:220, dur:0.14, type:"sawtooth", gain:0.045});
 }
 
-/* PIN specific voices */
 function sfxPinOk(){
-  // "ta-da" ceria
   beep({freq:784, dur:0.10, type:"triangle", gain:0.07});
   setTimeout(()=>beep({freq:988, dur:0.12, type:"triangle", gain:0.07}), 110);
   setTimeout(()=>beep({freq:1319, dur:0.14, type:"triangle", gain:0.07}), 240);
 }
 function sfxPinBad(){
-  // "wah-wah" pendek
   beep({freq:196, dur:0.12, type:"sawtooth", gain:0.05});
   setTimeout(()=>beep({freq:160, dur:0.16, type:"sawtooth", gain:0.05}), 120);
 }
@@ -680,7 +676,8 @@ window.addEventListener("resize", ()=>{
   }catch(e){}
 });
 
-/* ================== KONFIG RTDB (REST) ================== */
+/* ================== KONFIG RTDB (REST) ==================
+   NOTE: ini sengaja pakai REST biar simple & stabil di Hosting Firebase/GitHub. */
 const DB_BASE  = "https://hidrologi-heroes-default-rtdb.asia-southeast1.firebasedatabase.app";
 const DEVICE_ID = "niseef_v12_01";
 const PATH_CMD   = `/devices/${DEVICE_ID}/cmd`;
@@ -714,7 +711,7 @@ function toast(msg){
   t.textContent=msg;
   t.classList.add("on");
   clearTimeout(toastT);
-  toastT=setTimeout(()=>t.classList.remove("on"),900);
+  toastT=setTimeout(()=>t.classList.remove("on"),1100);
 }
 
 /* ================== ONLINE COUNTER ================== */
@@ -753,19 +750,27 @@ setInterval(heartbeatPresence, 5000);
 /* ================== DEVICE STATE ================== */
 let telem = null;
 let seq = 0;
-async function sendCmd(patch){
+
+function showModeHeader(){
+  const m = (telem?.mode || "-");
+  document.getElementById("hdrMode").textContent = m;
+}
+
+async function sendCmd(patch, extraToast){
   seq++;
   try{
     await rtdbPatch(PATH_CMD, { seq, ts: Date.now(), ...patch });
-    toast("✅ Terkirim ke perangkat");
+    toast(extraToast || "✅ Terkirim ke perangkat");
   }catch(e){
     toast("⚠️ Gagal kirim");
   }
 }
+
 async function pollTelem(){
   try{
     telem = await rtdbGet(PATH_TELEM);
-    document.getElementById("hdrVer").textContent = telem?.version || "-";
+    document.getElementById("hdrVer").textContent  = telem?.version || "-";
+    showModeHeader();
     if(page==="diorama") updateDioramaUI();
   }catch(e){}
 }
@@ -777,6 +782,7 @@ let page = "home";
 let historyStack = ["home"];
 
 function setGuide(text){
+  // childNodes[0] berisi teks awal (sebelum <small>)
   document.getElementById("guideText").childNodes[0].textContent = text + " ";
 }
 function go(p){
@@ -800,13 +806,12 @@ function back(){
 function getSession(){ return JSON.parse(localStorage.getItem("hh_student") || "null"); }
 function saveSession(s){ localStorage.setItem("hh_student", JSON.stringify(s)); }
 
-/* ================== DIORAMA AUTH ================== */
-function dioramaAllowed(){
-  return sessionStorage.getItem(STORAGE_DIORAMA_OK) === "1";
-}
-function setDioramaAllowed(ok){
-  sessionStorage.setItem(STORAGE_DIORAMA_OK, ok ? "1" : "0");
-}
+/* ================== AUTH (session-only) ================== */
+function dioramaAllowed(){ return sessionStorage.getItem(STORAGE_DIORAMA_OK) === "1"; }
+function setDioramaAllowed(ok){ sessionStorage.setItem(STORAGE_DIORAMA_OK, ok ? "1" : "0"); }
+
+function guruAllowed(){ return sessionStorage.getItem(STORAGE_GURU_OK) === "1"; }
+function setGuruAllowed(ok){ sessionStorage.setItem(STORAGE_GURU_OK, ok ? "1" : "0"); }
 
 /* ================== SVG fallback (Presipitasi) ================== */
 function svgData(svg){
@@ -882,6 +887,7 @@ function render(){
             <div class="badges">
               <div class="badge">👥 <small>Online:</small> <span>${onlineCount}</span></div>
               <div class="badge">📡 <small>Device:</small> <span>${telem?.version || "-"}</span></div>
+              <div class="badge">⚙️ <small>Mode:</small> <span>${telem?.mode || "-"}</span></div>
             </div>
           </div>
 
@@ -898,7 +904,9 @@ function render(){
             <span><i>📺</i> Kisah Perjalanan si Tirta, Air Ajaib</span><span>➡</span>
           </button>
 
-          <div class="mini">Tip: Menu bertingkat. Pakai tombol Back / Home / Next di bawah.</div>
+          <div class="mini">
+            Tip: Menu bertingkat. Pakai tombol Back / Home / Next di bawah.
+          </div>
         </div>
       </div>
     `;
@@ -1073,30 +1081,108 @@ function render(){
     `;
   }
 
+  /* ===================== GURU WITH PIN GATE ===================== */
   if(page==="guru"){
-    setGuide("Menu Guru: monitoring sederhana.");
+    const ok = guruAllowed();
+
+    if(!ok){
+      setGuide("Menu Guru terkunci 🔒 Masukkan PIN Guru dulu ya 🙂");
+      app.innerHTML = `
+        <div class="card">
+          <div class="h2">👩‍🏫 Menu Guru (Terkunci)</div>
+          <div class="mini">Untuk keamanan, menu guru dibuka dengan PIN.</div>
+        </div>
+
+        <div class="card">
+          <div class="pinWrap">
+            <div style="font-weight:1000">🔒 Masukkan PIN Guru</div>
+            <div class="mini">Setelah benar, baru bisa lihat monitoring.</div>
+
+            <div class="pinRow">
+              <input id="pinGuru" type="password" inputmode="numeric" placeholder="••••" maxlength="4">
+              <button class="btn b-green" id="btnGuruPin" style="flex:0 0 auto;min-width:160px">
+                <span><i>✅</i> Masuk</span><span>➡</span>
+              </button>
+            </div>
+
+            <div class="mini" id="guruMsg" style="font-weight:1000"></div>
+          </div>
+        </div>
+      `;
+
+      const pinEl = document.getElementById("pinGuru");
+      const msgEl = document.getElementById("guruMsg");
+      const btnEl = document.getElementById("btnGuruPin");
+
+      const tryPin = async ()=>{
+        await unlockAudio();
+        const entered = (pinEl.value||"").trim();
+        if(entered === GURU_PIN){
+          setGuruAllowed(true);
+          msgEl.style.color = "#0c7a5c";
+          msgEl.textContent = "Selamat datang, Guru Hidrologi Heroes";
+          sfxPinOk();
+          toast("👩‍🏫 Guru OK!");
+          setTimeout(()=>render(), 250);
+        }else{
+          msgEl.style.color = "#b02020";
+          msgEl.textContent = "Anda memasukkan PIN yang salah";
+          sfxPinBad();
+          toast("❌ PIN salah");
+          pinEl.value = "";
+          pinEl.focus();
+        }
+      };
+
+      btnEl.onclick = tryPin;
+      pinEl.addEventListener("keydown", (e)=>{
+        if(e.key==="Enter") tryPin();
+      });
+
+      return updateFooterNav();
+    }
+
+    // unlocked guru
+    setGuide("Selamat datang, Guru Hidrologi Heroes 👩‍🏫");
     const s=getSession();
     const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
     app.innerHTML = `
       <div class="card">
-        <div class="h2">👩‍🏫 Menu Guru</div>
-        <div class="mini">Monitoring sederhana. (IP pengunjung dimatikan sesuai request Boss.)</div>
+        <div class="h2">👩‍🏫 Menu Guru (Unlocked)</div>
+        <div class="mini">Monitoring sederhana. (IP pengunjung dimatikan.)</div>
 
         <div style="height:10px"></div>
+        <button class="pill" id="btnLockGuru" title="Kunci lagi Menu Guru">🔒 Kunci Lagi</button>
+
+        <div style="height:12px"></div>
+
         <div class="grid">
           <div class="card" style="grid-column:span 6;background:linear-gradient(135deg,rgba(42,127,255,.10),rgba(83,213,255,.08))">
             <div style="font-weight:1000;font-size:16px">👥 Online</div>
             <div style="font-size:32px;font-weight:1000;margin-top:6px">${onlineCount}</div>
             <div class="mini">Pengunjung aktif (≈ 15 detik terakhir)</div>
           </div>
+
           <div class="card" style="grid-column:span 6;background:linear-gradient(135deg,rgba(255,79,163,.10),rgba(255,158,208,.08))">
             <div style="font-weight:1000;font-size:16px">📝 Skor terakhir (browser ini)</div>
             <div style="font-size:32px;font-weight:1000;margin-top:6px">${sc}</div>
             <div class="mini">Tersimpan lokal</div>
           </div>
+
+          <div class="card" style="grid-column:span 12;background:rgba(255,255,255,.70)">
+            <div style="font-weight:1000;margin-bottom:8px">⚙️ Mode Perangkat</div>
+            <div class="mini">Mode sekarang: <b>${escapeHtml(telem?.mode || "-")}</b></div>
+            <div class="mini">Auto: Pompa2 ON ≥ 80% dan OFF ≤ 25%. Lampu Desa ON jika flow ≥ 3.0 L/menit.</div>
+          </div>
         </div>
       </div>
     `;
+
+    document.getElementById("btnLockGuru").onclick = ()=>{
+      setGuruAllowed(false);
+      toast("🔒 Menu Guru dikunci");
+      render();
+    };
   }
 
   /* ===================== DIORAMA WITH PIN GATE ===================== */
@@ -1104,7 +1190,7 @@ function render(){
     const ok = dioramaAllowed();
 
     if(!ok){
-      setGuide("Menu Diorama terkunci 🔒 Masukkan PIN dulu ya, Boss 🙂");
+      setGuide("Menu Diorama terkunci 🔒 Masukkan PIN dulu ya 🙂");
       app.innerHTML = `
         <div class="card">
           <div class="h2">🎥 Diorama (Terkunci)</div>
@@ -1117,7 +1203,7 @@ function render(){
             <div class="mini">Hanya orang yang punya PIN yang bisa menyalakan Evaporasi/Kondensasi/dll.</div>
 
             <div class="pinRow">
-              <input id="pinInput" inputmode="numeric" placeholder="••••••" maxlength="6">
+              <input id="pinInput" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
               <button class="btn b-orange" id="btnPin" style="flex:0 0 auto;min-width:160px">
                 <span><i>✅</i> Buka</span><span>➡</span>
               </button>
@@ -1141,7 +1227,7 @@ function render(){
           msgEl.textContent = "Selamat berpetualang di dunia Hidrologi Heroes";
           sfxPinOk();
           toast("🔓 Diorama terbuka!");
-          setTimeout(()=>render(), 350);
+          setTimeout(()=>render(), 250);
         }else{
           msgEl.style.color = "#b02020";
           msgEl.textContent = "Anda memasukkan PIN yang salah";
@@ -1160,14 +1246,16 @@ function render(){
       return updateFooterNav();
     }
 
-    // if PIN OK
     setGuide("Selamat berpetualang di dunia Hidrologi Heroes! 🎉 Klik tombol diorama ya!");
     app.innerHTML = `
       <div class="card">
         <div class="h2">🎥 Diorama (Unlocked)</div>
-        <div class="mini">Klik tombol proses siklus air. Perintah dikirim ke Firebase, lalu ESP32 mengeksekusi.</div>
+        <div class="mini">Perintah dikirim ke Firebase, lalu ESP32 mengeksekusi.</div>
         <div class="mini" style="margin-top:8px;font-weight:1000;color:#0c7a5c">
           ✅ Selamat berpetualang di dunia Hidrologi Heroes
+        </div>
+        <div class="mini" style="margin-top:6px">
+          Aturan perangkat: Lampu Desa ON jika <b>flow ≥ 3.0 L/menit</b>. Pompa2 (Auto) ON ≥ <b>80%</b> dan OFF ≤ <b>25%</b>.
         </div>
         <div style="height:10px"></div>
         <button class="pill" id="btnLock" title="Kunci lagi Diorama">🔒 Kunci Lagi</button>
@@ -1189,6 +1277,7 @@ function render(){
           <div class="card" style="grid-column:span 12;background:rgba(255,255,255,.70)">
             <div style="font-weight:1000;margin-bottom:8px">🔌 Status Output</div>
             <div class="mini" id="outS">A:- B:- C:- D:- | LD:- P2:-</div>
+            <div class="mini" style="margin-top:6px">⚙️ Mode sekarang: <b id="modeNow">${escapeHtml(telem?.mode || "-")}</b></div>
           </div>
         </div>
       </div>
@@ -1211,14 +1300,21 @@ function render(){
       render();
     };
 
-    document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
-    document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
-    document.getElementById("bC").onclick=()=>sendCmd({k:"C"});
-    document.getElementById("bD").onclick=()=>sendCmd({k:"D"});
-    document.getElementById("bOff").onclick=()=>sendCmd({k:"ALLOFF"});
+    document.getElementById("bA").onclick=()=>sendCmd({k:"A"}, "✅ Evaporasi dikirim");
+    document.getElementById("bB").onclick=()=>sendCmd({k:"B"}, "✅ Kondensasi dikirim");
+    document.getElementById("bC").onclick=()=>sendCmd({k:"C"}, "✅ Presipitasi dikirim");
+    document.getElementById("bD").onclick=()=>sendCmd({k:"D"}, "✅ Banjir dikirim");
+    document.getElementById("bOff").onclick=()=>sendCmd({k:"ALLOFF"}, "⛔ Matikan semua dikirim");
+
+    // ✅ REVISI (Boss): saat klik Ganti Mode, tampilkan mode yang sedang berjalan
     document.getElementById("bMode").onclick=()=>{
-      const next = (telem?.mode==="manual") ? "auto" : "manual";
-      sendCmd({mode: next});
+      const cur = (telem?.mode || "auto");
+      const next = (cur === "manual") ? "auto" : "manual";
+      const msg = `⚙️ Mode sekarang: ${cur.toUpperCase()} → ganti ke ${next.toUpperCase()}`;
+      sendCmd({mode: next}, msg);
+      // UI lokal cepat (biar user langsung lihat), telemetry akan mengonfirmasi di polling berikutnya
+      document.getElementById("modeNow").textContent = next;
+      document.getElementById("hdrMode").textContent = next;
     };
 
     updateDioramaUI();
@@ -1227,7 +1323,6 @@ function render(){
   updateFooterNav();
 }
 
-/* ====== detail page template ====== */
 function proyekDetail(title, imgSrc, desc, bullets){
   const items = bullets.map(x=>`<li style="margin:6px 0">${escapeHtml(x)}</li>`).join("");
   return `
@@ -1354,6 +1449,9 @@ function updateDioramaUI(){
   document.getElementById("fLpm").textContent = `${flow} L/menit`;
   document.getElementById("outS").textContent =
     `A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${C?"ON":"OFF"} D:${D?"ON":"OFF"} | LD:${LD?"ON":"OFF"} P2:${P2?"ON":"OFF"}`;
+
+  const mEl = document.getElementById("modeNow");
+  if(mEl) mEl.textContent = (telem?.mode || "-");
 }
 
 /* ================== Footer Nav behavior ================== */
