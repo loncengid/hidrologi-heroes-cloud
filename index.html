@@ -729,8 +729,9 @@ function updateDioramaUI(){
   const A = !!telem?.outA, B = !!telem?.outB, C = !!telem?.outC, D = !!telem?.outD;
   const LD = !!telem?.lampuDesa, P2 = !!telem?.pompa2;
   const OV = !!telem?.pumpOverride;
-
-  document.getElementById("uPct").textContent = `${percent}%`;
+  const cm = (telem?.ultra_cm ?? "-");
+  
+  document.getElementById("uPct").textContent = `${percent}%  (${cm} cm)`;
   document.getElementById("fLpm").textContent = `${flow} L/menit`;
   document.getElementById("outS").textContent =
     `A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${C?"ON":"OFF"} D:${D?"ON":"OFF"} | LD:${LD?"ON":"OFF"} P2:${P2?"ON":"OFF"}`;
