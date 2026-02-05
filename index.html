@@ -477,14 +477,19 @@
 
 <script>
 /* ================== ASSET URLS (RAW GitHub) ================== */
+/* Boss repo screenshot: Scene Banjir.png, Scene Evaporasi.png, Scene Kondensasi.png, Scene PLTMH.png, Scene Presipitasi.png, Tirta 1.png, Tirta 2.png, audio niseef.mp3 */
 const ASSETS_BASE = "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/";
-const IMG_TIRTA   = ASSETS_BASE + "karakter%20tirta.png";
+
+const IMG_TIRTA   = ASSETS_BASE + "Tirta%201.png";                 // sesuai repo
 const IMG_BANJIR  = ASSETS_BASE + "Scene%20Banjir.png";
 const IMG_EVAP    = ASSETS_BASE + "Scene%20Evaporasi.png";
 const IMG_KOND    = ASSETS_BASE + "Scene%20Kondensasi.png";
 const IMG_PRES    = ASSETS_BASE + "Scene%20Presipitasi.png";
 const IMG_PLTMH   = ASSETS_BASE + "Scene%20PLTMH.png";
+
+// kalau file QR belum ada di repo, aman: nanti auto fallback ke SVG placeholder
 const IMG_QR      = ASSETS_BASE + "qrcode%20yt%20channel%20aksa%20swastika.png";
+
 const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 const AUDIO_BANJIR = ASSETS_BASE + "suara%20banjir%20bandang.mp3";
 
@@ -494,9 +499,48 @@ const GURU_PIN    = "1234";
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 const STORAGE_GURU_OK    = "hh_guru_ok";
 
+/* ====== fallback SVG (supaya gambar 404 gak bikin blank) ====== */
+function svgData(svg){ return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); }
+
+const PRES_FALLBACK_SVG = svgData(`
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="190">
+  <rect width="100%" height="100%" fill="#fff7e8"/>
+  <g fill="#ffffff" stroke="#ffe0a3" stroke-width="2">
+    <ellipse cx="130" cy="62" rx="62" ry="30"/>
+    <ellipse cx="92" cy="70" rx="38" ry="22"/>
+    <ellipse cx="172" cy="72" rx="42" ry="24"/>
+  </g>
+  <g fill="#2a7fff">
+    <path d="M80 120 C90 105 102 105 108 120 C100 130 90 132 80 120Z"/>
+    <path d="M125 122 C135 107 147 107 154 122 C147 132 136 134 125 122Z"/>
+    <path d="M170 120 C180 105 192 105 198 120 C192 130 182 132 170 120Z"/>
+  </g>
+  <rect x="0" y="150" width="260" height="40" fill="#cfe7ff"/>
+  <text x="14" y="28" font-family="Arial" font-weight="900" font-size="18" fill="#0d2b45">Presipitasi</text>
+</svg>`);
+
+const GENERIC_FALLBACK_SVG = svgData(`
+<svg xmlns="http://www.w3.org/2000/svg" width="260" height="190">
+  <rect width="100%" height="100%" fill="#eef6ff"/>
+  <text x="14" y="40" font-family="Arial" font-weight="900" font-size="16" fill="#0d2b45">Gambar tidak ditemukan</text>
+  <text x="14" y="70" font-family="Arial" font-weight="700" font-size="12" fill="#4b647a">Cek nama file di GitHub Assets</text>
+</svg>`);
+
+function safeImg(src, fallback){
+  const f = fallback || GENERIC_FALLBACK_SVG;
+  return {src, onerror:`this.onerror=null;this.src='${f}'`};
+}
+
 /* set Tirta images + audio */
-document.getElementById("tirtaLogo").src  = IMG_TIRTA;
-document.getElementById("tirtaGuide").src = IMG_TIRTA;
+{
+  const a = safeImg(IMG_TIRTA);
+  document.getElementById("tirtaLogo").src = a.src;
+  document.getElementById("tirtaLogo").setAttribute("onerror", a.onerror);
+
+  const g = safeImg(IMG_TIRTA);
+  document.getElementById("tirtaGuide").src = g.src;
+  document.getElementById("tirtaGuide").setAttribute("onerror", g.onerror);
+}
 
 const bgm = document.getElementById("bgm");
 bgm.src = AUDIO_BGM;
@@ -833,12 +877,10 @@ async function pollTelem(){
     }
 
     // === RULE LD UI: paksa mati jika bukan A yang aktif
-    // LD aktif hanya setelah A aktif 2 detik.
     const now = Date.now();
     if(telem?.outA){
       if(!aOnSinceMs) aOnSinceMs = now;
       const a2s = (now - aOnSinceMs) >= 2000;
-      // tampilan LD ikut aturan ini (walau tombol LD disembunyikan)
       telem.lampuDesa = !!a2s;
     }else{
       aOnSinceMs = 0;
@@ -867,12 +909,7 @@ async function startBanjirAlarm(){
   overlay.style.display = "block";
   banjirOn = true;
 
-  // play mp3
-  try{
-    await banjirAudio.play();
-  }catch(e){
-    // kalau browser blokir, minimal tetap overlay + getar saat user klik
-  }
+  try{ await banjirAudio.play(); }catch(e){}
 
   vibrateBanjir();
   clearInterval(banjirVibeTimer);
@@ -891,24 +928,19 @@ function stopBanjirAlarm(){
 function handleBanjirAlarm(){
   const pct = Number(telem?.ultra_percent ?? -1);
 
-  // aktif saat pompa2 ON
   if(telem?.pompa2){
     if(!banjirOn) startBanjirAlarm();
     return;
   }
 
-  // matikan alarm jika air sudah <=30%
   if(banjirOn && pct >= 0 && pct <= 30){
     stopBanjirAlarm();
   }
 
-  // kalau pompa2 OFF tapi overlay masih nyala (safety)
   if(banjirOn && !telem?.pompa2 && (pct < 0 || pct <= 30)){
     stopBanjirAlarm();
   }
 }
-
-// Biar audio banjir bisa jalan setelah user interaksi:
 window.addEventListener("pointerdown", async ()=>{
   try{
     if(banjirOn && banjirAudio.paused) await banjirAudio.play();
@@ -920,7 +952,6 @@ let page = "home";
 let historyStack = ["home"];
 
 function setGuide(text){
-  // replace first text node
   const gt = document.getElementById("guideText");
   gt.childNodes[0].textContent = text + " ";
 }
@@ -952,38 +983,15 @@ function setDioramaAllowed(ok){ sessionStorage.setItem(STORAGE_DIORAMA_OK, ok ? 
 function guruAllowed(){ return sessionStorage.getItem(STORAGE_GURU_OK) === "1"; }
 function setGuruAllowed(ok){ sessionStorage.setItem(STORAGE_GURU_OK, ok ? "1" : "0"); }
 
-/* ================== SVG fallback (Presipitasi) ================== */
-function svgData(svg){
-  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-}
-function IMG_PRES(){
-  return svgData(`
-  <svg xmlns="http://www.w3.org/2000/svg" width="220" height="180">
-    <rect width="100%" height="100%" fill="#fff7e8"/>
-    <g fill="#ffffff" stroke="#ffe0a3" stroke-width="2">
-      <ellipse cx="110" cy="62" rx="52" ry="28"/>
-      <ellipse cx="78" cy="68" rx="34" ry="22"/>
-      <ellipse cx="148" cy="70" rx="36" ry="24"/>
-    </g>
-    <g fill="#2a7fff">
-      <path d="M70 110 C80 95 90 95 95 110 C90 120 80 122 70 110Z"/>
-      <path d="M105 112 C115 97 125 97 130 112 C125 122 115 124 105 112Z"/>
-      <path d="M140 110 C150 95 160 95 165 110 C160 120 150 122 140 110Z"/>
-    </g>
-    <rect x="0" y="138" width="220" height="42" fill="#cfe7ff"/>
-    <text x="14" y="26" font-family="Arial" font-weight="900" font-size="16" fill="#0d2b45">Presipitasi</text>
-  </svg>`);
-}
-
-/* ================== BANK SOAL (10 soal acak, bergambar) ================== */
+/* ================== BANK SOAL ================== */
 const QUESTION_BANK = [
   { img: IMG_EVAP,  q:"Apa yang disebut evaporasi?", o:["Air berubah jadi es","Air menguap karena panas","Awan turun jadi hujan"], a:1 },
   { img: IMG_KOND,  q:"Kondensasi itu terjadi saat...", o:["Uap air jadi awan","Hujan jadi sungai","Air jadi batu"], a:0 },
-  { img: IMG_PRES(), q:"Presipitasi adalah...", o:["Air menguap","Awan terbentuk","Hujan turun ke bumi"], a:2 },
+  { img: IMG_PRES,  q:"Presipitasi adalah...", o:["Air menguap","Awan terbentuk","Hujan turun ke bumi"], a:2 },
   { img: IMG_BANJIR, q:"Banjir biasanya terjadi karena...", o:["Air berlebih dan meluap","Air menguap habis","Awan hilang"], a:0 },
   { img: IMG_EVAP,  q:"Sumber energi yang memicu evaporasi adalah...", o:["Matahari","Bulan","Bintang jatuh"], a:0 },
   { img: IMG_KOND,  q:"Awan terbentuk dari...", o:["Tanah kering","Uap air yang berkumpul","Batu kecil"], a:1 },
-  { img: IMG_PRES(), q:"Setelah hujan turun, air biasanya...", o:["Naik ke langit lagi langsung","Mengalir ke sungai/laut","Berubah jadi api"], a:1 },
+  { img: IMG_PRES,  q:"Setelah hujan turun, air biasanya...", o:["Naik ke langit lagi langsung","Mengalir ke sungai/laut","Berubah jadi api"], a:1 },
   { img: IMG_BANJIR, q:"Cara mengurangi risiko banjir adalah...", o:["Buang sampah ke sungai","Menjaga saluran air bersih","Menutup semua pohon"], a:1 },
   { img: IMG_PLTMH, q:"PLTMH itu singkatan dari...", o:["Pembangkit Listrik Tenaga Mikrohidro","Pabrik Lampu Tengah Malam","Perahu Listrik Tenaga Matahari"], a:0 },
   { img: IMG_PLTMH, q:"PLTMH memanfaatkan energi dari...", o:["Angin","Arus air","Pasir"], a:1 },
@@ -1052,6 +1060,7 @@ function render(){
 
   if(page==="kisah"){
     setGuide("Scan QR ini ya! Nanti kamu bisa lihat kisah Tirta 🙂");
+    const q = safeImg(IMG_QR);
     app.innerHTML = `
       <div class="card">
         <div class="h2">📺 Kisah Perjalanan si Tirta, Air Ajaib</div>
@@ -1060,7 +1069,7 @@ function render(){
 
       <div class="card">
         <div class="qCard">
-          <div class="qImg"><img alt="QR" src="${IMG_QR}"></div>
+          <div class="qImg"><img alt="QR" src="${q.src}" onerror="${q.onerror}"></div>
           <div>
             <div style="font-weight:1000">Arahkan kamera HP ke QR 👉</div>
             <div class="mini">Kalau QR belum kebaca, coba zoom sedikit atau naikkan brightness layar.</div>
@@ -1072,6 +1081,11 @@ function render(){
 
   if(page==="proyek"){
     setGuide("Pilih salah satu ya: Evaporasi, Kondensasi, Presipitasi, atau Banjir 🙂");
+    const pEv = safeImg(IMG_EVAP);
+    const pKo = safeImg(IMG_KOND);
+    const pPr = safeImg(IMG_PRES, PRES_FALLBACK_SVG);
+    const pBa = safeImg(IMG_BANJIR);
+
     app.innerHTML = `
       <div class="card">
         <div class="h2">📚 Penjelasan Proyek</div>
@@ -1081,28 +1095,28 @@ function render(){
       <div class="subgrid">
         <div class="topic" id="pEv">
           <div class="topicHead">
-            <div class="pic"><img alt="Evaporasi" src="${IMG_EVAP}"></div>
+            <div class="pic"><img alt="Evaporasi" src="${pEv.src}" onerror="${pEv.onerror}"></div>
             <div><h3>Evaporasi</h3><div class="mini">Air menguap karena panas</div></div>
           </div>
         </div>
 
         <div class="topic" id="pKo">
           <div class="topicHead">
-            <div class="pic"><img alt="Kondensasi" src="${IMG_KOND}"></div>
+            <div class="pic"><img alt="Kondensasi" src="${pKo.src}" onerror="${pKo.onerror}"></div>
             <div><h3>Kondensasi</h3><div class="mini">Uap air jadi awan</div></div>
           </div>
         </div>
 
         <div class="topic" id="pPr">
           <div class="topicHead">
-            <div class="pic"><img alt="Presipitasi" src="${IMG_PRES()}"></div>
+            <div class="pic"><img alt="Presipitasi" src="${pPr.src}" onerror="${pPr.onerror}"></div>
             <div><h3>Presipitasi</h3><div class="mini">Awan jenuh → hujan turun</div></div>
           </div>
         </div>
 
         <div class="topic" id="pBa">
           <div class="topicHead">
-            <div class="pic"><img alt="Banjir" src="${IMG_BANJIR}"></div>
+            <div class="pic"><img alt="Banjir" src="${pBa.src}" onerror="${pBa.onerror}"></div>
             <div><h3>Banjir</h3><div class="mini">Air berlebih → meluap</div></div>
           </div>
         </div>
@@ -1119,7 +1133,7 @@ function render(){
     setGuide("Evaporasi = air naik jadi uap 💨");
     app.innerHTML = proyekDetail(
       "Evaporasi",
-      IMG_EVAP,
+      safeImg(IMG_EVAP).src,
       "Evaporasi adalah proses saat air berubah menjadi uap karena panas matahari. Uap air naik ke atas dan memulai siklus air.",
       ["Air di laut/danau menguap", "Jemuran jadi kering", "Uap air naik ke langit"]
     );
@@ -1128,7 +1142,7 @@ function render(){
     setGuide("Kondensasi = uap jadi awan ☁️");
     app.innerHTML = proyekDetail(
       "Kondensasi",
-      IMG_KOND,
+      safeImg(IMG_KOND).src,
       "Kondensasi adalah proses saat uap air mendingin dan berkumpul menjadi titik-titik air kecil, lalu membentuk awan.",
       ["Uap air jadi awan", "Contoh: embun di gelas dingin", "Awan makin tebal kalau uap banyak"]
     );
@@ -1137,7 +1151,7 @@ function render(){
     setGuide("Presipitasi = hujan turun 🌧️");
     app.innerHTML = proyekDetail(
       "Presipitasi",
-      IMG_PRES(),
+      safeImg(IMG_PRES, PRES_FALLBACK_SVG).src,
       "Presipitasi adalah proses turunnya air dari awan ke bumi, seperti hujan. Ini terjadi saat awan sudah sangat jenuh.",
       ["Awan gelap → hujan", "Air turun ke tanah", "Air mengalir ke sungai/laut"]
     );
@@ -1146,7 +1160,7 @@ function render(){
     setGuide("Banjir = air meluap. Yuk jaga lingkungan! ♻️");
     app.innerHTML = proyekDetail(
       "Banjir",
-      IMG_BANJIR,
+      safeImg(IMG_BANJIR).src,
       "Banjir terjadi saat air berlebih tidak tertampung sehingga sungai/saluran meluap. Bisa karena hujan deras, saluran tersumbat, atau resapan berkurang.",
       ["Jaga saluran air bersih", "Jangan buang sampah sembarangan", "Buat resapan/biopori"]
     );
@@ -1216,7 +1230,7 @@ function render(){
     `;
   }
 
-  /* ===================== GURU WITH PIN GATE (NO IP) ===================== */
+  /* ===================== GURU WITH PIN GATE ===================== */
   if(page==="guru"){
     const ok = guruAllowed();
 
@@ -1437,17 +1451,12 @@ function render(){
     document.getElementById("bD").onclick=()=>sendCmd({k:"D"});
     document.getElementById("bOff").onclick=()=>sendCmd({k:"ALLOFF"});
     document.getElementById("bAll").onclick=()=>{
-      // Boss request: Hidupkan semua => A,B,C,D ON
-      // kita kirim satu per satu (lebih kompatibel)
       sendCmd({k:"A"}); setTimeout(()=>sendCmd({k:"B"}), 120);
       setTimeout(()=>sendCmd({k:"C"}), 240);
       setTimeout(()=>sendCmd({k:"D"}), 360);
       toast("🔥 Menyalakan A–D...");
     };
     document.getElementById("bPump").onclick=()=>{
-      // tombol Pompa Banjir (manual trigger)
-      // catatan: firmware harus menangani k:"PUMP" atau k:"P2" sesuai yang Boss pakai.
-      // biar kompatibel, kita kirim dua kali berbeda key.
       sendCmd({k:"P2"}); setTimeout(()=>sendCmd({k:"PUMP"}), 140);
       toast("🚨 Pompa Banjir dikirim");
     };
@@ -1460,11 +1469,12 @@ function render(){
 
 function proyekDetail(title, imgSrc, desc, bullets){
   const items = bullets.map(x=>`<li style="margin:6px 0">${escapeHtml(x)}</li>`).join("");
+  const p = safeImg(imgSrc, GENERIC_FALLBACK_SVG);
   return `
     <div class="card">
       <div class="h2">📚 ${escapeHtml(title)}</div>
       <div class="qCard" style="margin-top:10px">
-        <div class="qImg"><img alt="" src="${imgSrc}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="qImg"><img alt="" src="${p.src}" onerror="${p.onerror}" style="width:100%;height:100%;object-fit:cover"></div>
         <div>
           <div class="mini" style="font-size:13px;line-height:1.55">${escapeHtml(desc)}</div>
           <div style="height:10px"></div>
@@ -1487,12 +1497,13 @@ function renderQuiz(app){
 
   const q = quizSet[quizIdx];
   const pct = Math.round(((quizIdx)/quizSet.length)*100);
+  const qi = (q.img===IMG_PRES) ? safeImg(q.img, PRES_FALLBACK_SVG) : safeImg(q.img);
 
   app.innerHTML = `
     <div class="card">
       <div class="quizTop">
         <div style="display:flex;align-items:center;gap:10px">
-          <img src="${IMG_TIRTA}" alt="Tirta" style="width:46px;height:46px;border-radius:16px;border:1px solid rgba(13,43,69,.12);object-fit:cover">
+          <img src="${safeImg(IMG_TIRTA).src}" onerror="${safeImg(IMG_TIRTA).onerror}" alt="Tirta" style="width:46px;height:46px;border-radius:16px;border:1px solid rgba(13,43,69,.12);object-fit:cover">
           <div>
             <div class="h2" style="margin:0">📝 Kuis Bergambar</div>
             <div class="mini"><b>${escapeHtml(s.name||"Siswa")}</b> (Kelas ${escapeHtml(s.kelas||"-")})</div>
@@ -1509,7 +1520,7 @@ function renderQuiz(app){
     <div class="card">
       <div class="qCard">
         <div class="qImg">
-          <img alt="Ilustrasi" src="${q.img}">
+          <img alt="Ilustrasi" src="${qi.src}" onerror="${qi.onerror}">
         </div>
         <div>
           <div style="font-weight:1000;font-size:16px;margin-bottom:10px">${escapeHtml(q.q)}</div>
@@ -1576,8 +1587,6 @@ function updateDioramaUI(){
   if(!u) return;
 
   const percent = (telem?.ultra_percent ?? "-");
-
-  // Flow dipaksa 0 jika A OFF
   const flow = (telem?.outA ? (telem?.flow_lpm ?? "-") : 0);
 
   const A = !!telem?.outA, B = !!telem?.outB, C = !!telem?.outC, D = !!telem?.outD;
