@@ -265,7 +265,6 @@
   }
   .toast.on{opacity:.92}
 
-  /* Tirta guide */
   .guide{
     position:fixed;
     right:14px;
@@ -323,7 +322,6 @@
     box-shadow:0 10px 18px rgba(0,0,0,.10);
   }
 
-  /* FX layer */
   .fx-layer{
     position:fixed; inset:0;
     pointer-events:none;
@@ -357,7 +355,6 @@
     100%{opacity:0; transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2)}
   }
 
-  /* PIN UI */
   .pinWrap{
     display:grid;
     gap:10px;
@@ -379,7 +376,6 @@
     letter-spacing:2px;
   }
 
-  /* BANJIR overlay (heboh + blink) */
   .banjirOverlay{
     position:fixed; inset:0;
     display:none;
@@ -466,7 +462,6 @@
 
 <div class="fx-layer" id="fx"></div>
 
-<!-- BANJIR overlay -->
 <div class="banjirOverlay" id="banjirOverlay">
   <div class="banjirText">BANJIR...</div>
   <div class="banjirSub">⚠️ Air besar! Tetap aman ya!</div>
@@ -477,19 +472,14 @@
 
 <script>
 /* ================== ASSET URLS (RAW GitHub) ================== */
-/* Boss repo screenshot: Scene Banjir.png, Scene Evaporasi.png, Scene Kondensasi.png, Scene PLTMH.png, Scene Presipitasi.png, Tirta 1.png, Tirta 2.png, audio niseef.mp3 */
 const ASSETS_BASE = "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/";
-
-const IMG_TIRTA   = ASSETS_BASE + "Tirta%201.png";                 // sesuai repo
+const IMG_TIRTA   = ASSETS_BASE + "karakter%20tirta.png";
 const IMG_BANJIR  = ASSETS_BASE + "Scene%20Banjir.png";
 const IMG_EVAP    = ASSETS_BASE + "Scene%20Evaporasi.png";
 const IMG_KOND    = ASSETS_BASE + "Scene%20Kondensasi.png";
 const IMG_PRES    = ASSETS_BASE + "Scene%20Presipitasi.png";
 const IMG_PLTMH   = ASSETS_BASE + "Scene%20PLTMH.png";
-
-// kalau file QR belum ada di repo, aman: nanti auto fallback ke SVG placeholder
 const IMG_QR      = ASSETS_BASE + "qrcode%20yt%20channel%20aksa%20swastika.png";
-
 const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 const AUDIO_BANJIR = ASSETS_BASE + "suara%20banjir%20bandang.mp3";
 
@@ -499,48 +489,9 @@ const GURU_PIN    = "1234";
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 const STORAGE_GURU_OK    = "hh_guru_ok";
 
-/* ====== fallback SVG (supaya gambar 404 gak bikin blank) ====== */
-function svgData(svg){ return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); }
-
-const PRES_FALLBACK_SVG = svgData(`
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="190">
-  <rect width="100%" height="100%" fill="#fff7e8"/>
-  <g fill="#ffffff" stroke="#ffe0a3" stroke-width="2">
-    <ellipse cx="130" cy="62" rx="62" ry="30"/>
-    <ellipse cx="92" cy="70" rx="38" ry="22"/>
-    <ellipse cx="172" cy="72" rx="42" ry="24"/>
-  </g>
-  <g fill="#2a7fff">
-    <path d="M80 120 C90 105 102 105 108 120 C100 130 90 132 80 120Z"/>
-    <path d="M125 122 C135 107 147 107 154 122 C147 132 136 134 125 122Z"/>
-    <path d="M170 120 C180 105 192 105 198 120 C192 130 182 132 170 120Z"/>
-  </g>
-  <rect x="0" y="150" width="260" height="40" fill="#cfe7ff"/>
-  <text x="14" y="28" font-family="Arial" font-weight="900" font-size="18" fill="#0d2b45">Presipitasi</text>
-</svg>`);
-
-const GENERIC_FALLBACK_SVG = svgData(`
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="190">
-  <rect width="100%" height="100%" fill="#eef6ff"/>
-  <text x="14" y="40" font-family="Arial" font-weight="900" font-size="16" fill="#0d2b45">Gambar tidak ditemukan</text>
-  <text x="14" y="70" font-family="Arial" font-weight="700" font-size="12" fill="#4b647a">Cek nama file di GitHub Assets</text>
-</svg>`);
-
-function safeImg(src, fallback){
-  const f = fallback || GENERIC_FALLBACK_SVG;
-  return {src, onerror:`this.onerror=null;this.src='${f}'`};
-}
-
 /* set Tirta images + audio */
-{
-  const a = safeImg(IMG_TIRTA);
-  document.getElementById("tirtaLogo").src = a.src;
-  document.getElementById("tirtaLogo").setAttribute("onerror", a.onerror);
-
-  const g = safeImg(IMG_TIRTA);
-  document.getElementById("tirtaGuide").src = g.src;
-  document.getElementById("tirtaGuide").setAttribute("onerror", g.onerror);
-}
+document.getElementById("tirtaLogo").src  = IMG_TIRTA;
+document.getElementById("tirtaGuide").src = IMG_TIRTA;
 
 const bgm = document.getElementById("bgm");
 bgm.src = AUDIO_BGM;
@@ -626,7 +577,6 @@ function sfxPinBad(){
 /* ================== STAR POP FX ================== */
 const fx = document.getElementById("fx");
 function rand(min,max){ return min + Math.random()*(max-min); }
-
 function starPopAt(x,y){
   const s = document.createElement("div");
   s.className = "star-pop";
@@ -762,6 +712,7 @@ tirta.addEventListener("pointerdown", (e)=>{
 tirta.addEventListener("pointermove", (e)=> onDragMove(e.clientX, e.clientY));
 tirta.addEventListener("pointerup", ()=> onDragEnd());
 tirta.addEventListener("pointercancel", ()=> onDragEnd());
+
 window.addEventListener("resize", ()=>{
   const raw = localStorage.getItem(STORAGE_POS);
   if(!raw) return;
@@ -865,18 +816,18 @@ async function sendCmd(patch){
     toast("⚠️ Gagal kirim");
   }
 }
+
 async function pollTelem(){
   try{
     telem = await rtdbGet(PATH_TELEM);
-
     document.getElementById("hdrVer").textContent = telem?.version || "-";
 
-    // === RULE UI: Flow dipaksa 0 kalau A OFF
+    // Flow dipaksa 0 kalau A OFF (untuk tampilan)
     if(telem && !telem.outA){
       telem.flow_lpm = 0;
     }
 
-    // === RULE LD UI: paksa mati jika bukan A yang aktif
+    // aturan LD internal (walau LD disembunyikan, tetap dipakai untuk logic display telem bila perlu)
     const now = Date.now();
     if(telem?.outA){
       if(!aOnSinceMs) aOnSinceMs = now;
@@ -887,7 +838,6 @@ async function pollTelem(){
       telem.lampuDesa = false;
     }
 
-    // BANJIR ALARM: P2 aktif => nyala alarm + overlay, mati kalau <=30%
     handleBanjirAlarm();
 
     if(page==="diorama") updateDioramaUI();
@@ -896,7 +846,7 @@ async function pollTelem(){
 pollTelem();
 setInterval(pollTelem, 1000);
 
-/* ================== BANJIR ALARM (MP3 asli + blink + vibrate) ================== */
+/* ================== BANJIR ALARM ================== */
 let banjirOn = false;
 let banjirVibeTimer = null;
 
@@ -908,9 +858,7 @@ async function startBanjirAlarm(){
   const overlay = document.getElementById("banjirOverlay");
   overlay.style.display = "block";
   banjirOn = true;
-
   try{ await banjirAudio.play(); }catch(e){}
-
   vibrateBanjir();
   clearInterval(banjirVibeTimer);
   banjirVibeTimer = setInterval(vibrateBanjir, 2200);
@@ -919,7 +867,6 @@ function stopBanjirAlarm(){
   const overlay = document.getElementById("banjirOverlay");
   overlay.style.display = "none";
   banjirOn = false;
-
   banjirAudio.pause();
   try{ banjirAudio.currentTime = 0; }catch(e){}
   clearInterval(banjirVibeTimer);
@@ -927,16 +874,13 @@ function stopBanjirAlarm(){
 }
 function handleBanjirAlarm(){
   const pct = Number(telem?.ultra_percent ?? -1);
-
   if(telem?.pompa2){
     if(!banjirOn) startBanjirAlarm();
     return;
   }
-
   if(banjirOn && pct >= 0 && pct <= 30){
     stopBanjirAlarm();
   }
-
   if(banjirOn && !telem?.pompa2 && (pct < 0 || pct <= 30)){
     stopBanjirAlarm();
   }
@@ -950,6 +894,9 @@ window.addEventListener("pointerdown", async ()=>{
 /* ================== NAV STATE ================== */
 let page = "home";
 let historyStack = ["home"];
+
+// agar "paksa OFF" saat masuk diorama cuma sekali per masuk
+let dioramaEntryLockSent = false;
 
 function setGuide(text){
   const gt = document.getElementById("guideText");
@@ -1020,6 +967,7 @@ function render(){
 
   if(page==="home"){
     setGuide("Hai! Aku Tirta 💧 Klik menu yang kamu mau ya! (Kalau nutup tombol, drag aku 😄)");
+    dioramaEntryLockSent = false; // reset flag saat keluar dari diorama
     app.innerHTML = `
       <div class="grid">
         <div class="card hero">
@@ -1060,7 +1008,7 @@ function render(){
 
   if(page==="kisah"){
     setGuide("Scan QR ini ya! Nanti kamu bisa lihat kisah Tirta 🙂");
-    const q = safeImg(IMG_QR);
+    dioramaEntryLockSent = false;
     app.innerHTML = `
       <div class="card">
         <div class="h2">📺 Kisah Perjalanan si Tirta, Air Ajaib</div>
@@ -1069,7 +1017,7 @@ function render(){
 
       <div class="card">
         <div class="qCard">
-          <div class="qImg"><img alt="QR" src="${q.src}" onerror="${q.onerror}"></div>
+          <div class="qImg"><img alt="QR" src="${IMG_QR}"></div>
           <div>
             <div style="font-weight:1000">Arahkan kamera HP ke QR 👉</div>
             <div class="mini">Kalau QR belum kebaca, coba zoom sedikit atau naikkan brightness layar.</div>
@@ -1081,11 +1029,7 @@ function render(){
 
   if(page==="proyek"){
     setGuide("Pilih salah satu ya: Evaporasi, Kondensasi, Presipitasi, atau Banjir 🙂");
-    const pEv = safeImg(IMG_EVAP);
-    const pKo = safeImg(IMG_KOND);
-    const pPr = safeImg(IMG_PRES, PRES_FALLBACK_SVG);
-    const pBa = safeImg(IMG_BANJIR);
-
+    dioramaEntryLockSent = false;
     app.innerHTML = `
       <div class="card">
         <div class="h2">📚 Penjelasan Proyek</div>
@@ -1095,28 +1039,28 @@ function render(){
       <div class="subgrid">
         <div class="topic" id="pEv">
           <div class="topicHead">
-            <div class="pic"><img alt="Evaporasi" src="${pEv.src}" onerror="${pEv.onerror}"></div>
+            <div class="pic"><img alt="Evaporasi" src="${IMG_EVAP}"></div>
             <div><h3>Evaporasi</h3><div class="mini">Air menguap karena panas</div></div>
           </div>
         </div>
 
         <div class="topic" id="pKo">
           <div class="topicHead">
-            <div class="pic"><img alt="Kondensasi" src="${pKo.src}" onerror="${pKo.onerror}"></div>
+            <div class="pic"><img alt="Kondensasi" src="${IMG_KOND}"></div>
             <div><h3>Kondensasi</h3><div class="mini">Uap air jadi awan</div></div>
           </div>
         </div>
 
         <div class="topic" id="pPr">
           <div class="topicHead">
-            <div class="pic"><img alt="Presipitasi" src="${pPr.src}" onerror="${pPr.onerror}"></div>
+            <div class="pic"><img alt="Presipitasi" src="${IMG_PRES}"></div>
             <div><h3>Presipitasi</h3><div class="mini">Awan jenuh → hujan turun</div></div>
           </div>
         </div>
 
         <div class="topic" id="pBa">
           <div class="topicHead">
-            <div class="pic"><img alt="Banjir" src="${pBa.src}" onerror="${pBa.onerror}"></div>
+            <div class="pic"><img alt="Banjir" src="${IMG_BANJIR}"></div>
             <div><h3>Banjir</h3><div class="mini">Air berlebih → meluap</div></div>
           </div>
         </div>
@@ -1130,43 +1074,48 @@ function render(){
   }
 
   if(page==="proyek_evaporasi"){
+    dioramaEntryLockSent = false;
     setGuide("Evaporasi = air naik jadi uap 💨");
     app.innerHTML = proyekDetail(
       "Evaporasi",
-      safeImg(IMG_EVAP).src,
+      IMG_EVAP,
       "Evaporasi adalah proses saat air berubah menjadi uap karena panas matahari. Uap air naik ke atas dan memulai siklus air.",
       ["Air di laut/danau menguap", "Jemuran jadi kering", "Uap air naik ke langit"]
     );
   }
   if(page==="proyek_kondensasi"){
+    dioramaEntryLockSent = false;
     setGuide("Kondensasi = uap jadi awan ☁️");
     app.innerHTML = proyekDetail(
       "Kondensasi",
-      safeImg(IMG_KOND).src,
+      IMG_KOND,
       "Kondensasi adalah proses saat uap air mendingin dan berkumpul menjadi titik-titik air kecil, lalu membentuk awan.",
       ["Uap air jadi awan", "Contoh: embun di gelas dingin", "Awan makin tebal kalau uap banyak"]
     );
   }
   if(page==="proyek_presipitasi"){
+    dioramaEntryLockSent = false;
     setGuide("Presipitasi = hujan turun 🌧️");
     app.innerHTML = proyekDetail(
       "Presipitasi",
-      safeImg(IMG_PRES, PRES_FALLBACK_SVG).src,
+      IMG_PRES,
       "Presipitasi adalah proses turunnya air dari awan ke bumi, seperti hujan. Ini terjadi saat awan sudah sangat jenuh.",
       ["Awan gelap → hujan", "Air turun ke tanah", "Air mengalir ke sungai/laut"]
     );
   }
   if(page==="proyek_banjir"){
+    dioramaEntryLockSent = false;
     setGuide("Banjir = air meluap. Yuk jaga lingkungan! ♻️");
     app.innerHTML = proyekDetail(
       "Banjir",
-      safeImg(IMG_BANJIR).src,
+      IMG_BANJIR,
       "Banjir terjadi saat air berlebih tidak tertampung sehingga sungai/saluran meluap. Bisa karena hujan deras, saluran tersumbat, atau resapan berkurang.",
       ["Jaga saluran air bersih", "Jangan buang sampah sembarangan", "Buat resapan/biopori"]
     );
   }
 
   if(page==="siswa"){
+    dioramaEntryLockSent = false;
     setGuide("Isi nama + kelas dulu ya. Nanti skor kuisnya muncul ⭐");
     const s = getSession() || {};
     app.innerHTML = `
@@ -1209,10 +1158,12 @@ function render(){
   }
 
   if(page==="quiz"){
+    dioramaEntryLockSent = false;
     renderQuiz(app);
   }
 
   if(page==="hasil"){
+    dioramaEntryLockSent = false;
     setGuide("Keren! Mau coba lagi? balik ke Home lalu masuk menu Siswa 😄");
     const s=getSession()||{};
     const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
@@ -1230,8 +1181,9 @@ function render(){
     `;
   }
 
-  /* ===================== GURU WITH PIN GATE ===================== */
+  /* ===================== GURU ===================== */
   if(page==="guru"){
+    dioramaEntryLockSent = false;
     const ok = guruAllowed();
 
     if(!ok){
@@ -1245,7 +1197,6 @@ function render(){
         <div class="card">
           <div class="pinWrap">
             <div style="font-weight:1000">🔒 Masukkan PIN Guru</div>
-            <div class="mini">Setelah benar, baru bisa lihat monitoring.</div>
 
             <div class="pinRow">
               <input id="pinGuru" type="password" inputmode="numeric" placeholder="••••" maxlength="4">
@@ -1329,7 +1280,7 @@ function render(){
     };
   }
 
-  /* ===================== DIORAMA WITH PIN GATE ===================== */
+  /* ===================== DIORAMA ===================== */
   if(page==="diorama"){
     const ok = dioramaAllowed();
 
@@ -1344,7 +1295,6 @@ function render(){
         <div class="card">
           <div class="pinWrap">
             <div style="font-weight:1000">🔒 Masukkan PIN Diorama</div>
-            <div class="mini">Hanya orang yang punya PIN yang bisa menyalakan proses A–D.</div>
 
             <div class="pinRow">
               <input id="pinInput" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
@@ -1387,11 +1337,10 @@ function render(){
       return updateFooterNav();
     }
 
-    setGuide("Klik tombol diorama ya! (LD & P2 otomatis, disembunyikan)");
+    setGuide("Klik tombol diorama ya!");
     app.innerHTML = `
       <div class="card">
         <div class="h2">🎥 Diorama</div>
-        <div class="mini">A–D bisa manual. LD & P2 otomatis dan tidak ditampilkan.</div>
 
         <div class="mini" style="margin-top:8px;font-weight:1000;color:#0c7a5c">
           ✅ Selamat berpetualang di dunia Hidrologi Heroes
@@ -1410,15 +1359,12 @@ function render(){
           <div class="card" style="grid-column:span 6;background:linear-gradient(135deg,rgba(32,201,151,.10),rgba(135,245,208,.08))">
             <div style="font-weight:1000">💦 Flow</div>
             <div id="fLpm" style="font-size:34px;font-weight:1000;margin-top:6px">-</div>
-            <div class="mini">L/menit (dipaksa 0 jika A OFF)</div>
+            <div class="mini">L/menit</div>
           </div>
 
           <div class="card" style="grid-column:span 12;background:rgba(255,255,255,.70)">
             <div style="font-weight:1000;margin-bottom:8px">🔌 Status Output (A–D)</div>
             <div class="mini" id="outS">A:- B:- C:- D:-</div>
-            <div class="mini" id="noteLD" style="margin-top:6px;font-weight:1000;color:#4b647a">
-              LD aktif hanya jika A ON ≥ 2 detik. Jika A OFF → LD dipaksa OFF.
-            </div>
           </div>
         </div>
       </div>
@@ -1430,10 +1376,7 @@ function render(){
           <button class="btn b-orange" id="bC" style="grid-column:span 6"><span><i>🟡</i> Presipitasi (C)</span><span>Tap</span></button>
           <button class="btn b-pink" id="bD" style="grid-column:span 6"><span><i>⚪</i> Banjir (D)</span><span>Tap</span></button>
 
-          <button class="btn b-red" id="bAll" style="grid-column:span 6"><span><i>🔥</i> Hidupkan Semua</span><span>Tap</span></button>
-          <button class="btn b-red" id="bOff" style="grid-column:span 6"><span><i>⛔</i> Matikan Semua</span><span>Tap</span></button>
-
-          <button class="btn b-orange" id="bPump" style="grid-column:span 12"><span><i>🚨</i> Pompa Banjir</span><span>Tap</span></button>
+          <button class="btn b-red" id="bOff" style="grid-column:span 12"><span><i>⛔</i> Matikan Semua</span><span>Tap</span></button>
         </div>
       </div>
     `;
@@ -1444,22 +1387,22 @@ function render(){
       render();
     };
 
-    // Commands
+    // ====== POIN #4: Saat masuk Diorama -> paksa semua OFF sekali + tampilkan message ======
+    if(!dioramaEntryLockSent){
+      dioramaEntryLockSent = true;
+
+      toast("🎛️ Diorama siap dikendalikan");
+
+      // paksa OFF (sekali saja saat masuk menu diorama)
+      sendCmd({k:"ALLOFF"});
+    }
+
+    // Commands manual
     document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
     document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
     document.getElementById("bC").onclick=()=>sendCmd({k:"C"});
     document.getElementById("bD").onclick=()=>sendCmd({k:"D"});
     document.getElementById("bOff").onclick=()=>sendCmd({k:"ALLOFF"});
-    document.getElementById("bAll").onclick=()=>{
-      sendCmd({k:"A"}); setTimeout(()=>sendCmd({k:"B"}), 120);
-      setTimeout(()=>sendCmd({k:"C"}), 240);
-      setTimeout(()=>sendCmd({k:"D"}), 360);
-      toast("🔥 Menyalakan A–D...");
-    };
-    document.getElementById("bPump").onclick=()=>{
-      sendCmd({k:"P2"}); setTimeout(()=>sendCmd({k:"PUMP"}), 140);
-      toast("🚨 Pompa Banjir dikirim");
-    };
 
     updateDioramaUI();
   }
@@ -1469,12 +1412,11 @@ function render(){
 
 function proyekDetail(title, imgSrc, desc, bullets){
   const items = bullets.map(x=>`<li style="margin:6px 0">${escapeHtml(x)}</li>`).join("");
-  const p = safeImg(imgSrc, GENERIC_FALLBACK_SVG);
   return `
     <div class="card">
       <div class="h2">📚 ${escapeHtml(title)}</div>
       <div class="qCard" style="margin-top:10px">
-        <div class="qImg"><img alt="" src="${p.src}" onerror="${p.onerror}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="qImg"><img alt="" src="${imgSrc}" style="width:100%;height:100%;object-fit:cover"></div>
         <div>
           <div class="mini" style="font-size:13px;line-height:1.55">${escapeHtml(desc)}</div>
           <div style="height:10px"></div>
@@ -1497,13 +1439,12 @@ function renderQuiz(app){
 
   const q = quizSet[quizIdx];
   const pct = Math.round(((quizIdx)/quizSet.length)*100);
-  const qi = (q.img===IMG_PRES) ? safeImg(q.img, PRES_FALLBACK_SVG) : safeImg(q.img);
 
   app.innerHTML = `
     <div class="card">
       <div class="quizTop">
         <div style="display:flex;align-items:center;gap:10px">
-          <img src="${safeImg(IMG_TIRTA).src}" onerror="${safeImg(IMG_TIRTA).onerror}" alt="Tirta" style="width:46px;height:46px;border-radius:16px;border:1px solid rgba(13,43,69,.12);object-fit:cover">
+          <img src="${IMG_TIRTA}" alt="Tirta" style="width:46px;height:46px;border-radius:16px;border:1px solid rgba(13,43,69,.12);object-fit:cover">
           <div>
             <div class="h2" style="margin:0">📝 Kuis Bergambar</div>
             <div class="mini"><b>${escapeHtml(s.name||"Siswa")}</b> (Kelas ${escapeHtml(s.kelas||"-")})</div>
@@ -1520,7 +1461,7 @@ function renderQuiz(app){
     <div class="card">
       <div class="qCard">
         <div class="qImg">
-          <img alt="Ilustrasi" src="${qi.src}" onerror="${qi.onerror}">
+          <img alt="Ilustrasi" src="${q.img}">
         </div>
         <div>
           <div style="font-weight:1000;font-size:16px;margin-bottom:10px">${escapeHtml(q.q)}</div>
