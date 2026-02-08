@@ -129,13 +129,32 @@
     font-weight:1000;
     color:#fff;
     box-shadow:0 10px 18px rgba(0,0,0,.12);
-    transition: transform .08s ease, filter .08s ease;
+    transition: transform .08s ease, filter .08s ease, opacity .12s ease;
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     user-select:none;
   }
   .btn:active{transform: scale(.98)}
   .btn span{display:inline-flex; align-items:center; gap:10px}
   .btn i{font-style:normal; font-size:18px}
+
+  .btn:disabled{
+    cursor:not-allowed;
+    opacity:.55;
+    filter: grayscale(0.35);
+    transform:none !important;
+    box-shadow:0 8px 14px rgba(0,0,0,.08);
+  }
+
+  /* ===== ACTIVE FX (blink + reverse) ===== */
+  .btn.is-on{
+    animation: onBlink 0.85s infinite;
+    filter: saturate(1.2) contrast(1.1);
+  }
+  @keyframes onBlink{
+    0%{ transform: translateY(0); filter: none; }
+    40%{ transform: translateY(-1px); filter: invert(1) hue-rotate(180deg) contrast(1.2); }
+    100%{ transform: translateY(0); filter: none; }
+  }
 
   .b-blue{ background: linear-gradient(135deg, var(--blue1), var(--blue2)); }
   .b-pink{ background: linear-gradient(135deg, var(--pink1), var(--pink2)); }
@@ -827,7 +846,7 @@ async function pollTelem(){
       telem.flow_lpm = 0;
     }
 
-    // aturan LD internal (walau LD disembunyikan, tetap dipakai untuk logic display telem bila perlu)
+    // aturan LD internal
     const now = Date.now();
     if(telem?.outA){
       if(!aOnSinceMs) aOnSinceMs = now;
@@ -967,7 +986,7 @@ function render(){
 
   if(page==="home"){
     setGuide("Hai! Aku Tirta 💧 Klik menu yang kamu mau ya! (Kalau nutup tombol, drag aku 😄)");
-    dioramaEntryLockSent = false; // reset flag saat keluar dari diorama
+    dioramaEntryLockSent = false;
     app.innerHTML = `
       <div class="grid">
         <div class="card hero">
@@ -1242,6 +1261,12 @@ function render(){
     setGuide("Selamat datang, Guru Hidrologi Heroes 👩‍🏫");
     const s=getSession();
     const sc = s?.score ? `${s.score.score}/${s.score.total}` : "-";
+
+    // cap flow max 6 di menu guru juga
+    let f = telem?.outA ? Number(telem?.flow_lpm ?? 0) : 0;
+    if(!Number.isFinite(f)) f = 0;
+    f = Math.max(0, Math.min(6, f));
+
     app.innerHTML = `
       <div class="card">
         <div class="h2">👩‍🏫 Menu Guru</div>
@@ -1266,7 +1291,7 @@ function render(){
           <div class="card" style="grid-column:span 12;background:linear-gradient(135deg,rgba(32,201,151,.10),rgba(135,245,208,.08))">
             <div style="font-weight:1000;font-size:16px">📡 Telemetri Device</div>
             <div class="mini">Ultrasonic: <b>${escapeHtml(String(telem?.ultra_percent ?? "-"))}%</b> |
-              Flow: <b>${escapeHtml(String((telem?.outA ? telem?.flow_lpm : 0) ?? 0))} L/menit</b></div>
+              Flow: <b>${f.toFixed(1)} L/menit</b></div>
             <div class="mini">A:${telem?.outA?"ON":"OFF"} B:${telem?.outB?"ON":"OFF"} C:${telem?.outC?"ON":"OFF"} D:${telem?.outD?"ON":"OFF"}</div>
           </div>
         </div>
@@ -1358,13 +1383,16 @@ function render(){
           </div>
           <div class="card" style="grid-column:span 6;background:linear-gradient(135deg,rgba(32,201,151,.10),rgba(135,245,208,.08))">
             <div style="font-weight:1000">💦 Flow</div>
-            <div id="fLpm" style="font-size:34px;font-weight:1000;margin-top:6px">-</div>
-            <div class="mini">L/menit</div>
+            <div id="fLpm" style="font-size:34px;font-weight:1000;margin-top:6px">0.0 L/menit</div>
+            <div class="mini">L/menit (max 6)</div>
           </div>
 
           <div class="card" style="grid-column:span 12;background:rgba(255,255,255,.70)">
             <div style="font-weight:1000;margin-bottom:8px">🔌 Status Output (A–D)</div>
             <div class="mini" id="outS">A:- B:- C:- D:-</div>
+            <div class="mini" id="p2Info" style="font-weight:1000;margin-top:6px;color:#b02020;display:none">
+              ⚠️ P2 aktif! Presipitasi (C) & Pompa Banjir (D) otomatis dimatikan.
+            </div>
           </div>
         </div>
       </div>
@@ -1374,7 +1402,7 @@ function render(){
           <button class="btn b-blue" id="bA" style="grid-column:span 6"><span><i>🔴</i> Evaporasi (A)</span><span>Tap</span></button>
           <button class="btn b-purple" id="bB" style="grid-column:span 6"><span><i>🔵</i> Kondensasi (B)</span><span>Tap</span></button>
           <button class="btn b-orange" id="bC" style="grid-column:span 6"><span><i>🟡</i> Presipitasi (C)</span><span>Tap</span></button>
-          <button class="btn b-pink" id="bD" style="grid-column:span 6"><span><i>⚪</i> Banjir (D)</span><span>Tap</span></button>
+          <button class="btn b-pink" id="bD" style="grid-column:span 6"><span><i>⚪</i> Pompa Banjir (D)</span><span>Tap</span></button>
 
           <button class="btn b-red" id="bOff" style="grid-column:span 12"><span><i>⛔</i> Matikan Semua</span><span>Tap</span></button>
         </div>
@@ -1387,17 +1415,14 @@ function render(){
       render();
     };
 
-    // ====== POIN #4: Saat masuk Diorama -> paksa semua OFF sekali + tampilkan message ======
+    // Saat masuk Diorama -> paksa semua OFF sekali
     if(!dioramaEntryLockSent){
       dioramaEntryLockSent = true;
-
       toast("🎛️ Diorama siap dikendalikan");
-
-      // paksa OFF (sekali saja saat masuk menu diorama)
       sendCmd({k:"ALLOFF"});
     }
 
-    // Commands manual
+    // Commands manual (firmware akan ignore C/D saat P2 aktif)
     document.getElementById("bA").onclick=()=>sendCmd({k:"A"});
     document.getElementById("bB").onclick=()=>sendCmd({k:"B"});
     document.getElementById("bC").onclick=()=>sendCmd({k:"C"});
@@ -1528,14 +1553,39 @@ function updateDioramaUI(){
   if(!u) return;
 
   const percent = (telem?.ultra_percent ?? "-");
-  const flow = (telem?.outA ? (telem?.flow_lpm ?? "-") : 0);
+
+  // Flow: tampilkan 0 kalau A OFF, cap max 6 L/menit
+  let flowVal = (telem?.outA ? Number(telem?.flow_lpm ?? 0) : 0);
+  if(!Number.isFinite(flowVal)) flowVal = 0;
+  flowVal = Math.max(0, Math.min(6, flowVal));
 
   const A = !!telem?.outA, B = !!telem?.outB, C = !!telem?.outC, D = !!telem?.outD;
+  const p2 = !!telem?.pompa2;
 
   document.getElementById("uPct").textContent = `${percent}%`;
-  document.getElementById("fLpm").textContent = `${flow} L/menit`;
+  document.getElementById("fLpm").textContent = `${flowVal.toFixed(1)} L/menit`;
   document.getElementById("outS").textContent =
     `A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${C?"ON":"OFF"} D:${D?"ON":"OFF"}`;
+
+  // tombol aktif: blink/reverse
+  const bA = document.getElementById("bA");
+  const bB = document.getElementById("bB");
+  const bC = document.getElementById("bC");
+  const bD = document.getElementById("bD");
+  if(bA) bA.classList.toggle("is-on", A);
+  if(bB) bB.classList.toggle("is-on", B);
+  if(bC) bC.classList.toggle("is-on", C);
+  if(bD) bD.classList.toggle("is-on", D);
+
+  // RULE BARU: kalau P2 aktif -> C dan D dimatikan + tombol nonaktif
+  const warn = document.getElementById("p2Info");
+  if(warn) warn.style.display = p2 ? "block" : "none";
+
+  if(bC) bC.disabled = p2;
+  if(bD) bD.disabled = p2;
+
+  // kalau P2 aktif, label tombol C/D tetap terlihat tapi nonaktif
+  // (actual force-off dilakukan di firmware)
 }
 
 /* ================== Footer Nav behavior ================== */
