@@ -503,8 +503,8 @@ const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 const AUDIO_BANJIR = ASSETS_BASE + "suara%20banjir%20bandang.mp3";
 
 /* ================== PIN ================== */
-const DIORAMA_PIN = "56789";     // changed
-const GURU_PIN    = "5678";      // changed
+const DIORAMA_PIN = "56789";
+const GURU_PIN    = "5678";
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 const STORAGE_GURU_OK    = "hh_guru_ok";
 
@@ -572,7 +572,6 @@ document.getElementById("btnMusic").onclick = toggleMusic;
 window.addEventListener("pointerdown", async ()=>{
   await unlockAudio();
   if(!musicOn){
-    // try once after the user interacts
     await tryStartMusic({silent:true});
   }
 }, {once:true});
@@ -909,7 +908,6 @@ async function pollTelem(){
     stopBanjirAlarm();
     document.getElementById("hdrVer").textContent = "OFFLINE";
   }else{
-    // tampilkan versi statis UI
     document.getElementById("hdrVer").textContent = UI_VERSION;
   }
 
@@ -938,6 +936,12 @@ function vibrateBanjir(){
   navigator.vibrate([400,200,400,200,800]);
 }
 async function startBanjirAlarm(){
+  // ✅ FIX #2: bila tidak terhubung ke ESP32 (OFFLINE), jangan tampilkan notifikasi banjir
+  if(isDeviceOffline()){
+    stopBanjirAlarm();
+    return;
+  }
+
   const overlay = document.getElementById("banjirOverlay");
   overlay.style.display = "block";
   banjirOn = true;
