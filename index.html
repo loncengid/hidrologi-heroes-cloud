@@ -487,6 +487,9 @@
 <audio id="banjirAudio" preload="auto" loop></audio>
 
 <script>
+/* ================== VERSION DISPLAY (UI) ================== */
+const UI_VERSION = "Niseef V1.12";
+
 /* ================== ASSET URLS (RAW GitHub) ================== */
 const ASSETS_BASE = "https://raw.githubusercontent.com/loncengid/Hidrologi-Heroes-Assets/main/";
 const IMG_TIRTA   = ASSETS_BASE + "karakter%20tirta.png";
@@ -500,8 +503,8 @@ const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 const AUDIO_BANJIR = ASSETS_BASE + "suara%20banjir%20bandang.mp3";
 
 /* ================== PIN ================== */
-const DIORAMA_PIN = "654321";
-const GURU_PIN    = "1234";
+const DIORAMA_PIN = "56789";     // changed
+const GURU_PIN    = "5678";      // changed
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 const STORAGE_GURU_OK    = "hh_guru_ok";
 
@@ -517,27 +520,6 @@ const banjirAudio = document.getElementById("banjirAudio");
 banjirAudio.src = AUDIO_BANJIR;
 banjirAudio.volume = 1.0;
 
-/* Music toggle */
-let musicOn = false;
-async function toggleMusic(){
-  try{
-    if(!musicOn){
-      await bgm.play();
-      musicOn = true;
-      document.getElementById("musicLabel").textContent = "Pause";
-      toast("🎵 Musik ON");
-    }else{
-      bgm.pause();
-      musicOn = false;
-      document.getElementById("musicLabel").textContent = "Play";
-      toast("🔇 Musik OFF");
-    }
-  }catch(e){
-    toast("⚠️ Browser blokir audio. Klik lagi ya.");
-  }
-}
-document.getElementById("btnMusic").onclick = toggleMusic;
-
 /* ================== SFX (WebAudio) ================== */
 let audioCtx = null;
 function getAudio(){
@@ -552,7 +534,51 @@ async function unlockAudio(){
   if(!ctx) return;
   if(ctx.state === "suspended") await ctx.resume();
 }
-window.addEventListener("pointerdown", unlockAudio, {once:true});
+
+/* Music toggle + auto start */
+let musicOn = false;
+
+function setMusicUI(on){
+  musicOn = !!on;
+  document.getElementById("musicLabel").textContent = musicOn ? "Pause" : "Play";
+}
+
+async function tryStartMusic({silent=false} = {}){
+  try{
+    await unlockAudio();
+    await bgm.play();
+    setMusicUI(true);
+    if(!silent) toast("🎵 Musik ON");
+    return true;
+  }catch(e){
+    setMusicUI(false);
+    if(!silent) toast("⚠️ Browser blokir audio. Tap layar ya.");
+    return false;
+  }
+}
+
+async function toggleMusic(){
+  if(!musicOn){
+    await tryStartMusic({silent:false});
+  }else{
+    bgm.pause();
+    setMusicUI(false);
+    toast("🔇 Musik OFF");
+  }
+}
+document.getElementById("btnMusic").onclick = toggleMusic;
+
+/* Unlock audio on first interaction, and also try to start bgm automatically if still off */
+window.addEventListener("pointerdown", async ()=>{
+  await unlockAudio();
+  if(!musicOn){
+    // try once after the user interacts
+    await tryStartMusic({silent:true});
+  }
+}, {once:true});
+
+/* Auto-start backsound immediately on load (may be blocked; will fallback to pointerdown) */
+setTimeout(()=>{ tryStartMusic({silent:true}); }, 50);
 
 function beep({freq=600, dur=0.10, type="sine", gain=0.06}={}){
   const ctx = getAudio();
@@ -846,13 +872,11 @@ function flashActive(el){
 }
 
 async function pollTelem(){
-  let ok = false;
   try{
     const t = await rtdbGet(PATH_TELEM);
     if(t && typeof t === "object"){
       telem = t;
       lastTelemAt = Date.now();
-      ok = true;
     }
   }catch(e){}
 
@@ -885,7 +909,8 @@ async function pollTelem(){
     stopBanjirAlarm();
     document.getElementById("hdrVer").textContent = "OFFLINE";
   }else{
-    document.getElementById("hdrVer").textContent = telem?.version || "-";
+    // tampilkan versi statis UI
+    document.getElementById("hdrVer").textContent = UI_VERSION;
   }
 
   handleBanjirAlarm();
@@ -1032,6 +1057,9 @@ function render(){
   if(page==="home"){
     setGuide("Hai! Aku Tirta 💧 Klik menu yang kamu mau ya! (Kalau nutup tombol, drag aku 😄)");
     dioramaEntryLockSent = false;
+
+    const dioramaStatus = isDeviceOffline() ? "OFFLINE" : UI_VERSION;
+
     app.innerHTML = `
       <div class="grid">
         <div class="card hero">
@@ -1042,7 +1070,7 @@ function render(){
             </div>
             <div class="badges">
               <div class="badge">👥 <small>Online:</small> <span>${onlineCount}</span></div>
-              <div class="badge">📡 <small>Device:</small> <span>${isDeviceOffline() ? "OFFLINE" : (telem?.version || "-")}</span></div>
+              <div class="badge">📡 <small>Diorama:</small> <span>${dioramaStatus}</span></div>
             </div>
           </div>
 
@@ -1363,7 +1391,7 @@ function render(){
             <div style="font-weight:1000">🔒 Masukkan PIN Diorama</div>
 
             <div class="pinRow">
-              <input id="pinInput" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
+              <input id="pinInput" type="password" inputmode="numeric" placeholder="•••••" maxlength="5">
               <button class="btn b-orange" id="btnPin" style="flex:0 0 auto;min-width:160px">
                 <span><i>✅</i> Buka</span><span>➡</span>
               </button>
@@ -1468,7 +1496,7 @@ function render(){
     function sendCmdDiorama(k, el){
       flashActive(el);
       if(isDeviceOffline()){
-        toast("⚠️ Device OFFLINE");
+        toast("⚠️ Diorama OFFLINE");
         stopBanjirAlarm();
         return;
       }
