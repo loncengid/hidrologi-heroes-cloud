@@ -478,6 +478,7 @@
 
 <div class="fx-layer" id="fx"></div>
 
+<!-- overlay tetap ada, tapi alarm dimatikan total -->
 <div class="banjirOverlay" id="banjirOverlay">
   <div class="banjirText">BANJIR...</div>
   <div class="banjirSub">⚠️ Air besar! Tetap aman ya!</div>
@@ -503,7 +504,7 @@ const AUDIO_BGM   = ASSETS_BASE + "audio%20niseef.mp3";
 const AUDIO_BANJIR = ASSETS_BASE + "suara%20banjir%20bandang.mp3";
 
 /* ================== PIN ================== */
-const DIORAMA_PIN = "56789";
+const DIORAMA_PIN = "12345";  // ✅ update
 const GURU_PIN    = "5678";
 const STORAGE_DIORAMA_OK = "hh_diorama_ok";
 const STORAGE_GURU_OK    = "hh_guru_ok";
@@ -899,19 +900,19 @@ async function pollTelem(){
   }
 
   // ==== OFFLINE GUARD (ESP32 OFF) ====
-  // jika offline: alarm banjir mati + ultrasonic 0% + flow 0 + output dianggap OFF
+  // jika offline: ultrasonic 0% + flow 0 + output dianggap OFF
   if(isDeviceOffline()){
     telem.pompa2 = false;
     telem.ultra_percent = 0;
     telem.flow_lpm = 0;
     telem.outA = telem.outB = telem.outC = telem.outD = false;
-    stopBanjirAlarm();
+    stopBanjirAlarm(); // pastikan overlay/audio mati
     document.getElementById("hdrVer").textContent = "OFFLINE";
   }else{
     document.getElementById("hdrVer").textContent = UI_VERSION;
   }
 
-  handleBanjirAlarm();
+  handleBanjirAlarm(); // hanya untuk "check status", alarm tetap mati
 
   if(page==="diorama") updateDioramaUI();
 }
@@ -927,29 +928,22 @@ setInterval(()=>{
   }
 }, 700);
 
-/* ================== BANJIR ALARM ================== */
+/* ================== BANJIR (ALARM DIMATIKAN, HANYA CHECK SENSOR) ================== */
 let banjirOn = false;
 let banjirVibeTimer = null;
+let banjirDetected = false; // ✅ status check saja
 
 function vibrateBanjir(){
-  if(!navigator.vibrate) return;
-  navigator.vibrate([400,200,400,200,800]);
+  // ✅ alarm dimatikan
+  return;
 }
-async function startBanjirAlarm(){
-  // ✅ FIX #2: bila tidak terhubung ke ESP32 (OFFLINE), jangan tampilkan notifikasi banjir
-  if(isDeviceOffline()){
-    stopBanjirAlarm();
-    return;
-  }
 
-  const overlay = document.getElementById("banjirOverlay");
-  overlay.style.display = "block";
-  banjirOn = true;
-  try{ await banjirAudio.play(); }catch(e){}
-  vibrateBanjir();
-  clearInterval(banjirVibeTimer);
-  banjirVibeTimer = setInterval(vibrateBanjir, 2200);
+async function startBanjirAlarm(){
+  // ✅ alarm dimatikan, tidak tampil overlay / bunyi / getar
+  banjirDetected = true;
+  stopBanjirAlarm();
 }
+
 function stopBanjirAlarm(){
   const overlay = document.getElementById("banjirOverlay");
   overlay.style.display = "none";
@@ -959,30 +953,21 @@ function stopBanjirAlarm(){
   clearInterval(banjirVibeTimer);
   banjirVibeTimer = null;
 }
+
 function handleBanjirAlarm(){
-  // kalau device offline, banjir HARUS mati
+  // ✅ hanya cek status sensor banjir
   if(isDeviceOffline()){
+    banjirDetected = false;
     if(banjirOn) stopBanjirAlarm();
     return;
   }
 
-  const pct = Number(telem?.ultra_percent ?? -1);
-  if(telem?.pompa2){
-    if(!banjirOn) startBanjirAlarm();
-    return;
-  }
-  if(banjirOn && pct >= 0 && pct <= 30){
-    stopBanjirAlarm();
-  }
-  if(banjirOn && !telem?.pompa2 && (pct < 0 || pct <= 30)){
-    stopBanjirAlarm();
-  }
+  // Asumsi "banjir" terdeteksi jika pompa2 ON (sesuai logika sistem)
+  banjirDetected = !!telem?.pompa2;
+
+  // pastikan overlay/audio selalu mati
+  if(banjirOn) stopBanjirAlarm();
 }
-window.addEventListener("pointerdown", async ()=>{
-  try{
-    if(banjirOn && banjirAudio.paused) await banjirAudio.play();
-  }catch(e){}
-}, {passive:true});
 
 /* ================== NAV STATE ================== */
 let page = "home";
@@ -1463,6 +1448,8 @@ function render(){
           <div class="card" style="grid-column:span 12;background:rgba(255,255,255,.70)">
             <div style="font-weight:1000;margin-bottom:8px">🔌 Status Output (A–D)</div>
             <div class="mini" id="outS">A:OFF B:OFF C:OFF D:OFF | P2:OFF</div>
+            <div class="mini" id="banjirS" style="font-weight:1000;margin-top:6px">Status Banjir: -</div>
+
             <div class="mini" id="p2Hint" style="font-weight:1000;color:#b02020;display:none;margin-top:6px">
               ⚠️ P2 sedang ON → Tombol C & D dikunci otomatis
             </div>
@@ -1640,12 +1627,19 @@ function updateDioramaUI(){
   const u=document.getElementById("uPct");
   if(!u) return;
 
+  const bs = document.getElementById("banjirS");
+
   // OFFLINE: ultrasonic 0% + flow 0 + alarm mati
   if(isDeviceOffline()){
     document.getElementById("uPct").textContent = `0%`;
     document.getElementById("fLpm").textContent = `0.0 L/menit`;
     document.getElementById("outS").textContent = `A:OFF B:OFF C:OFF D:OFF | P2:OFF`;
     const p2Hint = document.getElementById("p2Hint"); if(p2Hint) p2Hint.style.display="none";
+
+    if(bs){
+      bs.textContent = "Status Banjir: OFFLINE";
+      bs.style.color = "#4b647a";
+    }
 
     ["bA","bB","bC","bD"].forEach(id=>{
       const el = document.getElementById(id);
@@ -1654,6 +1648,9 @@ function updateDioramaUI(){
     stopBanjirAlarm();
     return;
   }
+
+  const upctRaw = Number(telem?.ultra_percent ?? -1);
+  const sensorOk = (upctRaw >= 0);
 
   const percent = Math.max(0, Number(telem?.ultra_percent ?? 0)) || 0;
 
@@ -1673,6 +1670,20 @@ function updateDioramaUI(){
   document.getElementById("fLpm").textContent = `${flowClamped.toFixed(1)} L/menit`;
   document.getElementById("outS").textContent =
     `A:${A?"ON":"OFF"} B:${B?"ON":"OFF"} C:${showC?"ON":"OFF"} D:${showD?"ON":"OFF"} | P2:${P2?"ON":"OFF"}`;
+
+  // status banjir (check sensor)
+  if(bs){
+    if(!sensorOk){
+      bs.textContent = "Status Banjir: SENSOR ERROR";
+      bs.style.color = "#b02020";
+    }else if(P2){
+      bs.textContent = "Status Banjir: TERDETEKSI";
+      bs.style.color = "#b02020";
+    }else{
+      bs.textContent = "Status Banjir: AMAN";
+      bs.style.color = "#0c7a5c";
+    }
+  }
 
   // tombol live blink bila output ON
   const bA=document.getElementById("bA");
